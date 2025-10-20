@@ -18,4 +18,10 @@ class AppModel {
         case open
     }
     var immersiveSpaceState = ImmersiveSpaceState.closed
+    var markersVisible: Bool = true
+    
+    func toggleMarkers() {
+        markersVisible.toggle()
+        print("Markers visibility: \(markersVisible)") // TODO 삭제
+    }
 }
