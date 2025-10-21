@@ -18,13 +18,6 @@ struct TeleportRealityView: View {
     
     var body: some View {
         RealityView { content in
-            // 씬 컨테이너 생성 (바닥과 오브젝트들을 담을 컨테이너)
-            //            let root = Entity()
-            //            rootEntity = root
-            
-            //                    content.add(rootEntity!)
-            //                    SceneManager.setupScene(in: rootEntity!)
-            
             // 이미 로드된 경우 중복 추가 방지
             guard rootEntity == nil else {
                 if let existingRoot = rootEntity {
