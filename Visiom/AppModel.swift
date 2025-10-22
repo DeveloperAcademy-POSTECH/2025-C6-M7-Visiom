@@ -11,7 +11,13 @@ import SwiftUI
 @MainActor
 @Observable
 class AppModel {
+    // TODO : ImmersiveView 사용하지 않는 것 확인 후 id 삭제 필요
     let immersiveSpaceID = "ImmersiveSpace"
+    
+    let fullImmersiveSpaceID = "FullImmersiveSpace"
+    let crimeSceneListWindowID = "CrimeSceneListWindow"
+    let photoCollectionWindowID = "PhotoCollectionWindow"
+    
     enum ImmersiveSpaceState {
         case closed
         case inTransition
