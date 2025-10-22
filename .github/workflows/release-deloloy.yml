@@ -4,7 +4,7 @@ name: deploy
 on:
   #  workflow 를 trigger 조건 설정 - release/ 로 시작하는 branch 가 push 되었을 때 
   push:
-    branches: [ release ]
+    branches: [ main ]
     
 # workflow의 실행은 하나 이상의 job으로 구성 됨
 jobs:
@@ -74,7 +74,7 @@ jobs:
       - name: Archive app
         # 빌드 및 아카이브
         run: |
-          pod install --repo-update --clean-install --project-directory=HappyChuseok/
+          pod install --repo-update --clean-install --project-directory=Visiom/
           xcodebuild clean archive -workspace $XC_WORKSPACE -scheme $XC_SCHEME -configuration release -archivePath $XC_ARCHIVE
       - name: Export app
         # export 를 통해 ipa 파일 만듦
@@ -83,7 +83,7 @@ jobs:
       - name: Upload app to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: 'HappyChuseok.ipa'
+          app-path: 'Visiom.ipa'
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
