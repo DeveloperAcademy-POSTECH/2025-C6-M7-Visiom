@@ -17,23 +17,10 @@ struct CrimeSceneListView: View {
         VStack {
             Button {
                 Task { @MainActor in
-                    switch appModel.immersiveSpaceState {
-                    case .open:
-                        break
-                    case .closed:
-                        appModel.immersiveSpaceState = .inTransition
-                        switch await openImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
-                        case .opened:
-                            dismissWindow(id: appModel.crimeSceneListWindowID)
-                            break
-                        case .userCancelled, .error:
-                            fallthrough
-                        @unknown default:
-                            appModel.immersiveSpaceState = .closed
-                        }
-                    case .inTransition:
-                        break
-                    }
+                    await appModel.enterFullImmersive(
+                        openImmersiveSpace: openImmersiveSpace,
+                        dismissWindow: dismissWindow
+                    )
                 }
             } label: {
                 Text("몰입형 공간 진입하기")

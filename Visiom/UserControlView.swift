@@ -16,50 +16,48 @@ struct UserControlView: View {
     var body: some View {
         HStack {
             Button {
-                Task {
-                    guard appModel.immersiveSpaceState == .open else { return }
-                    appModel.immersiveSpaceState = .inTransition
-                    
-                    await dismissImmersiveSpace()
-                
-                    openWindow(id: appModel.crimeSceneListWindowID)
+                Task { @MainActor in
+                    await appModel.exitFullImmersive(
+                        dismissImmersiveSpace: dismissImmersiveSpace,
+                        openWindow: openWindow
+                    )
                 }
             } label: {
                 Text("나가기")
             }
             
             Button {
-
+                
             } label: {
                 Text("사진")
             }
             Button {
-
+                
             } label: {
                 Text("메모")
             }
             Button {
-
+                
             } label: {
                 Text("숫자")
             }
             Button {
-
+                
             } label: {
                 Text("스티커")
             }
             Button {
-
+                
             } label: {
                 Text("마네킹")
             }
             Button {
-
+                
             } label: {
                 Text("필터")
             }
             Button {
-
+                
             } label: {
                 Text("이동")
             }

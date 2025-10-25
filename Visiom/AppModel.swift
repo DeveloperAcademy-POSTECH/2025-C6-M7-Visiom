@@ -23,5 +23,42 @@ class AppModel {
         case inTransition
         case open
     }
+    
     var immersiveSpaceState = ImmersiveSpaceState.closed
+    
+    //Full Immersive 진입 처리 함수
+    func enterFullImmersive(
+        openImmersiveSpace: OpenImmersiveSpaceAction,
+        dismissWindow: DismissWindowAction
+    ) async {
+        switch immersiveSpaceState {
+        case .open:
+            return
+        case .inTransition:
+            return
+        case .closed:
+            immersiveSpaceState = .inTransition
+            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
+            case .opened:
+                dismissWindow(id: crimeSceneListWindowID)
+                break
+            case .userCancelled, .error:
+                immersiveSpaceState = .closed
+            @unknown default:
+                immersiveSpaceState = .closed
+            }
+        }
+    }
+    
+    //Full Immersive 나가기 처리 함수
+    func exitFullImmersive(
+        dismissImmersiveSpace: DismissImmersiveSpaceAction,
+        openWindow: OpenWindowAction
+    ) async {
+        guard immersiveSpaceState == .open else { return }
+        immersiveSpaceState = .inTransition
+        
+        await dismissImmersiveSpace()
+        openWindow(id: crimeSceneListWindowID)
+    }
 }
