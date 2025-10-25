@@ -18,8 +18,8 @@ struct VisiomApp: App {
                 .environment(appModel)
         }
 
-        ImmersiveSpace(id: appModel.immersiveSpaceID) {
-            ImmersiveView()
+        ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
+            FullImmersiveView()
                 .environment(appModel)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
