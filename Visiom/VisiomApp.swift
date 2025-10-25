@@ -13,8 +13,8 @@ struct VisiomApp: App {
     @State private var appModel = AppModel()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        WindowGroup(id: appModel.crimeSceneListWindowID) {
+            CrimeSceneListView()
                 .environment(appModel)
         }
 
