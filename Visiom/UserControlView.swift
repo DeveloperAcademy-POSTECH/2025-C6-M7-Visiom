@@ -10,11 +10,20 @@ import SwiftUI
 
 struct UserControlView: View {
     @Environment(AppModel.self) var appModel
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    @Environment(\.openWindow) private var openWindow
     
     var body: some View {
         HStack {
             Button {
+                Task {
+                    guard appModel.immersiveSpaceState == .open else { return }
+                    appModel.immersiveSpaceState = .inTransition
+                    
+                    await dismissImmersiveSpace()
                 
+                    openWindow(id: appModel.crimeSceneListWindowID)
+                }
             } label: {
                 Text("나가기")
             }
