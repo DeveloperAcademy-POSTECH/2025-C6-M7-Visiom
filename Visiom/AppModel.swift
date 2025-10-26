@@ -11,11 +11,56 @@ import SwiftUI
 @MainActor
 @Observable
 class AppModel {
+    // TODO : ImmersiveView 사용하지 않는 것 확인 후 id 삭제 필요
     let immersiveSpaceID = "ImmersiveSpace"
+    
+    let fullImmersiveSpaceID = "FullImmersiveSpace"
+    let crimeSceneListWindowID = "CrimeSceneListWindow"
+    let photoCollectionWindowID = "PhotoCollectionWindow"
+    
     enum ImmersiveSpaceState {
         case closed
         case inTransition
         case open
     }
+    
     var immersiveSpaceState = ImmersiveSpaceState.closed
+    
+    //Full Immersive 진입 처리 함수
+    @MainActor
+    func enterFullImmersive(
+        openImmersiveSpace: OpenImmersiveSpaceAction,
+        dismissWindow: DismissWindowAction
+    ) async {
+        switch immersiveSpaceState {
+        case .open:
+            return
+        case .inTransition:
+            return
+        case .closed:
+            immersiveSpaceState = .inTransition
+            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
+            case .opened:
+                dismissWindow(id: crimeSceneListWindowID)
+                break
+            case .userCancelled, .error:
+                immersiveSpaceState = .closed
+            @unknown default:
+                immersiveSpaceState = .closed
+            }
+        }
+    }
+    
+    //Full Immersive 나가기 처리 함수
+    @MainActor
+    func exitFullImmersive(
+        dismissImmersiveSpace: DismissImmersiveSpaceAction,
+        openWindow: OpenWindowAction
+    ) async {
+        guard immersiveSpaceState == .open else { return }
+        immersiveSpaceState = .inTransition
+        
+        await dismissImmersiveSpace()
+        openWindow(id: crimeSceneListWindowID)
+    }
 }
