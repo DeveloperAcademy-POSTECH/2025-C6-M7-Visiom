@@ -16,7 +16,7 @@ struct CrimeSceneListView: View {
     var body: some View {
         VStack {
             Button {
-                Task { @MainActor in
+                Task {
                     await appModel.enterFullImmersive(
                         openImmersiveSpace: openImmersiveSpace,
                         dismissWindow: dismissWindow
