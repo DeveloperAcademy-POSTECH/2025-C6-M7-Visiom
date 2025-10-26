@@ -9,7 +9,8 @@ import SwiftUI
 import RealityKit
 import ARKit
 
-struct ImmersiveView: View {
+// TODO 리팩토링 후 삭제 예정
+struct TeleportExampleView: View {
     @Environment(AppModel.self) var appModel
     @State private var position: SIMD3<Float> = [0, 0, 0]
     @State private var rootEntity: Entity?
@@ -72,9 +73,4 @@ struct ImmersiveView: View {
     }
     
     
-}
-
-#Preview(immersionStyle: .full) {
-    ImmersiveView()
-        .environment(AppModel())
 }
