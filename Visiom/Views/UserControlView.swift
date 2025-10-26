@@ -16,7 +16,7 @@ struct UserControlView: View {
     var body: some View {
         HStack {
             Button {
-                Task { @MainActor in
+                Task {
                     await appModel.exitFullImmersive(
                         dismissImmersiveSpace: dismissImmersiveSpace,
                         openWindow: openWindow

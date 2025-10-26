@@ -27,6 +27,7 @@ class AppModel {
     var immersiveSpaceState = ImmersiveSpaceState.closed
     
     //Full Immersive 진입 처리 함수
+    @MainActor
     func enterFullImmersive(
         openImmersiveSpace: OpenImmersiveSpaceAction,
         dismissWindow: DismissWindowAction
@@ -51,6 +52,7 @@ class AppModel {
     }
     
     //Full Immersive 나가기 처리 함수
+    @MainActor
     func exitFullImmersive(
         dismissImmersiveSpace: DismissImmersiveSpaceAction,
         openWindow: OpenWindowAction
