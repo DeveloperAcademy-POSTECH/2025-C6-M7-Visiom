@@ -10,6 +10,11 @@ import RealityKit
 import RealityKitContent
 import SwiftUI
 
+struct WorldAnchorEntityData {
+    var anchor: WorldAnchor
+    var entity: Entity
+}
+
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
 
@@ -19,8 +24,8 @@ struct FullImmersiveView: View {
 
     @State private var root = Entity()
 
-    @State private var worldAnchorEntities: [UUID: Entity] = [:]
-    @State private var worldAnchors: [UUID: WorldAnchor] = [:]
+    @State private var worldAnchorEntityData: [UUID: WorldAnchorEntityData] =
+        [:]
     // 임시 객체 상태일 때 타입이랑 uuid를 저장하는 친구
     @State private var tempItemType: [UUID: UserControlBar] = [:]
 
@@ -97,9 +102,9 @@ struct FullImmersiveView: View {
             headAnchor.addChild(card)
 
         } update: { content in
-            for (_, entity) in worldAnchorEntities {
-                if !content.entities.contains(entity) {
-                    content.add(entity)
+            for (_, data) in worldAnchorEntityData {
+                if !content.entities.contains(data.entity) {
+                    content.add(data.entity)
                 }
             }
         }
@@ -204,28 +209,36 @@ struct FullImmersiveView: View {
                         relativeTo: nil  // 월드 좌표 기준
                     )
 
-                    worldAnchorEntities[update.anchor.id] = subjectClone
-                    worldAnchors[update.anchor.id] = update.anchor
+                    worldAnchorEntityData[update.anchor.id] =
+                        WorldAnchorEntityData(
+                            anchor: update.anchor,
+                            entity: subjectClone
+                        )
 
                     print("🟢 Anchor added \(update.anchor.id)")
 
                 case .updated:
-                    guard let entity = worldAnchorEntities[update.anchor.id]
-                    else {
-                        continue
-                    }
 
-                    entity.setTransformMatrix(
-                        update.anchor.originFromAnchorTransform,
-                        relativeTo: nil
-                    )
-                    worldAnchors[update.anchor.id] = update.anchor
+                    if var updateAnchor = worldAnchorEntityData[
+                        update.anchor.id
+                    ] {
+                        updateAnchor.entity.setTransformMatrix(
+                            update.anchor.originFromAnchorTransform,
+                            relativeTo: nil
+                        )
+
+                        updateAnchor.anchor = update.anchor
+
+                        worldAnchorEntityData[update.anchor.id] = updateAnchor
+                    }
                     print("🔵 Anchor updated \(update.anchor.id)")
 
                 case .removed:
-                    worldAnchorEntities[update.anchor.id]?.removeFromParent()
-                    worldAnchorEntities.removeValue(forKey: update.anchor.id)
-                    worldAnchors.removeValue(forKey: update.anchor.id)
+                    if let removeAnchor = worldAnchorEntityData.removeValue(
+                        forKey: update.anchor.id
+                    ) {
+                        removeAnchor.entity.removeFromParent()
+                    }
                     print("🔴 Anchor removed \(update.anchor.id)")
                 }
             }
@@ -330,7 +343,7 @@ struct FullImmersiveView: View {
 
     private func removeWorldAnchor(by id: UUID) async {
         do {
-            if let anchorToRemove = worldAnchors[id] {
+            if let anchorToRemove = worldAnchorEntityData[id]?.anchor {
                 try await Self.worldTracking.removeAnchor(anchorToRemove)
                 print("remove anchor: \(id)")
             } else {
