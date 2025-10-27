@@ -13,7 +13,7 @@ import SwiftUI
 enum ToolbarItem: String {
     case ball
     case box
-}
+} 
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
