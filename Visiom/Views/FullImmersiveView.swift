@@ -13,7 +13,7 @@ import SwiftUI
 enum ToolbarItem: String {
     case ball
     case box
-} 
+}
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
@@ -32,7 +32,7 @@ struct FullImmersiveView: View {
     @State private var currentItem: ModelEntity? = nil
     @State private var currentItemType: ToolbarItem? = nil
 
-    @State private var ball: ModelEntity = {
+    let ball: ModelEntity = {
         let ball = ModelEntity(
             mesh: .generateSphere(radius: 0.05),
             materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
@@ -47,7 +47,7 @@ struct FullImmersiveView: View {
         return ball
     }()
 
-    @State private var box: ModelEntity = {
+    let box: ModelEntity = {
         let box = ModelEntity(
             mesh: .generateBox(size: 0.1),
             materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
@@ -119,10 +119,15 @@ struct FullImmersiveView: View {
     }
 
     private static func startARSession() async {
-        guard HandTrackingProvider.isSupported,
-            WorldTrackingProvider.isSupported
+        guard HandTrackingProvider.isSupported
         else {
-            print("error: handtracking or worldtracking 안됨")
+            print("error: 핸드 트래킹이 안됨")
+            return
+        }
+
+        guard WorldTrackingProvider.isSupported
+        else {
+            print("error: 월드 트래킹이 안됨")
             return
         }
         do {
