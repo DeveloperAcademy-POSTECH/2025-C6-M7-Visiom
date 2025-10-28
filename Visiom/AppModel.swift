@@ -31,7 +31,8 @@ class AppModel {
     func toggleMarkers() {
         markersVisible.toggle()
         print("Markers visibility: \(markersVisible)") // TODO 삭제
-
+    }
+    
     //Full Immersive 진입 처리 함수
     @MainActor
     func enterFullImmersive(
