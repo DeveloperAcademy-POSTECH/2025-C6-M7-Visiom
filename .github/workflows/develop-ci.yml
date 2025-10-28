@@ -29,8 +29,8 @@ jobs:
     - name: Build VisionOS App
       run: |
         xcodebuild \
-          -project YourProject.xcodeproj \
-          -scheme YourSchemeName \
+          -project Visiom.xcodeproj \
+          -scheme Visiom \
           -configuration Release \
           -destination 'generic/platform=visionOS' \
           clean build | xcpretty
