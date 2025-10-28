@@ -13,13 +13,13 @@ struct VisiomApp: App {
     @State private var appModel = AppModel()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        WindowGroup(id: appModel.crimeSceneListWindowID) {
+            CrimeSceneListView()
                 .environment(appModel)
         }
 
-        ImmersiveSpace(id: appModel.immersiveSpaceID) {
-            ImmersiveView()
+        ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
+            FullImmersiveView()
                 .environment(appModel)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
