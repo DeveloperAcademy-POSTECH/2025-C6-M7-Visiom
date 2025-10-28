@@ -25,6 +25,11 @@ class AppModel {
     }
     
     var immersiveSpaceState = ImmersiveSpaceState.closed
+    var markersVisible: Bool = true
+    
+    func toggleMarkers() {
+        markersVisible.toggle()
+        print("Markers visibility: \(markersVisible)") // TODO 삭제
     
     //Full Immersive 진입 처리 함수
     @MainActor
