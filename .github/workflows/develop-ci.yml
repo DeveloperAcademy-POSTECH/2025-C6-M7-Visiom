@@ -1,5 +1,5 @@
 # workflow 이름 
-name: Run Test
+name: Develop Build
 
 on: 
   # develop 브랜치에 push나 pull request 이번트가 일어났을 때 해당 workflow를 trigger
