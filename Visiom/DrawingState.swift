@@ -6,13 +6,22 @@
 //
 
 import SwiftUI
+import Combine
 
-struct DrawingState: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+class DrawingState: ObservableObject {
+    @Published var isDrawingEnabled = false
+    @Published var isErasingEnabled = true
+    @Published var drawingColor: Color = .blue
+    
+    func toggleDrawing() {
+        isDrawingEnabled.toggle()
     }
-}
-
-#Preview {
-    DrawingState()
+    
+    func toggleErasing() {
+        isErasingEnabled.toggle()
+    }
+    
+    func setDrawingColor(_ color: Color) {
+        drawingColor = color
+    }
 }
