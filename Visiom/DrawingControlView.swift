@@ -1,12 +1,12 @@
 //
-//  DrawingControls.swift
+//  DrawingControlView.swift
 //  Visiom
 //
 //  Created by 윤창현 on 10/28/25.
 //
 import SwiftUI
 
-struct DrawingControls: View {
+struct DrawingControlView: View {
     @EnvironmentObject var drawingState: DrawingState
     
     var body: some View {
@@ -115,6 +115,6 @@ struct ColorPickerButton: View {
 }
 
 #Preview {
-    DrawingControls()
+    DrawingControlView()
         .environmentObject(DrawingState())
 }
