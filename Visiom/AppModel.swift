@@ -13,24 +13,25 @@ import SwiftUI
 class AppModel {
     // TODO : ImmersiveView 사용하지 않는 것 확인 후 id 삭제 필요
     let immersiveSpaceID = "ImmersiveSpace"
-    
+
     let fullImmersiveSpaceID = "FullImmersiveSpace"
     let crimeSceneListWindowID = "CrimeSceneListWindow"
     let photoCollectionWindowID = "PhotoCollectionWindow"
-    
+
     enum ImmersiveSpaceState {
         case closed
         case inTransition
         case open
     }
-    
+
     var immersiveSpaceState = ImmersiveSpaceState.closed
+    var itemAdd: UserControlBar? = nil
     var markersVisible: Bool = true
     
     func toggleMarkers() {
         markersVisible.toggle()
         print("Markers visibility: \(markersVisible)") // TODO 삭제
-    
+
     //Full Immersive 진입 처리 함수
     @MainActor
     func enterFullImmersive(
@@ -55,7 +56,7 @@ class AppModel {
             }
         }
     }
-    
+
     //Full Immersive 나가기 처리 함수
     @MainActor
     func exitFullImmersive(
@@ -64,7 +65,7 @@ class AppModel {
     ) async {
         guard immersiveSpaceState == .open else { return }
         immersiveSpaceState = .inTransition
-        
+
         await dismissImmersiveSpace()
         openWindow(id: crimeSceneListWindowID)
     }
