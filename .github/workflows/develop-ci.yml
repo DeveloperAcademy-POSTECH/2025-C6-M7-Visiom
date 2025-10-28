@@ -43,7 +43,7 @@ jobs:
           -scheme Visiom \
           -configuration Release \
           -destination 'generic/platform=visionOS' \
-          -archivePath $PWD/build/Visiom.xcarchive \
+          -archivePath ${{ github.workspace }}/build/Visiom.xcarchive \
           clean archive | xcpretty
 
     # 5️⃣ IPA 내보내기
@@ -51,8 +51,8 @@ jobs:
       run: |
         xcodebuild \
           -exportArchive \
-          -archivePath $PWD/build/Visiom.xcarchive \
-          -exportPath $PWD/build/export \
+          -archivePath ${{ github.workspace }}/build/Visiom.xcarchive \
+          -exportPath ${{ github.workspace }}/build/export \
           -exportOptionsPlist ExportOptions.plist
 
       # 6️⃣ 빌드 결과 업로드
