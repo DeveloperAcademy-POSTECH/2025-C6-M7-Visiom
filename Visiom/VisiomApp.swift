@@ -9,12 +9,11 @@ import SwiftUI
 
 @main
 struct VisiomApp: App {
-    
     @Environment(\.scenePhase) private var scenePhase
-    
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
-    
+    @StateObject private var drawingState = DrawingState()
+
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
             CrimeSceneListView()
@@ -34,11 +33,16 @@ struct VisiomApp: App {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
         }
+        WindowGroup(id: appModel.drawingControlWindowID) {
+            DrawingControlView()
+                .environmentObject(drawingState)
+        }.windowResizability(.contentSize)
         
         ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
             FullImmersiveView()
                 .environment(appModel)
                 .environment(collectionStore)
+                .environmentObject(drawingState)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }

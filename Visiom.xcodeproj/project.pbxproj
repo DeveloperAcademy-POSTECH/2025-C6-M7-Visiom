@@ -165,8 +165,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
-				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "";
-				INFOPLIST_KEY_NSWorldSensingUsageDescription = "";
+				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "손추적을 사용합니다. ";
+				INFOPLIST_KEY_NSWorldSensingUsageDescription = "월드트랙킹 사용합니다. ";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -196,8 +196,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
-				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "";
-				INFOPLIST_KEY_NSWorldSensingUsageDescription = "";
+				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "손추적을 사용합니다. ";
+				INFOPLIST_KEY_NSWorldSensingUsageDescription = "월드트랙킹 사용합니다. ";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
