@@ -9,16 +9,29 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum FileLocations {
+    @discardableResult
+    private static func ensureDirectory(_ url: URL) throws -> URL {
+        let fm = FileManager.default
+        if !fm.fileExists(atPath: url.path) {
+            try fm.createDirectory(at: url, withIntermediateDirectories: true)
+        }
+        return url
+    }
+    
     static func appSupportDir() throws -> URL {
         let fm = FileManager.default
         let base = try fm.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        let appDir = base.appendingPathComponent("Visiom", isDirectory: true) // TODO : 앱이름 혹은 Bundle로 변경
-        if !fm.fileExists(atPath: appDir.path) {
-            try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
-        }
-        return appDir
+        
+        let appComponent =
+        Bundle.main.bundleIdentifier
+        ?? (Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String)
+        ?? ProcessInfo.processInfo.processName
+        
+        let appDir = base.appendingPathComponent(appComponent, isDirectory: true)
+        
+        return try ensureDirectory(appDir)
     }
-
+    
     static func collectionsRoot() throws -> URL {
         let root = try appSupportDir().appendingPathComponent("Collections", isDirectory: true)
         let fm = FileManager.default
@@ -27,7 +40,7 @@ enum FileLocations {
         }
         return root
     }
-
+    
     static func collectionFolder(id: UUID) throws -> URL {
         let folder = try collectionsRoot().appendingPathComponent(id.uuidString, isDirectory: true)
         let fm = FileManager.default
@@ -36,7 +49,7 @@ enum FileLocations {
         }
         return folder
     }
-
+    
     static func collectionsIndexFile() throws -> URL {
         try appSupportDir().appendingPathComponent("collections.json", conformingTo: .json)
     }
