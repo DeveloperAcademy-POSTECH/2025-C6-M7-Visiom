@@ -11,6 +11,7 @@ import Observation
 @MainActor
 @Observable
 final class CollectionStore {
+    private let persistence = PersistenceActor()
     var collections: [PhotoCollection] = []
     
     init() {
@@ -20,12 +21,8 @@ final class CollectionStore {
     func load() async {
         do {
             let url = try FileLocations.collectionsIndexFile()
-            if let data = try? Data(contentsOf: url) {
-                let decoded = try JSONDecoder().decode([PhotoCollection].self, from: data)
-                self.collections = decoded
-            } else {
-                self.collections = []
-            }
+            let decoded = try await persistence.load(from: url)
+            self.collections = decoded
         } catch {
             print("Load collections error:", error)
             self.collections = []
@@ -34,16 +31,9 @@ final class CollectionStore {
     
     private func persist() {
         let snapshot = self.collections
-        let url = try? FileLocations.collectionsIndexFile()
-        guard let url else { return }
-        
-        Task.detached{
-            do {
-                let data = try JSONEncoder().encode(snapshot)
-                try data.write(to: url, options: .atomic)
-            } catch {
-                print("Persist collections error:", error)
-            }
+        guard let url = try? FileLocations.collectionsIndexFile() else { return }
+        Task {
+            await persistence.persist(snapshot, to: url)
         }
     }
     
@@ -76,7 +66,7 @@ final class CollectionStore {
         guard let idx = collections.firstIndex(where: { $0.id == id }) else { return }
         let trimmed = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        collections[idx].title = newTitle
+        collections[idx].title = trimmed
         persist()
     }
     
@@ -148,6 +138,7 @@ final class CollectionStore {
             let folder = try FileLocations.collectionFolder(id: collectionID)
             
             for i in offsets.sorted(by: >) { // 높은 인덱스부터
+                guard i < col.photoFileNames.count else { continue }
                 let name = col.photoFileNames[i]
                 let path = folder.appendingPathComponent(name)
                 try? FileManager.default.removeItem(at: path)
@@ -172,5 +163,9 @@ final class CollectionStore {
         guard let col = collection(with: collectionID),
               let folder = try? FileLocations.collectionFolder(id: collectionID) else { return [] }
         return col.photoFileNames.map { folder.appendingPathComponent($0) }
+    }
+    
+    func flushSaves() async {
+        await persistence.flush()
     }
 }

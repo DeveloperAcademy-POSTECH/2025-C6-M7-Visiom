@@ -10,6 +10,8 @@ import SwiftUI
 @main
 struct VisiomApp: App {
     
+    @Environment(\.scenePhase) private var scenePhase
+    
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
     
@@ -42,6 +44,13 @@ struct VisiomApp: App {
                 }
                 .onDisappear {
                     appModel.immersiveSpaceState = .closed
+                }
+                .onChange(of: scenePhase) {_, phase in
+                    if phase == .background {
+                        Task {
+                            await collectionStore.flushSaves()
+                        }
+                    }
                 }
         }
         .immersionStyle(selection: .constant(.full), in: .full)
