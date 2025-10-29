@@ -12,6 +12,18 @@ actor PersistenceActor {
     private var currentTask: Task<Void, Error>?
     private var generation: UInt64 = 0
     
+    private let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        
+        return encoder
+    }()
+    
+    private let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        
+        return decoder
+    }()
+    
     // Disk I/O를 직렬로 처리
     func enqueueWrite(_ snapshot: [PhotoCollection], to url: URL, debounceMS: UInt64 = 120) {
         generation &+= 1
@@ -29,7 +41,7 @@ actor PersistenceActor {
             try Self.ensureParentDirectoryExists(for: url)
             
             //인코딩
-            let data = try JSONEncoder().encode(snapshot)
+            let data = try self.encoder.encode(snapshot)
             
             // 취소 and 세대 재확인
             try Task.checkCancellation()
@@ -56,7 +68,7 @@ actor PersistenceActor {
     /// 파일에서 로드 후 PhotoCollection 배열로 반환
     func load(from url: URL) async throws -> [PhotoCollection] {
         if let data = try? Data(contentsOf: url) {
-            return try JSONDecoder().decode([PhotoCollection].self, from: data)
+            return try self.decoder.decode([PhotoCollection].self, from: data)
         } else {
             return []
         }
