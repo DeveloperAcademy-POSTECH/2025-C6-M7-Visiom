@@ -20,7 +20,10 @@ struct FullImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    
+    // 그리기 전역 상태
     @EnvironmentObject var drawingState: DrawingState
+    // 공간 추적 세션
     @State private var session: SpatialTrackingSession?
    
     private static let session = ARKitSession()
@@ -39,7 +42,7 @@ struct FullImmersiveView: View {
     
     @State private var anchorToCollection: [UUID: UUID] = [:]
     @State private var pendingCollectionIdForNextAnchor: UUID? = nil
-    
+
     let ball: ModelEntity = {
         let ball = ModelEntity(
             mesh: .generateSphere(radius: 0.05),
@@ -86,8 +89,8 @@ struct FullImmersiveView: View {
         .disabled(isPlaced)
         
         RealityView { content in
-            
             await setupRealityView(content: content)
+            
             content.add(root)
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
@@ -184,6 +187,7 @@ struct FullImmersiveView: View {
         //                appModel.itemAdd = nil
         //            }
         //        }
+        
     }
     
     private static func startARSession() async {

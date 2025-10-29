@@ -18,7 +18,7 @@ class AppModel {
     let crimeSceneListWindowID = "CrimeSceneListWindow"
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let drawingControlWindowID = "DrawingControlWindow"
-    
+
     enum ImmersiveSpaceState {
         case closed
         case inTransition
