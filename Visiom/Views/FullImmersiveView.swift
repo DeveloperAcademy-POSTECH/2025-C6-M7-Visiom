@@ -62,22 +62,6 @@ struct FullImmersiveView: View {
     }()
 
     var body: some View {
-        VStack {
-            // TO DO: UserControlView랑 합치기
-            HStack {
-                Button(action: { makePlacement(type: .photo) }) {
-                    Text("ball 생성")
-                }
-                Button(action: {
-                    makePlacement(type: .memo)
-                }) {
-                    Text("박스 생성")
-                }
-            }
-        }
-        .allowsHitTesting(!isPlaced)
-        .disabled(isPlaced)
-
         RealityView { content in
             content.add(root)
             // 씬 갈아끼기
@@ -89,17 +73,21 @@ struct FullImmersiveView: View {
                 root.addChild(immersiveContentEntity)
             }
 
-            let headAnchor = AnchorEntity(.head)
-            content.add(headAnchor)
+            // (보류) 따라다니는 headAnchor
+            //            let headAnchor = AnchorEntity(.head)
+            //            content.add(headAnchor)
 
             let card = ViewAttachmentEntity()
             card.attachment = ViewAttachmentComponent(
                 rootView: UserControlView()
                     .environment(appModel)
             )
-            card.position = [0, -0.3, -0.9]
+            card.position = [0, 1.2, -0.9]
 
-            headAnchor.addChild(card)
+            card.components.set(InputTargetComponent())
+            card.generateCollisionShapes(recursive: true)
+
+            content.add(card)
 
         } update: { content in
             for (_, data) in worldAnchorEntityData {
@@ -162,14 +150,13 @@ struct FullImmersiveView: View {
             else { return }
             await trackingHand(currentItem)
         }
-        // 이거 UesrControlBar랑 연결하는 부분인데 작동을 안해요..
-        //        .onChange(of: appModel.itemAdd) { _, newValue in
-        //            if let itemType = newValue {
-        //                print("함수호출")
-        //                makePlacement(type: itemType)
-        //                appModel.itemAdd = nil
-        //            }
-        //        }
+        .onChange(of: appModel.itemAdd) { _, newValue in
+            if let itemType = newValue {
+                print("함수호출")
+                makePlacement(type: itemType)
+                appModel.itemAdd = nil
+            }
+        }
     }
 
     private static func startARSession() async {
