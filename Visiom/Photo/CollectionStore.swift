@@ -50,16 +50,17 @@ final class CollectionStore {
     
     func deleteCollection(_ id: UUID) {
         guard let idx = collections.firstIndex(where: { $0.id == id }) else { return }
-        do {
-            let folder = try FileLocations.collectionFolder(id: id)
-            if FileManager.default.fileExists(atPath: folder.path) {
-                try FileManager.default.removeItem(at: folder)
+        Task {
+            do {
+                try await persistence.deleteCollectionFolder(id: id)
+                await MainActor.run {
+                    collections.remove(at: idx)
+                    scheduleSave()
+                }
+            } catch {
+                print("Delete folder error:", error)
             }
-        } catch {
-            print("Delete folder error:", error)
         }
-        collections.remove(at: idx)
-        scheduleSave()
     }
     
     func renameCollection(_ id: UUID, to newTitle: String) {

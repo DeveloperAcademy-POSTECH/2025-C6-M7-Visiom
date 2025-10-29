@@ -40,6 +40,13 @@ actor PersistenceActor {
         }
     }
     
+    func deleteCollectionFolder(id: UUID) async throws {
+        let folder = try FileLocations.collectionFolder(id: id)
+        if FileManager.default.fileExists(atPath: folder.path) {
+            try FileManager.default.removeItem(at: folder)
+        }
+    }
+    
     // 현재 예약된 저장이 끝날때까지 대기
     func flush() async {
         let t = currentTask
