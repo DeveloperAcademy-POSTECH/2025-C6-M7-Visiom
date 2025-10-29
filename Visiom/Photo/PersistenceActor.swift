@@ -13,7 +13,7 @@ actor PersistenceActor {
     private var generation: UInt64 = 0
     
     // Disk I/O를 직렬로 처리
-    func persist(_ snapshot: [PhotoCollection], to url: URL, debounceMS: UInt64 = 120) {
+    func enqueueWrite(_ snapshot: [PhotoCollection], to url: URL, debounceMS: UInt64 = 120) {
         generation &+= 1
         let myGen = generation
         

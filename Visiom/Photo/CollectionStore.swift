@@ -29,11 +29,11 @@ final class CollectionStore {
         }
     }
     
-    private func persist() {
+    private func scheduleSave() {
         let snapshot = self.collections
         guard let url = try? FileLocations.collectionsIndexFile() else { return }
         Task {
-            await persistence.persist(snapshot, to: url)
+            await persistence.enqueueWrite(snapshot, to: url)
         }
     }
     
@@ -44,7 +44,7 @@ final class CollectionStore {
         let name = (defaultTitle?.isEmpty == false) ? defaultTitle! : "컬렉션 \(collections.count + 1)"
         let col = PhotoCollection(title: name)
         collections.insert(col, at: 0)
-        persist()
+        scheduleSave()
         return col
     }
     
@@ -59,7 +59,7 @@ final class CollectionStore {
             print("Delete folder error:", error)
         }
         collections.remove(at: idx)
-        persist()
+        scheduleSave()
     }
     
     func renameCollection(_ id: UUID, to newTitle: String) {
@@ -67,7 +67,7 @@ final class CollectionStore {
         let trimmed = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         collections[idx].title = trimmed
-        persist()
+        scheduleSave()
     }
     
     func collection(with id: UUID) -> PhotoCollection? {
@@ -154,7 +154,7 @@ final class CollectionStore {
     private func update(_ updated: PhotoCollection) {
         if let idx = collections.firstIndex(where: { $0.id == updated.id }) {
             collections[idx] = updated
-            persist()
+            scheduleSave()
         }
     }
     
