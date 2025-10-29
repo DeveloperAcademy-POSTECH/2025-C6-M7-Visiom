@@ -22,6 +22,7 @@ struct VisiomApp: App {
         
         WindowGroup(id: "PhotoCollectionList") {
             PhotoCollectionListView()
+                .environment(appModel)
                 .environment(collectionStore)
         }
         

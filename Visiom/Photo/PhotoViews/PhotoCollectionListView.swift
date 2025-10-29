@@ -13,6 +13,7 @@
 import SwiftUI
 
 struct PhotoCollectionListView: View {
+    @Environment(AppModel.self) var appModel
     @Environment(CollectionStore.self) var collectionStore
     @Environment(\.openWindow) private var openWindow
     

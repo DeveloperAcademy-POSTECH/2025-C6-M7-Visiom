@@ -109,18 +109,18 @@ struct FullImmersiveView: View {
             card.position = [0, -0.3, -0.9]
             
             headAnchor.addChild(card)
-        }
-        .onChange(of: drawingState.isDrawingEnabled) {
-            DrawingSystem.isDrawingEnabled = drawingState.isDrawingEnabled
-        }
-        .onChange(of: drawingState.isErasingEnabled) {
-            DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         } update: { content in
             for (_, data) in worldAnchorEntityData {
                 if !content.entities.contains(data.entity) {
                     content.add(data.entity)
                 }
             }
+        }
+        .onChange(of: drawingState.isDrawingEnabled) {
+            DrawingSystem.isDrawingEnabled = drawingState.isDrawingEnabled
+        }
+        .onChange(of: drawingState.isErasingEnabled) {
+            DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         }
         .modifier(DragGestureImproved())
         // 객체 탭하면 동작
