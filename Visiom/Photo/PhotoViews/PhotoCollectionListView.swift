@@ -31,7 +31,7 @@ struct PhotoCollectionListView: View {
                         
                         // 공간 버튼의 동작
                         Button("열기") {
-                            openWindow(id: "PhotoCollectionWindow", value: col.id)
+                            openWindow(id: appModel.photoCollectionWindowID, value: col.id)
                         }
                     }
                 }

@@ -386,7 +386,7 @@ struct FullImmersiveView: View {
             return
         }
         // PhotoCollectionWindow 열기
-        openWindow(id: "PhotoCollectionWindow", value: colId)
+        openWindow(id: appModel.photoCollectionWindowID, value: colId)
         print("Opened collection window for \(colId)")
     }
     private func tapMemoButton() {
