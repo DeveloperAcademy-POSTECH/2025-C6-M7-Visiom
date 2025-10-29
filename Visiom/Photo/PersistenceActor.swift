@@ -26,7 +26,7 @@ actor PersistenceActor {
             // 최신 호출인지 확인(세대 확인)
             try await self.ensureLatest(myGen)
             // 부모 디렉토리 확인
-            try Self.ensureParentDiretoryExists(for: url)
+            try Self.ensureParentDirectoryExists(for: url)
             
             //인코딩
             let data = try JSONEncoder().encode(snapshot)
@@ -66,7 +66,7 @@ actor PersistenceActor {
         if myGen != generation { throw CancellationError() }
     }
     
-    private static func ensureParentDiretoryExists(for url: URL) throws {
+    private static func ensureParentDirectoryExists(for url: URL) throws {
         let parentURL = url.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: parentURL, withIntermediateDirectories: true)
     }
