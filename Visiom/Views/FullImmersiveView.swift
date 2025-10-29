@@ -35,23 +35,27 @@ struct FullImmersiveView: View {
 
     @State private var memoText: [UUID: String] = [:]
 
-    let ball: ModelEntity = {
-        let ball = ModelEntity(
-            mesh: .generateSphere(radius: 0.05),
+    let photoButtonEntity: ModelEntity = {
+        let photoBtn = ModelEntity(
+            mesh: .generateCylinder(height: 0.005, radius: 0.03),
             materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
         )
 
         let collision = CollisionComponent(shapes: [
-            .generateSphere(radius: 0.05)
+            .generateSphere(radius: 0.03)
         ])
         let input = InputTargetComponent()  // 상호작용할 수 있는 객체임을 표시해주는 컴포넌트
-        ball.components.set([collision, input])
+        photoBtn.components.set([collision, input])
+        photoBtn.transform.rotation = simd_quatf(
+            angle: -Float.pi / 2,
+            axis: [1, 0, 0]
+        )
 
-        return ball
+        return photoBtn
     }()
 
-    let box: ModelEntity = {
-        let box = ModelEntity(
+    let memoEntity: ModelEntity = {
+        let memo = ModelEntity(
             mesh: .generateBox(width: 0.1, height: 0.1, depth: 0.005),
             materials: [SimpleMaterial(color: .yellow, isMetallic: false)]
         )
@@ -59,8 +63,8 @@ struct FullImmersiveView: View {
             .generateBox(width: 0.1, height: 0.1, depth: 0.005)
         ])
         let input = InputTargetComponent()
-        box.components.set([collision, input])
-        return box
+        memo.components.set([collision, input])
+        return memo
     }()
 
     var body: some View {
@@ -188,9 +192,9 @@ struct FullImmersiveView: View {
                     let subjectClone: ModelEntity
 
                     if tempItemType[update.anchor.id] == .photo {
-                        subjectClone = ball.clone(recursive: true)
+                        subjectClone = photoButtonEntity.clone(recursive: true)
                     } else {
-                        subjectClone = box.clone(recursive: true)
+                        subjectClone = memoEntity.clone(recursive: true)
                         if let memotext = memoText[update.anchor.id],
                             !memotext.isEmpty
                         {
@@ -260,9 +264,9 @@ struct FullImmersiveView: View {
         let tempObject: ModelEntity
 
         if type == .photo {
-            tempObject = ball.clone(recursive: true)
+            tempObject = photoButtonEntity.clone(recursive: true)
         } else {
-            tempObject = box.clone(recursive: true)
+            tempObject = memoEntity.clone(recursive: true)
         }
 
         root.addChild(tempObject)
