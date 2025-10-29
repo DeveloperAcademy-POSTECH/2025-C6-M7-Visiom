@@ -47,6 +47,7 @@ struct VisiomApp: App {
                 }
                 .onChange(of: scenePhase) {_, phase in
                     if phase == .background {
+                        PhotoPipeline.cleanupTempFiles()
                         Task {
                             await collectionStore.flushSaves()
                         }
