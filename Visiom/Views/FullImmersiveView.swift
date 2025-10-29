@@ -17,6 +17,13 @@ struct WorldAnchorEntityData {
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
+    
+    @State private var session: SpatialTrackingSession?
+    @EnvironmentObject var drawingState: DrawingState
+    
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
+    
 
     private static let session = ARKitSession()
     private static let handTracking = HandTrackingProvider()
@@ -79,6 +86,8 @@ struct FullImmersiveView: View {
         .disabled(isPlaced)
 
         RealityView { content in
+            
+            await setupRealityView(content: content)
             content.add(root)
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
@@ -101,6 +110,12 @@ struct FullImmersiveView: View {
 
             headAnchor.addChild(card)
 
+        }
+        .onChange(of: drawingState.isDrawingEnabled) {
+            DrawingSystem.isDrawingEnabled = drawingState.isDrawingEnabled
+        }
+        .onChange(of: drawingState.isErasingEnabled) {
+            DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         } update: { content in
             for (_, data) in worldAnchorEntityData {
                 if !content.entities.contains(data.entity) {
@@ -360,9 +375,70 @@ struct FullImmersiveView: View {
     private func tapMemoButton() {
         print("box 클릭 ")
     }
+    
+    // MARK: - RealityKit 설정
+    @MainActor
+    private func setupRealityView(content: RealityViewContent) async {
+        // SpatialTrackingSession 시작
+        let trackingSession = SpatialTrackingSession()
+        let configuration = SpatialTrackingSession.Configuration(tracking: [.hand])
+        
+        let unapprovedCapabilities = await trackingSession.run(configuration)
+        
+        if let unapproved = unapprovedCapabilities,
+           unapproved.anchor.contains(.hand) {
+            print("손 추적 권한이 거부되었습니다")
+            return
+        }
+        
+        self.session = trackingSession
+        
+        // 그림을 담을 부모 엔티티
+        let drawingParent = Entity()
+        content.add(drawingParent)
+        
+        // 오른손 앵커
+        let rightIndexTipAnchor = AnchorEntity(
+            .hand(.right, location: .indexFingerTip),
+            trackingMode: .continuous
+        )
+        content.add(rightIndexTipAnchor)
+        
+        let rightThumbTipAnchor = AnchorEntity(
+            .hand(.right, location: .thumbTip),
+            trackingMode: .continuous
+        )
+        content.add(rightThumbTipAnchor)
+        
+        // 왼손 앵커
+        let leftIndexTipAnchor = AnchorEntity(
+            .hand(.left, location: .indexFingerTip),
+            trackingMode: .continuous
+        )
+        content.add(leftIndexTipAnchor)
+        
+        let leftThumbTipAnchor = AnchorEntity(
+            .hand(.left, location: .thumbTip),
+            trackingMode: .continuous
+        )
+        content.add(leftThumbTipAnchor)
+        
+        // 그리기 시스템 등록 및 설정
+        DrawingSystem.registerSystem()
+        DrawingSystem.rightIndexTipAnchor = rightIndexTipAnchor
+        DrawingSystem.rightThumbTipAnchor = rightThumbTipAnchor
+        DrawingSystem.leftIndexTipAnchor = leftIndexTipAnchor
+        DrawingSystem.leftThumbTipAnchor = leftThumbTipAnchor
+        DrawingSystem.drawingParent = drawingParent
+        
+        // 초기 상태 적용
+        DrawingSystem.setDrawingEnabled(drawingState.isDrawingEnabled)
+        DrawingSystem.setErasingEnabled(drawingState.isErasingEnabled)
+    }
 }
 
-#Preview(immersionStyle: .full) {
-    FullImmersiveView()
-        .environment(AppModel())
-}
+ #Preview(immersionStyle: .full) {
+ FullImmersiveView()
+ .environment(AppModel())
+ }
+ 
