@@ -52,11 +52,11 @@ struct FullImmersiveView: View {
 
     let box: ModelEntity = {
         let box = ModelEntity(
-            mesh: .generateBox(size: 0.1),
-            materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
+            mesh: .generateBox(width: 0.1, height: 0.1, depth: 0.005),
+            materials: [SimpleMaterial(color: .yellow, isMetallic: false)]
         )
         let collision = CollisionComponent(shapes: [
-            .generateBox(size: [0.1, 0.1, 0.1])
+            .generateBox(width: 0.1, height: 0.1, depth: 0.005)
         ])
         let input = InputTargetComponent()
         box.components.set([collision, input])
@@ -197,11 +197,13 @@ struct FullImmersiveView: View {
                             let memoTextField = ViewAttachmentEntity()
                             memoTextField.attachment = ViewAttachmentComponent(
                                 rootView: Text(memotext)
-                                    .frame(maxWidth: 200)
-                                    .foregroundColor(.white)
+                                    .frame(width: 90, height: 90)
+                                    .background(.regularMaterial.opacity(0.5))
+                                    .foregroundColor(.black)
+                                    .font(.system(size: 10))
                             )
                             memoTextField.setPosition(
-                                [0, 0, -0.051],
+                                [0, 0, 0.0053],
                                 relativeTo: subjectClone
                             )
                             subjectClone.addChild(memoTextField)
