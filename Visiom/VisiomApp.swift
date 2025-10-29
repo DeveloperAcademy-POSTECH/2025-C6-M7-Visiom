@@ -11,7 +11,7 @@ import SwiftUI
 struct VisiomApp: App {
     
     @State private var appModel = AppModel()
-    @State private var collectionStore = CollectionsStore()
+    @State private var collectionStore = CollectionStore()
     
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
@@ -36,6 +36,7 @@ struct VisiomApp: App {
         ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
             FullImmersiveView()
                 .environment(appModel)
+                .environment(collectionStore)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }

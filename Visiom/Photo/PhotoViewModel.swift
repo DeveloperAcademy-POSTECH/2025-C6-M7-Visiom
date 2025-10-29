@@ -17,10 +17,10 @@ final class PhotoViewModel {
     var lookIndex: Int = 0
     var errorMessage: String?
     
-    private let store: CollectionsStore
+    private let store: CollectionStore
     private let collectionID: UUID
     
-    init(store: CollectionsStore, collectionID: UUID) {
+    init(store: CollectionStore, collectionID: UUID) {
         self.store = store
         self.collectionID = collectionID
         self.refreshFromDisk()

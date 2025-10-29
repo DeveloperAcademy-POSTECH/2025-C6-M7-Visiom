@@ -10,7 +10,7 @@ import SwiftUI
 import Observation
 
 struct PhotoCollectionView: View {
-    @Environment(CollectionsStore.self) var collectionStore
+    @Environment(CollectionStore.self) var collectionStore
     @State private var photoViewModel: PhotoViewModel?
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var showFileImporter = false

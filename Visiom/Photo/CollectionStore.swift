@@ -10,7 +10,7 @@ import Observation
 
 @MainActor
 @Observable
-final class CollectionsStore {
+final class CollectionStore {
     var collections: [PhotoCollection] = []
     
     init() {
