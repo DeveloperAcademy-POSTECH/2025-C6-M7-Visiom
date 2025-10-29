@@ -19,7 +19,6 @@ struct UserControlView: View {
     @Environment(\.dismissWindow) private var dismissWindow
     
     @StateObject private var drawingState = DrawingState()
-    
 
     var body: some View {
         HStack {
