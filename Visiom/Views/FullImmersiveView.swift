@@ -39,6 +39,11 @@ struct FullImmersiveView: View {
     @State private var isPlaced = false
     @State private var currentItem: ModelEntity? = nil
     @State private var currentItemType: UserControlBar? = nil
+    
+    // 공간 추적 세션
+    @State private var session: SpatialTrackingSession?
+    // 그리기 전역 상태
+    @EnvironmentObject var drawingState: DrawingState
 
     @State private var memoText: [UUID: String] = [:]
 
@@ -76,8 +81,8 @@ struct FullImmersiveView: View {
 
     var body: some View {
         RealityView { content in
-            
             await setupRealityView(content: content)
+            
             content.add(root)
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
