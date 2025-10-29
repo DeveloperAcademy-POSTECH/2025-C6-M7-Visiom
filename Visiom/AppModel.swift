@@ -27,12 +27,15 @@ class AppModel {
     var immersiveSpaceState = ImmersiveSpaceState.closed
     var itemAdd: UserControlBar? = nil
     var markersVisible: Bool = true
-    
+
+    var memoEditMode: Bool = false
+    var memoToAttach: String = ""
+
     func toggleMarkers() {
         markersVisible.toggle()
-        print("Markers visibility: \(markersVisible)") // TODO 삭제
+        print("Markers visibility: \(markersVisible)")  // TODO 삭제
     }
-    
+
     //Full Immersive 진입 처리 함수
     @MainActor
     func enterFullImmersive(

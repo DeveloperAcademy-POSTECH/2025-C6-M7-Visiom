@@ -17,57 +17,71 @@ struct UserControlView: View {
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.openWindow) private var openWindow
 
+    @State private var inputText: String = ""
+
     var body: some View {
-        HStack {
-            Button {
-                Task {
-                    await appModel.exitFullImmersive(
-                        dismissImmersiveSpace: dismissImmersiveSpace,
-                        openWindow: openWindow
-                    )
-                }
-            } label: {
-                Text("나가기")
-            }
-
-            Button {
-                appModel.itemAdd = .photo
-                print("사진 버튼 탭")
-            } label: {
-                Text("사진")
-            }
-            Button {
+        if appModel.memoEditMode {
+            TextFieldAttachmentView(
+                text: $inputText,
+            )
+            Button("작성 완료") {
+                appModel.memoToAttach = inputText
+                inputText = ""
+                appModel.memoEditMode = false
                 appModel.itemAdd = .memo
-            } label: {
-                Text("메모")
             }
-            Button {
+        } else {
+            HStack {
+                Button {
+                    Task {
+                        await appModel.exitFullImmersive(
+                            dismissImmersiveSpace: dismissImmersiveSpace,
+                            openWindow: openWindow
+                        )
+                    }
+                } label: {
+                    Text("나가기")
+                }
 
-            } label: {
-                Text("숫자")
-            }
-            Button {
+                Button {
+                    appModel.itemAdd = .photo
+                    print("사진 버튼 탭")
+                } label: {
+                    Text("사진")
+                }
+                Button {
+                    appModel.memoEditMode = true
+                } label: {
+                    Text("메모")
+                }
+                Button {
 
-            } label: {
-                Text("스티커")
-            }
-            Button {
+                } label: {
+                    Text("숫자")
+                }
+                Button {
 
-            } label: {
-                Text("마네킹")
-            }
-            Button {
+                } label: {
+                    Text("스티커")
+                }
+                Button {
 
-            } label: {
-                Text("필터")
-            }
-            Button {
+                } label: {
+                    Text("마네킹")
+                }
+                Button {
 
-            } label: {
-                Text("이동")
+                } label: {
+                    Text("필터")
+                }
+                Button {
+
+                } label: {
+                    Text("이동")
+                }
             }
+            .glassBackgroundEffect()
         }
-        .glassBackgroundEffect()
     }
 }
 

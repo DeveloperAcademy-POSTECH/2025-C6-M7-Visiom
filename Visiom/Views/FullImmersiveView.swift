@@ -33,6 +33,8 @@ struct FullImmersiveView: View {
     @State private var currentItem: ModelEntity? = nil
     @State private var currentItemType: UserControlBar? = nil
 
+    @State private var memoText: [UUID: String] = [:]
+
     let ball: ModelEntity = {
         let ball = ModelEntity(
             mesh: .generateSphere(radius: 0.05),
@@ -115,7 +117,7 @@ struct FullImmersiveView: View {
                         case .photo:
                             tapPhotoButton()
                         case .memo:
-                            tapMemoButton()
+                            tapMemoButton(memoId: anchorUUID)
                         }
                     } else {
                         print("Tapped entity's UUID not found in tempItemType.")
@@ -189,6 +191,21 @@ struct FullImmersiveView: View {
                         subjectClone = ball.clone(recursive: true)
                     } else {
                         subjectClone = box.clone(recursive: true)
+                        if let memotext = memoText[update.anchor.id],
+                            !memotext.isEmpty
+                        {
+                            let memoTextField = ViewAttachmentEntity()
+                            memoTextField.attachment = ViewAttachmentComponent(
+                                rootView: Text(memotext)
+                                    .frame(maxWidth: 200)
+                                    .foregroundColor(.white)
+                            )
+                            memoTextField.setPosition(
+                                [0, 0, -0.051],
+                                relativeTo: subjectClone
+                            )
+                            subjectClone.addChild(memoTextField)
+                        }
                     }
                     subjectClone.name = update.anchor.id.uuidString
                     subjectClone.setTransformMatrix(
@@ -225,6 +242,8 @@ struct FullImmersiveView: View {
                         forKey: update.anchor.id
                     ) {
                         removeAnchor.entity.removeFromParent()
+                        tempItemType.removeValue(forKey: update.anchor.id)
+                        memoText.removeValue(forKey: update.anchor.id)
                     }
                     print("🔴 Anchor removed \(update.anchor.id)")
                 }
@@ -316,6 +335,11 @@ struct FullImmersiveView: View {
                             await MainActor.run {
                                 if let itemType = self.currentItemType {
                                     tempItemType[anchor.id] = itemType
+                                    if itemType == .memo {
+                                        memoText[anchor.id] =
+                                            appModel.memoToAttach
+                                        appModel.memoToAttach = ""
+                                    }
                                 }
                             }
                         } catch {
@@ -344,8 +368,8 @@ struct FullImmersiveView: View {
     private func tapPhotoButton() {
         print("ball 클릭 ")
     }
-    private func tapMemoButton() {
-        print("box 클릭 ")
+    private func tapMemoButton(memoId: UUID) {
+        print("box 클릭, text: \(memoText[memoId] ?? "no memo") ")
     }
 }
 
