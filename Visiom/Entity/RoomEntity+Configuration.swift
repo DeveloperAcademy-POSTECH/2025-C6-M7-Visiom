@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension RoomEntity {
-    /// Configuration information for Earth entities.
+    /// Entity 설정 정보
     struct Configuration {
 
         var scale: Float = 0.6

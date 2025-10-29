@@ -8,7 +8,6 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 
-/// An entity that represents the Earth and all its moving parts.
 class RoomEntity: Entity {
 
     // MARK: - Sub-entities
