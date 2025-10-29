@@ -17,6 +17,13 @@ struct WorldAnchorEntityData {
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
+    
+    @State private var session: SpatialTrackingSession?
+    @EnvironmentObject var drawingState: DrawingState
+    
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
+    
 
     private static let session = ARKitSession()
     private static let handTracking = HandTrackingProvider()
@@ -108,6 +115,12 @@ struct FullImmersiveView: View {
 
             headAnchor.addChild(card)
 
+        }
+        .onChange(of: drawingState.isDrawingEnabled) {
+            DrawingSystem.isDrawingEnabled = drawingState.isDrawingEnabled
+        }
+        .onChange(of: drawingState.isErasingEnabled) {
+            DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         } update: { content in
             for (_, data) in worldAnchorEntityData {
                 if !content.entities.contains(data.entity) {
@@ -430,7 +443,8 @@ struct FullImmersiveView: View {
     }
 }
 
-#Preview(immersionStyle: .full) {
-    FullImmersiveView()
-        .environment(AppModel())
-}
+ #Preview(immersionStyle: .full) {
+ FullImmersiveView()
+ .environment(AppModel())
+ }
+ 

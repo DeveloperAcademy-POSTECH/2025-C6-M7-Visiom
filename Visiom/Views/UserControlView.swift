@@ -20,7 +20,6 @@ struct UserControlView: View {
     
     @StateObject private var drawingState = DrawingState()
 
-
     var body: some View {
         HStack {
             Button {
