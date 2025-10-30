@@ -511,21 +511,21 @@ struct FullImmersiveView: View {
     @MainActor
     private func setupRealityView(content: RealityViewContent) async {
         // SpatialTrackingSession 시작
-        //        let trackingSession = SpatialTrackingSession()
-        //        let configuration = SpatialTrackingSession.Configuration(tracking: [
-        //            .hand
-        //        ])
-        //
-        //        let unapprovedCapabilities = await trackingSession.run(configuration)
-        //
-        //        if let unapproved = unapprovedCapabilities,
-        //            unapproved.anchor.contains(.hand)
-        //        {
-        //            print("손 추적 권한이 거부되었습니다")
-        //            return
-        //        }
-        //
-        //        self.session = trackingSession
+                let trackingSession = SpatialTrackingSession()
+                let configuration = SpatialTrackingSession.Configuration(tracking: [
+                    .hand
+                ])
+        
+                let unapprovedCapabilities = await trackingSession.run(configuration)
+        
+                if let unapproved = unapprovedCapabilities,
+                    unapproved.anchor.contains(.hand)
+                {
+                    print("손 추적 권한이 거부되었습니다")
+                    return
+                }
+        
+                self.session = trackingSession
 
         // 그림을 담을 부모 엔티티
         let drawingParent = Entity()
