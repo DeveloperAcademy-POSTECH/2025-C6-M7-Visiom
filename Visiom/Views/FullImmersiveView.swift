@@ -494,7 +494,7 @@ struct FullImmersiveView: View {
         content.add(rightIndexTipAnchor)
         
         let rightThumbTipAnchor = AnchorEntity(
-            .hand(.right, location: .thumbTip),
+            .hand(.right, location: .joint(for: .middleFingerTip)),
             trackingMode: .continuous
         )
         content.add(rightThumbTipAnchor)
@@ -519,10 +519,6 @@ struct FullImmersiveView: View {
         DrawingSystem.leftIndexTipAnchor = leftIndexTipAnchor
         DrawingSystem.leftThumbTipAnchor = leftThumbTipAnchor
         DrawingSystem.drawingParent = drawingParent
-        
-        // 초기 상태 적용
-        DrawingSystem.setDrawingEnabled(drawingState.isDrawingEnabled)
-        DrawingSystem.setErasingEnabled(drawingState.isErasingEnabled)
     }
 }
 
