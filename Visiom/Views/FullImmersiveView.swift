@@ -20,26 +20,26 @@ struct FullImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
-    
+
     // 그리기 전역 상태
     @EnvironmentObject var drawingState: DrawingState
     // 공간 추적 세션
     @State private var session: SpatialTrackingSession?
-   
+
     private static let session = ARKitSession()
     private static let handTracking = HandTrackingProvider()
     private static let worldTracking = WorldTrackingProvider()
-    
+
     @State private var root = Entity()
     @State private var worldAnchorEntityData: [UUID: WorldAnchorEntityData] =
-    [:]
+        [:]
     // 임시 객체 상태일 때 타입이랑 uuid를 저장하는 친구
     @State private var tempItemType: [UUID: UserControlBar] = [:]
-    
+
     @State private var isPlaced = false
     @State private var currentItem: ModelEntity? = nil
     @State private var currentItemType: UserControlBar? = nil
-    
+
     @State private var anchorToCollection: [UUID: UUID] = [:]
     @State private var pendingCollectionIdForNextAnchor: UUID? = nil
 
@@ -50,7 +50,7 @@ struct FullImmersiveView: View {
             mesh: .generateCylinder(height: 0.005, radius: 0.03),
             materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
         )
-        
+
         let collision = CollisionComponent(shapes: [
             .generateSphere(radius: 0.03)
         ])
@@ -76,27 +76,11 @@ struct FullImmersiveView: View {
         memo.components.set([collision, input])
         return memo
     }()
-    
+
     var body: some View {
-        VStack {
-            // TO DO: UserControlView랑 합치기
-            HStack {
-                Button(action: { makePlacement(type: .photo) }) {
-                    Text("ball 생성")
-                }
-                Button(action: {
-                    makePlacement(type: .memo)
-                }) {
-                    Text("박스 생성")
-                }
-            }
-        }
-        .allowsHitTesting(!isPlaced)
-        .disabled(isPlaced)
-        
         RealityView { content in
             await setupRealityView(content: content)
-            
+
             content.add(root)
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
@@ -123,7 +107,7 @@ struct FullImmersiveView: View {
 
             content.add(card)
 
-         } update: { content in
+        } update: { content in
             for (_, data) in worldAnchorEntityData {
                 if !content.entities.contains(data.entity) {
                     content.add(data.entity)
@@ -145,7 +129,7 @@ struct FullImmersiveView: View {
                     let targetEntity = value.entity
                     let anchorUUIDString = targetEntity.name
                     guard !anchorUUIDString.isEmpty,
-                          let anchorUUID = UUID(uuidString: anchorUUIDString)
+                        let anchorUUID = UUID(uuidString: anchorUUIDString)
                     else {
                         print("Tapped entity has no valid UUID name.")
                         return
@@ -167,12 +151,12 @@ struct FullImmersiveView: View {
                 .targetedToAnyEntity()
                 .onEnded { value in
                     let targetEntity = value.entity
-                    
+
                     guard let anchorUUID = UUID(uuidString: targetEntity.name)
                     else {
                         return
                     }
-                    
+
                     Task {
                         await removeWorldAnchor(by: anchorUUID)
                     }
@@ -186,7 +170,7 @@ struct FullImmersiveView: View {
         }
         .task(id: isPlaced) {
             guard isPlaced,
-                  let currentItem
+                let currentItem
             else { return }
             await trackingHand(currentItem)
         }
@@ -198,14 +182,14 @@ struct FullImmersiveView: View {
             }
         }
     }
-    
+
     private static func startARSession() async {
         guard HandTrackingProvider.isSupported
         else {
             print("error: 핸드 트래킹이 안됨")
             return
         }
-        
+
         guard WorldTrackingProvider.isSupported
         else {
             print("error: 월드 트래킹이 안됨")
@@ -217,14 +201,14 @@ struct FullImmersiveView: View {
             print("AR session falied")
         }
     }
-    
+
     private func observeUpdate() async {
         do {
             for await update in Self.worldTracking.anchorUpdates {
                 switch update.event {
                 case .added:
                     let subjectClone: ModelEntity
-                    
+
                     if tempItemType[update.anchor.id] == .photo {
                         subjectClone = photoButtonEntity.clone(recursive: true)
                     } else {
@@ -252,17 +236,17 @@ struct FullImmersiveView: View {
                         update.anchor.originFromAnchorTransform,
                         relativeTo: nil  // 월드 좌표 기준
                     )
-                    
+
                     worldAnchorEntityData[update.anchor.id] =
-                    WorldAnchorEntityData(
-                        anchor: update.anchor,
-                        entity: subjectClone
-                    )
-                    
+                        WorldAnchorEntityData(
+                            anchor: update.anchor,
+                            entity: subjectClone
+                        )
+
                     print("🟢 Anchor added \(update.anchor.id)")
-                    
+
                 case .updated:
-                    
+
                     if var updateAnchor = worldAnchorEntityData[
                         update.anchor.id
                     ] {
@@ -270,13 +254,13 @@ struct FullImmersiveView: View {
                             update.anchor.originFromAnchorTransform,
                             relativeTo: nil
                         )
-                        
+
                         updateAnchor.anchor = update.anchor
-                        
+
                         worldAnchorEntityData[update.anchor.id] = updateAnchor
                     }
                     print("🔵 Anchor updated \(update.anchor.id)")
-                    
+
                 case .removed:
                     if let removeAnchor = worldAnchorEntityData.removeValue(
                         forKey: update.anchor.id
@@ -290,82 +274,85 @@ struct FullImmersiveView: View {
             }
         }
     }
-    
+
     private func makePlacement(type: UserControlBar) {
         guard !isPlaced else { return }
-        
+
         // 손을 따라다니는 임시 객체를 생성
         let tempObject: ModelEntity
-        
+
         if type == .photo {
             tempObject = photoButtonEntity.clone(recursive: true)
-            
+
             let newCol = collectionStore.createCollection()
-            collectionStore.renameCollection(newCol.id, to: newCol.id.uuidString)
+            collectionStore.renameCollection(
+                newCol.id,
+                to: newCol.id.uuidString
+            )
             pendingCollectionIdForNextAnchor = newCol.id
         } else {
             tempObject = memoEntity.clone(recursive: true)
         }
-        
+
         root.addChild(tempObject)
         print("객체 생성 완료")
         self.currentItem = tempObject
         self.currentItemType = type
         self.isPlaced = true
     }
-    
+
     private func trackingHand(_ currentBall: ModelEntity) async {
         // 직전 상태 저장
         var tapDetectedLastFrame = true
-        
+
         // 계속 핸드트래킹의 업데이트 받기
         for await update in Self.handTracking.anchorUpdates {
             guard isPlaced else { return }
-            
+
             guard update.anchor.chirality == .right,
-                  update.anchor.isTracked,
-                  let skeleton = update.anchor.handSkeleton
+                update.anchor.isTracked,
+                let skeleton = update.anchor.handSkeleton
             else { continue }
-            
+
             // 검지 끝 위치 가져오기
             let indexTipJoint = skeleton.joint(.indexFingerTip)
             let originFromWorld = update.anchor.originFromAnchorTransform
             let indexTipTransform =
-            originFromWorld * indexTipJoint.anchorFromJointTransform
+                originFromWorld * indexTipJoint.anchorFromJointTransform
             let indexTipPosition = simd_make_float3(indexTipTransform.columns.3)
-            
+
             // 객체 위치를 검지 끝 위치로 실시간 업데이트
             await MainActor.run {
                 currentBall.setPosition(indexTipPosition, relativeTo: nil)
-                
+
             }
-            
+
             // 탭 감지
             // 엄지끝 위치 가져오기
             let thumbTipJoint = skeleton.joint(.thumbTip)
             let thumbTipTransform =
-            originFromWorld * thumbTipJoint.anchorFromJointTransform
+                originFromWorld * thumbTipJoint.anchorFromJointTransform
             let thumbTipPosition = simd_make_float3(thumbTipTransform.columns.3)
-            
+
             // 엄지끝~검지끝 사이의 거리 계산
             let distance = simd_distance(indexTipPosition, thumbTipPosition)
             let tapDetected = distance < 0.02  // 2cm 이내면 탭으로 인식
-            
+
             // 탭 감지 + 직전 상태는 탭 상태가 아니어야 함
             if tapDetected && !tapDetectedLastFrame {
                 await MainActor.run {
                     print("placement")
-                    
+
                     // ball의 최종 위치(월드 좌표) 가져와
                     let finalPosition = currentBall.transformMatrix(
                         relativeTo: nil
                     )
-                    
+
                     currentBall.removeFromParent()
-                    
+
                     self.isPlaced = false
                     self.currentItem = nil
-                    
+
                     // 별도 Task에서 월드 앵커를 생성(MainActor에서 네트워킹/ARKit 작업을 하면 UI가 멈출 수 있음(?))
                     Task {
                         do {
@@ -385,10 +372,11 @@ struct FullImmersiveView: View {
                                         appModel.memoToAttach = ""
                                     }
                                 }
-                                
+
                                 // 앵커ID와 컬렉션 ID를 연결함
                                 if let colId =
-                                    pendingCollectionIdForNextAnchor {
+                                    pendingCollectionIdForNextAnchor
+                                {
                                     anchorToCollection[anchor.id] = colId
                                     pendingCollectionIdForNextAnchor = nil
                                 }
@@ -402,7 +390,7 @@ struct FullImmersiveView: View {
             tapDetectedLastFrame = tapDetected
         }
     }
-    
+
     private func removeWorldAnchor(by id: UUID) async {
         do {
             if let anchorToRemove = worldAnchorEntityData[id]?.anchor {
@@ -415,7 +403,7 @@ struct FullImmersiveView: View {
             print("error: \(error)")
         }
     }
-    
+
     private func tapPhotoButton(_ anchorUUID: UUID) {
         print("ball 클릭 ")
         guard let colId = anchorToCollection[anchorUUID] else {
@@ -429,54 +417,57 @@ struct FullImmersiveView: View {
     private func tapMemoButton(memoId: UUID) {
         print("box 클릭, text: \(memoText[memoId] ?? "no memo") ")
     }
-    
+
     // MARK: - RealityKit 설정
     @MainActor
     private func setupRealityView(content: RealityViewContent) async {
         // SpatialTrackingSession 시작
         let trackingSession = SpatialTrackingSession()
-        let configuration = SpatialTrackingSession.Configuration(tracking: [.hand])
-        
+        let configuration = SpatialTrackingSession.Configuration(tracking: [
+            .hand
+        ])
+
         let unapprovedCapabilities = await trackingSession.run(configuration)
-        
+
         if let unapproved = unapprovedCapabilities,
-           unapproved.anchor.contains(.hand) {
+            unapproved.anchor.contains(.hand)
+        {
             print("손 추적 권한이 거부되었습니다")
             return
         }
-        
+
         self.session = trackingSession
-        
+
         // 그림을 담을 부모 엔티티
         let drawingParent = Entity()
         content.add(drawingParent)
-        
+
         // 오른손 앵커
         let rightIndexTipAnchor = AnchorEntity(
             .hand(.right, location: .indexFingerTip),
             trackingMode: .continuous
         )
         content.add(rightIndexTipAnchor)
-        
+
         let rightThumbTipAnchor = AnchorEntity(
             .hand(.right, location: .thumbTip),
             trackingMode: .continuous
         )
         content.add(rightThumbTipAnchor)
-        
+
         // 왼손 앵커
         let leftIndexTipAnchor = AnchorEntity(
             .hand(.left, location: .indexFingerTip),
             trackingMode: .continuous
         )
         content.add(leftIndexTipAnchor)
-        
+
         let leftThumbTipAnchor = AnchorEntity(
             .hand(.left, location: .thumbTip),
             trackingMode: .continuous
         )
         content.add(leftThumbTipAnchor)
-        
+
         // 그리기 시스템 등록 및 설정
         DrawingSystem.registerSystem()
         DrawingSystem.rightIndexTipAnchor = rightIndexTipAnchor
@@ -484,15 +475,14 @@ struct FullImmersiveView: View {
         DrawingSystem.leftIndexTipAnchor = leftIndexTipAnchor
         DrawingSystem.leftThumbTipAnchor = leftThumbTipAnchor
         DrawingSystem.drawingParent = drawingParent
-        
+
         // 초기 상태 적용
         DrawingSystem.setDrawingEnabled(drawingState.isDrawingEnabled)
         DrawingSystem.setErasingEnabled(drawingState.isErasingEnabled)
     }
 }
 
- #Preview(immersionStyle: .full) {
- FullImmersiveView()
- .environment(AppModel())
- }
- 
+#Preview(immersionStyle: .full) {
+    FullImmersiveView()
+        .environment(AppModel())
+}
