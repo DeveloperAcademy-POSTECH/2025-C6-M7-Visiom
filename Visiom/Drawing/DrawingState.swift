@@ -10,7 +10,7 @@ import Combine
 
 class DrawingState: ObservableObject {
     @Published var isDrawingEnabled = false
-    @Published var isErasingEnabled = true
+    @Published var isErasingEnabled = false
     @Published var drawingColor: Color = .blue
     
     func toggleDrawing() {

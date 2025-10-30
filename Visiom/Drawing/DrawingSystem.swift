@@ -145,7 +145,7 @@ class DrawingSystem: System {
             let eraseIndicator = ModelEntity(
                 mesh: .generateSphere(radius: eraseRadius),
                 materials: [SimpleMaterial(
-                    color: UIColor.red.withAlphaComponent(0.3),
+                    color: UIColor.white.withAlphaComponent(0.5),
                     isMetallic: false
                 )]
             )
