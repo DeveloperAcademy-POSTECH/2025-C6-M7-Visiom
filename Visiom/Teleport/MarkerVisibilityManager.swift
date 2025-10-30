@@ -6,13 +6,10 @@
 //
 
 import SwiftUI
+import Combine
 
-struct MarkerVisibilityManager: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
-
-#Preview {
-    MarkerVisibilityManager()
+@MainActor
+final class MarkerVisibilityManager: ObservableObject {
+    static let shared = MarkerVisibilityManager()
+    @Published var isVisible: Bool = true
 }
