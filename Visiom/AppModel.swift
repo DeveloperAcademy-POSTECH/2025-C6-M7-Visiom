@@ -31,10 +31,21 @@ class AppModel {
 
     var memoEditMode: Bool = false
     var memoToAttach: String = ""
+    
+    // visible/invisible 상태 관리
+    var showPhotos: Bool = true
+    var showMemos: Bool = true
 
     func toggleMarkers() {
         markersVisible.toggle()
         print("Markers visibility: \(markersVisible)")  // TODO 삭제
+    }
+    
+    func togglePhotos(){
+        showPhotos.toggle()
+    }
+    func toggleMemos() {
+        showMemos.toggle()
     }
 
     //Full Immersive 진입 처리 함수
