@@ -28,7 +28,7 @@ class SceneManager {
     static func createMovementPoints(in container: Entity) {
         // 바닥 크기: 50x50m, 중심이 (0,0,0)이므로 범위는 -25 ~ 25
         // 마커는 가장자리에서 1m 안쪽에만 배치: -49 ~ 49
-        let floorSize: Float = 50.0
+        let floorSize: Float = 9.0
         let margin: Float = 1.0
         let maxCoord = (floorSize / 2) - margin  // 49
         let minCoord = -maxCoord  // -49
@@ -43,7 +43,7 @@ class SceneManager {
             for j in minIndex...maxIndex {
                 // 텔레포트 마커 (바닥)
                 let marker = ModelEntity(
-                    mesh: .generateCylinder(height: 0.05, radius: 0.3),
+                    mesh: .generateCylinder(height: 0.02, radius: 0.1),
                     materials: [SimpleMaterial(color: .cyan.withAlphaComponent(0.6), isMetallic: false)]
                 )
                 marker.position = [Float(i) * spacing, 0.025, Float(j) * spacing]
@@ -73,10 +73,13 @@ class SceneManager {
     // MARK: - Update Markers Visibility
     static func updateMarkersVisibility(root: Entity, visible: Bool) {
         // 모든 텔레포트 마커의 가시성 업데이트
-        root.children.forEach { entity in
-            if entity.name.starts(with: "teleport_") {
-                entity.isEnabled = visible
-            }
-        }
+//        root.children.forEach { entity in
+//            if entity.name.starts(with: "teleport_") {
+//                entity.isEnabled = visible
+//            }
+//        }
+        for child in root.children where child.name.starts(with: "teleport_") {
+                   child.isEnabled = visible
+               }
     }
 }

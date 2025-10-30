@@ -17,6 +17,7 @@ struct UserControlView: View {
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @ObservedObject var markerManager = MarkerVisibilityManager.shared
 
     @EnvironmentObject var drawingState: DrawingState
     
@@ -106,9 +107,10 @@ print("showPhotos: \(appModel.showPhotos)")
                     Text(appModel.showPhotos ? "visible" : "invisible")
                 }
                 Button {
+                    markerManager.isVisible.toggle()
 
                 } label: {
-                    Text("이동")
+                    Text(markerManager.isVisible ? "정지" : "이동")
                 }
             }
             .glassBackgroundEffect()
