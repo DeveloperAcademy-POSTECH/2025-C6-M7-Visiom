@@ -18,8 +18,8 @@ struct UserControlView: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
 
-    @StateObject private var drawingState = DrawingState()
-
+    @EnvironmentObject var drawingState: DrawingState
+    
     @State private var inputText: String = ""
 
     var body: some View {
@@ -63,14 +63,16 @@ struct UserControlView: View {
                     Text("스티커")
                 }
                 Button {
-                    if drawingState.isDrawingEnabled {
-                        openWindow(id: appModel.drawingControlWindowID)
-                        drawingState.toggleDrawing()
-                        print("활성화")
-                    } else {
-                        dismissWindow(id: appModel.drawingControlWindowID)
-                        drawingState.toggleDrawing()
-                        print("비활성화")
+                    Task{
+                        if drawingState.isDrawingEnabled {
+                            drawingState.isDrawingEnabled = false
+                            drawingState.isErasingEnabled = false
+                            dismissWindow(id: appModel.drawingControlWindowID)
+                        } else {
+                            drawingState.isDrawingEnabled = true
+                            drawingState.isErasingEnabled = true
+                            openWindow(id: appModel.drawingControlWindowID)
+                        }
                     }
                 } label: {
                     HStack(spacing: 8) {
@@ -80,15 +82,11 @@ struct UserControlView: View {
                         )
                         .font(.system(size: 24))
 
-                        Text(drawingState.isDrawingEnabled ? "활성화" : "비활성화")
+                        Text(drawingState.isDrawingEnabled ? "그리기" : "그리기 정지")
                             .font(.system(size: 16, weight: .semibold))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(
-                        drawingState.isDrawingEnabled
-                            ? Color.green.opacity(0.7) : Color.red.opacity(0.7)
-                    )
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
