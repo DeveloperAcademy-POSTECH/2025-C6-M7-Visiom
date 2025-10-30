@@ -18,15 +18,16 @@ struct VisiomApp: App {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
             CrimeSceneListView()
                 .environment(appModel)
-        }
-        
+        }.defaultSize(CGSize(width: 1191, height: 477))
+
         WindowGroup(id: "PhotoCollectionList") {
             PhotoCollectionListView()
                 .environment(appModel)
                 .environment(collectionStore)
         }
-        
-        WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) { $collectionID in
+
+        WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
+            $collectionID in
             if let id = collectionID {
                 PhotoCollectionView(collectionID: id)
                     .environment(collectionStore)
@@ -38,7 +39,7 @@ struct VisiomApp: App {
             DrawingControlView()
                 .environmentObject(drawingState)
         }.windowResizability(.contentSize)
-        
+
         ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
             FullImmersiveView()
                 .environment(appModel)
@@ -50,7 +51,7 @@ struct VisiomApp: App {
                 .onDisappear {
                     appModel.immersiveSpaceState = .closed
                 }
-                .onChange(of: scenePhase) {_, phase in
+                .onChange(of: scenePhase) { _, phase in
                     if phase == .background {
                         PhotoPipeline.cleanupTempFiles()
                         Task {
