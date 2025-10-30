@@ -53,4 +53,8 @@ enum FileLocations {
     static func collectionsIndexFile() throws -> URL {
         try appSupportDir().appendingPathComponent("collections.json", conformingTo: .json)
     }
+    
+    static func memosIndexFile() throws -> URL {
+        try appSupportDir().appendingPathComponent("memos.json", conformingTo: .json)
+    }
 }

@@ -17,6 +17,7 @@ struct WorldAnchorEntityData {
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
+    @Environment(MemoStore.self) var memoStore
     @Environment(CollectionStore.self) var collectionStore
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
@@ -130,6 +131,7 @@ struct FullImmersiveView: View {
             card.attachment = ViewAttachmentComponent(
                 rootView: UserControlView()
                     .environment(appModel)
+                    .environment(memoStore)
             )
             card.position = [0, 1.2, -0.9]
             

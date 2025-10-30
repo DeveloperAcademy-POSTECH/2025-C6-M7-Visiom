@@ -17,106 +17,99 @@ struct UserControlView: View {
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(MemoStore.self) var memoStore
     @ObservedObject var markerManager = MarkerVisibilityManager.shared
-
+    
     @StateObject private var drawingState = DrawingState()
-
+    
     @State private var inputText: String = ""
-
+    
     var body: some View {
-        if appModel.memoEditMode {
-            TextFieldAttachmentView(
-                text: $inputText,
-            )
-            Button("작성 완료") {
-                appModel.memoToAttach = inputText
-                inputText = ""
-                appModel.memoEditMode = false
-                appModel.itemAdd = .memo
+        
+        HStack {
+            Button {
+                Task {
+                    await appModel.exitFullImmersive(
+                        dismissImmersiveSpace: dismissImmersiveSpace,
+                        openWindow: openWindow
+                    )
+                }
+            } label: {
+                Image(systemName: "arrow.uturn.left")
             }
-        } else {
-            HStack {
-                Button {
-                    Task {
-                        await appModel.exitFullImmersive(
-                            dismissImmersiveSpace: dismissImmersiveSpace,
-                            openWindow: openWindow
-                        )
-                    }
-                } label: {
-                    Text("나가기")
+            
+            Button {
+                appModel.itemAdd = .photo
+                print("사진 버튼 탭")
+            } label: {
+                Image(systemName: "photo")
+            }
+            Button {
+                let id = UUID()
+                memoStore.createDraft(id: id)
+                openWindow(id: appModel.memoEditWindowID, value: id)
+            } label: {
+                Image(systemName: "text.document")
+            }
+//            Button {
+//                
+//            } label: {
+//                Text("스티커")
+//            }
+            Button {
+                if drawingState.isDrawingEnabled {
+                    openWindow(id: appModel.drawingControlWindowID)
+                    drawingState.toggleDrawing()
+                    print("활성화")
+                } else {
+                    dismissWindow(id: appModel.drawingControlWindowID)
+                    drawingState.toggleDrawing()
+                    print("비활성화")
                 }
-
-                Button {
-                    appModel.itemAdd = .photo
-                    print("사진 버튼 탭")
-                } label: {
-                    Text("사진")
-                }
-                Button {
-                    appModel.memoEditMode = true
-                } label: {
-                    Text("메모")
-                }
-                Button {
-
-                } label: {
-                    Text("스티커")
-                }
-                Button {
-                    if drawingState.isDrawingEnabled {
-                        openWindow(id: appModel.drawingControlWindowID)
-                        drawingState.toggleDrawing()
-                        print("활성화")
-                    } else {
-                        dismissWindow(id: appModel.drawingControlWindowID)
-                        drawingState.toggleDrawing()
-                        print("비활성화")
-                    }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(
-                            systemName: drawingState.isDrawingEnabled
-                                ? "play.circle.fill" : "pause.circle.fill"
-                        )
-                        .font(.system(size: 24))
-
-                        Text(drawingState.isDrawingEnabled ? "활성화" : "비활성화")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                Button {
-
-                } label: {
-                    Text("마네킹")
-                }
-                Button {
-                    appModel.togglePhotos()
-                    appModel.toggleMemos()
-                    print("Button 눌림.")
-print("showPhotos: \(appModel.showPhotos)")
-                    print("showMemos: \(appModel.showMemos)")
+            } label: {
+                HStack(spacing: 8) {
+                    Image(
+                        systemName: drawingState.isDrawingEnabled
+                        ? "play.circle.fill" : "pause.circle.fill"
+                    )
+                    .font(.system(size: 24))
                     
-                } label: {
-                    Text(appModel.showPhotos ? "visible" : "invisible")
+                    Text(drawingState.isDrawingEnabled ? "활성화" : "비활성화")
+                        .font(.system(size: 16, weight: .semibold))
                 }
-                Button {
-                    markerManager.isVisible.toggle()
-
-                } label: {
-                    Text(markerManager.isVisible ? "정지" : "이동")
-                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .foregroundColor(.white)
+                .cornerRadius(10)
             }
-            .glassBackgroundEffect()
+//            Button {
+//                
+//            } label: {
+//                Text("마네킹")
+//            }
+            Button {
+                appModel.togglePhotos()
+                appModel.toggleMemos()
+                print("Button 눌림.")
+                print("showPhotos: \(appModel.showPhotos)")
+                print("showMemos: \(appModel.showMemos)")
+                
+            } label: {
+                Image(systemName: appModel.showPhotos ? "eye" : "eye.slash")
+            }
+            Button {
+                markerManager.isVisible.toggle()
+                
+            } label: {
+                Image(systemName: markerManager.isVisible ? "figure.run" : "figure.run.circle.fill")
+            }
         }
+        .glassBackgroundEffect()
     }
 }
 
 #Preview(windowStyle: .automatic) {
     UserControlView()
         .environment(AppModel())
+        .environment(MemoStore())
 }
