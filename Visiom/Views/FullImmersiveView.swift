@@ -64,7 +64,7 @@ struct FullImmersiveView: View {
             .generateSphere(radius: 0.03)
         ])
         let input = InputTargetComponent()  // 상호작용할 수 있는 객체임을 표시해주는 컴포넌트
-        photoBtn.components.set([collision, input])
+        photoBtn.components.set([collision, input, BillboardComponent()])
         photoBtn.transform.rotation = simd_quatf(
             angle: -Float.pi / 2,
             axis: [1, 0, 0]
@@ -82,7 +82,7 @@ struct FullImmersiveView: View {
             .generateBox(width: 0.1, height: 0.1, depth: 0.005)
         ])
         let input = InputTargetComponent()
-        memo.components.set([collision, input])
+        memo.components.set([collision, input, BillboardComponent()])
         return memo
     }()
     
@@ -513,21 +513,21 @@ struct FullImmersiveView: View {
     @MainActor
     private func setupRealityView(content: RealityViewContent) async {
         // SpatialTrackingSession 시작
-        //        let trackingSession = SpatialTrackingSession()
-        //        let configuration = SpatialTrackingSession.Configuration(tracking: [
-        //            .hand
-        //        ])
-        //
-        //        let unapprovedCapabilities = await trackingSession.run(configuration)
-        //
-        //        if let unapproved = unapprovedCapabilities,
-        //            unapproved.anchor.contains(.hand)
-        //        {
-        //            print("손 추적 권한이 거부되었습니다")
-        //            return
-        //        }
-        //
-        //        self.session = trackingSession
+                let trackingSession = SpatialTrackingSession()
+                let configuration = SpatialTrackingSession.Configuration(tracking: [
+                    .hand
+                ])
+        
+                let unapprovedCapabilities = await trackingSession.run(configuration)
+        
+                if let unapproved = unapprovedCapabilities,
+                    unapproved.anchor.contains(.hand)
+                {
+                    print("손 추적 권한이 거부되었습니다")
+                    return
+                }
+        
+                self.session = trackingSession
 
         // 그림을 담을 부모 엔티티
         let drawingParent = Entity()
@@ -541,7 +541,7 @@ struct FullImmersiveView: View {
         content.add(rightIndexTipAnchor)
         
         let rightThumbTipAnchor = AnchorEntity(
-            .hand(.right, location: .thumbTip),
+            .hand(.right, location: .joint(for: .middleFingerTip)),
             trackingMode: .continuous
         )
         content.add(rightThumbTipAnchor)
@@ -566,10 +566,6 @@ struct FullImmersiveView: View {
         DrawingSystem.leftIndexTipAnchor = leftIndexTipAnchor
         DrawingSystem.leftThumbTipAnchor = leftThumbTipAnchor
         DrawingSystem.drawingParent = drawingParent
-        
-        // 초기 상태 적용
-        DrawingSystem.setDrawingEnabled(drawingState.isDrawingEnabled)
-        DrawingSystem.setErasingEnabled(drawingState.isErasingEnabled)
     }
 }
 
