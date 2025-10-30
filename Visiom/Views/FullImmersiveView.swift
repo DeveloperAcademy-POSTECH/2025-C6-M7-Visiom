@@ -121,6 +121,8 @@ struct FullImmersiveView: View {
             DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         }
         .modifier(DragGestureImproved())
+        .disabled(isPlaced)
+
         // 객체 탭하면 동작
         .gesture(
             TapGesture()
@@ -278,6 +280,9 @@ struct FullImmersiveView: View {
     private func makePlacement(type: UserControlBar) {
         guard !isPlaced else { return }
 
+        drawingState.isDrawingEnabled = false
+        drawingState.isErasingEnabled = false
+
         // 손을 따라다니는 임시 객체를 생성
         let tempObject: ModelEntity
 
@@ -422,21 +427,21 @@ struct FullImmersiveView: View {
     @MainActor
     private func setupRealityView(content: RealityViewContent) async {
         // SpatialTrackingSession 시작
-        let trackingSession = SpatialTrackingSession()
-        let configuration = SpatialTrackingSession.Configuration(tracking: [
-            .hand
-        ])
-
-        let unapprovedCapabilities = await trackingSession.run(configuration)
-
-        if let unapproved = unapprovedCapabilities,
-            unapproved.anchor.contains(.hand)
-        {
-            print("손 추적 권한이 거부되었습니다")
-            return
-        }
-
-        self.session = trackingSession
+        //        let trackingSession = SpatialTrackingSession()
+        //        let configuration = SpatialTrackingSession.Configuration(tracking: [
+        //            .hand
+        //        ])
+        //
+        //        let unapprovedCapabilities = await trackingSession.run(configuration)
+        //
+        //        if let unapproved = unapprovedCapabilities,
+        //            unapproved.anchor.contains(.hand)
+        //        {
+        //            print("손 추적 권한이 거부되었습니다")
+        //            return
+        //        }
+        //
+        //        self.session = trackingSession
 
         // 그림을 담을 부모 엔티티
         let drawingParent = Entity()
