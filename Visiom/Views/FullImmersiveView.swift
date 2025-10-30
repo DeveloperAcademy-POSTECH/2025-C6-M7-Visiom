@@ -63,7 +63,7 @@ struct FullImmersiveView: View {
             .generateSphere(radius: 0.03)
         ])
         let input = InputTargetComponent()  // 상호작용할 수 있는 객체임을 표시해주는 컴포넌트
-        photoBtn.components.set([collision, input])
+        photoBtn.components.set([collision, input, BillboardComponent()])
         photoBtn.transform.rotation = simd_quatf(
             angle: -Float.pi / 2,
             axis: [1, 0, 0]
@@ -81,7 +81,7 @@ struct FullImmersiveView: View {
             .generateBox(width: 0.1, height: 0.1, depth: 0.005)
         ])
         let input = InputTargetComponent()
-        memo.components.set([collision, input])
+        memo.components.set([collision, input, BillboardComponent()])
         return memo
     }()
     
