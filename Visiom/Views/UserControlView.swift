@@ -98,9 +98,14 @@ struct UserControlView: View {
                     Text("마네킹")
                 }
                 Button {
-
+                    appModel.togglePhotos()
+                    appModel.toggleMemos()
+                    print("Button 눌림.")
+print("showPhotos: \(appModel.showPhotos)")
+                    print("showMemos: \(appModel.showMemos)")
+                    
                 } label: {
-                    Text("필터")
+                    Text(appModel.showPhotos ? "visible" : "invisible")
                 }
                 Button {
 
