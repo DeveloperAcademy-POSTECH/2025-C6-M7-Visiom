@@ -17,13 +17,20 @@ struct WorldAnchorEntityData {
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
+    @Environment(CollectionStore.self) var collectionStore
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
+
+    // 그리기 전역 상태
+    @EnvironmentObject var drawingState: DrawingState
+    // 공간 추적 세션
+    @State private var session: SpatialTrackingSession?
 
     private static let session = ARKitSession()
     private static let handTracking = HandTrackingProvider()
     private static let worldTracking = WorldTrackingProvider()
 
     @State private var root = Entity()
-
     @State private var worldAnchorEntityData: [UUID: WorldAnchorEntityData] =
         [:]
     // 임시 객체 상태일 때 타입이랑 uuid를 저장하는 친구
@@ -33,52 +40,47 @@ struct FullImmersiveView: View {
     @State private var currentItem: ModelEntity? = nil
     @State private var currentItemType: UserControlBar? = nil
 
-    let ball: ModelEntity = {
-        let ball = ModelEntity(
-            mesh: .generateSphere(radius: 0.05),
+    @State private var anchorToCollection: [UUID: UUID] = [:]
+    @State private var pendingCollectionIdForNextAnchor: UUID? = nil
+
+    @State private var memoText: [UUID: String] = [:]
+
+    let photoButtonEntity: ModelEntity = {
+        let photoBtn = ModelEntity(
+            mesh: .generateCylinder(height: 0.005, radius: 0.03),
             materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
         )
 
         let collision = CollisionComponent(shapes: [
-            .generateSphere(radius: 0.05)
+            .generateSphere(radius: 0.03)
         ])
         let input = InputTargetComponent()  // 상호작용할 수 있는 객체임을 표시해주는 컴포넌트
-        ball.components.set([collision, input])
+        photoBtn.components.set([collision, input])
+        photoBtn.transform.rotation = simd_quatf(
+            angle: -Float.pi / 2,
+            axis: [1, 0, 0]
+        )
 
-        return ball
+        return photoBtn
     }()
 
-    let box: ModelEntity = {
-        let box = ModelEntity(
-            mesh: .generateBox(size: 0.1),
-            materials: [SimpleMaterial(color: .cyan, isMetallic: false)]
+    let memoEntity: ModelEntity = {
+        let memo = ModelEntity(
+            mesh: .generateBox(width: 0.1, height: 0.1, depth: 0.005),
+            materials: [SimpleMaterial(color: .yellow, isMetallic: false)]
         )
         let collision = CollisionComponent(shapes: [
-            .generateBox(size: [0.1, 0.1, 0.1])
+            .generateBox(width: 0.1, height: 0.1, depth: 0.005)
         ])
         let input = InputTargetComponent()
-        box.components.set([collision, input])
-        return box
+        memo.components.set([collision, input])
+        return memo
     }()
 
     var body: some View {
-        VStack {
-            // TO DO: UserControlView랑 합치기
-            HStack {
-                Button(action: { makePlacement(type: .photo) }) {
-                    Text("ball 생성")
-                }
-                Button(action: {
-                    makePlacement(type: .memo)
-                }) {
-                    Text("박스 생성")
-                }
-            }
-        }
-        .allowsHitTesting(!isPlaced)
-        .disabled(isPlaced)
-
         RealityView { content in
+            await setupRealityView(content: content)
+
             content.add(root)
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
@@ -89,17 +91,21 @@ struct FullImmersiveView: View {
                 root.addChild(immersiveContentEntity)
             }
 
-            let headAnchor = AnchorEntity(.head)
-            content.add(headAnchor)
+            // (보류) 따라다니는 headAnchor
+            //            let headAnchor = AnchorEntity(.head)
+            //            content.add(headAnchor)
 
             let card = ViewAttachmentEntity()
             card.attachment = ViewAttachmentComponent(
                 rootView: UserControlView()
                     .environment(appModel)
             )
-            card.position = [0, -0.3, -0.9]
+            card.position = [0, 1.2, -0.9]
 
-            headAnchor.addChild(card)
+            card.components.set(InputTargetComponent())
+            card.generateCollisionShapes(recursive: true)
+
+            content.add(card)
 
         } update: { content in
             for (_, data) in worldAnchorEntityData {
@@ -107,6 +113,12 @@ struct FullImmersiveView: View {
                     content.add(data.entity)
                 }
             }
+        }
+        .onChange(of: drawingState.isDrawingEnabled) {
+            DrawingSystem.isDrawingEnabled = drawingState.isDrawingEnabled
+        }
+        .onChange(of: drawingState.isErasingEnabled) {
+            DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         }
         .modifier(DragGestureImproved())
         // 객체 탭하면 동작
@@ -125,9 +137,9 @@ struct FullImmersiveView: View {
                     if let itemType = tempItemType[anchorUUID] {
                         switch itemType {
                         case .photo:
-                            tapPhotoButton()
+                            tapPhotoButton(anchorUUID)
                         case .memo:
-                            tapMemoButton()
+                            tapMemoButton(memoId: anchorUUID)
                         }
                     } else {
                         print("Tapped entity's UUID not found in tempItemType.")
@@ -162,14 +174,13 @@ struct FullImmersiveView: View {
             else { return }
             await trackingHand(currentItem)
         }
-        // 이거 UesrControlBar랑 연결하는 부분인데 작동을 안해요..
-        //        .onChange(of: appModel.itemAdd) { _, newValue in
-        //            if let itemType = newValue {
-        //                print("함수호출")
-        //                makePlacement(type: itemType)
-        //                appModel.itemAdd = nil
-        //            }
-        //        }
+        .onChange(of: appModel.itemAdd) { _, newValue in
+            if let itemType = newValue {
+                print("함수호출")
+                makePlacement(type: itemType)
+                appModel.itemAdd = nil
+            }
+        }
     }
 
     private static func startARSession() async {
@@ -199,9 +210,26 @@ struct FullImmersiveView: View {
                     let subjectClone: ModelEntity
 
                     if tempItemType[update.anchor.id] == .photo {
-                        subjectClone = ball.clone(recursive: true)
+                        subjectClone = photoButtonEntity.clone(recursive: true)
                     } else {
-                        subjectClone = box.clone(recursive: true)
+                        subjectClone = memoEntity.clone(recursive: true)
+                        if let memotext = memoText[update.anchor.id],
+                            !memotext.isEmpty
+                        {
+                            let memoTextField = ViewAttachmentEntity()
+                            memoTextField.attachment = ViewAttachmentComponent(
+                                rootView: Text(memotext)
+                                    .frame(width: 90, height: 90)
+                                    .background(.regularMaterial.opacity(0.5))
+                                    .foregroundColor(.black)
+                                    .font(.system(size: 10))
+                            )
+                            memoTextField.setPosition(
+                                [0, 0, 0.0053],
+                                relativeTo: subjectClone
+                            )
+                            subjectClone.addChild(memoTextField)
+                        }
                     }
                     subjectClone.name = update.anchor.id.uuidString
                     subjectClone.setTransformMatrix(
@@ -238,6 +266,8 @@ struct FullImmersiveView: View {
                         forKey: update.anchor.id
                     ) {
                         removeAnchor.entity.removeFromParent()
+                        tempItemType.removeValue(forKey: update.anchor.id)
+                        memoText.removeValue(forKey: update.anchor.id)
                     }
                     print("🔴 Anchor removed \(update.anchor.id)")
                 }
@@ -252,9 +282,16 @@ struct FullImmersiveView: View {
         let tempObject: ModelEntity
 
         if type == .photo {
-            tempObject = ball.clone(recursive: true)
+            tempObject = photoButtonEntity.clone(recursive: true)
+
+            let newCol = collectionStore.createCollection()
+            collectionStore.renameCollection(
+                newCol.id,
+                to: newCol.id.uuidString
+            )
+            pendingCollectionIdForNextAnchor = newCol.id
         } else {
-            tempObject = box.clone(recursive: true)
+            tempObject = memoEntity.clone(recursive: true)
         }
 
         root.addChild(tempObject)
@@ -329,6 +366,19 @@ struct FullImmersiveView: View {
                             await MainActor.run {
                                 if let itemType = self.currentItemType {
                                     tempItemType[anchor.id] = itemType
+                                    if itemType == .memo {
+                                        memoText[anchor.id] =
+                                            appModel.memoToAttach
+                                        appModel.memoToAttach = ""
+                                    }
+                                }
+
+                                // 앵커ID와 컬렉션 ID를 연결함
+                                if let colId =
+                                    pendingCollectionIdForNextAnchor
+                                {
+                                    anchorToCollection[anchor.id] = colId
+                                    pendingCollectionIdForNextAnchor = nil
                                 }
                             }
                         } catch {
@@ -354,11 +404,81 @@ struct FullImmersiveView: View {
         }
     }
 
-    private func tapPhotoButton() {
+    private func tapPhotoButton(_ anchorUUID: UUID) {
         print("ball 클릭 ")
+        guard let colId = anchorToCollection[anchorUUID] else {
+            print("No collection mapped for anchor \(anchorUUID)")
+            return
+        }
+        // PhotoCollectionWindow 열기
+        openWindow(id: appModel.photoCollectionWindowID, value: colId)
+        print("Opened collection window for \(colId)")
     }
-    private func tapMemoButton() {
-        print("box 클릭 ")
+    private func tapMemoButton(memoId: UUID) {
+        print("box 클릭, text: \(memoText[memoId] ?? "no memo") ")
+    }
+
+    // MARK: - RealityKit 설정
+    @MainActor
+    private func setupRealityView(content: RealityViewContent) async {
+        // SpatialTrackingSession 시작
+        let trackingSession = SpatialTrackingSession()
+        let configuration = SpatialTrackingSession.Configuration(tracking: [
+            .hand
+        ])
+
+        let unapprovedCapabilities = await trackingSession.run(configuration)
+
+        if let unapproved = unapprovedCapabilities,
+            unapproved.anchor.contains(.hand)
+        {
+            print("손 추적 권한이 거부되었습니다")
+            return
+        }
+
+        self.session = trackingSession
+
+        // 그림을 담을 부모 엔티티
+        let drawingParent = Entity()
+        content.add(drawingParent)
+
+        // 오른손 앵커
+        let rightIndexTipAnchor = AnchorEntity(
+            .hand(.right, location: .indexFingerTip),
+            trackingMode: .continuous
+        )
+        content.add(rightIndexTipAnchor)
+
+        let rightThumbTipAnchor = AnchorEntity(
+            .hand(.right, location: .thumbTip),
+            trackingMode: .continuous
+        )
+        content.add(rightThumbTipAnchor)
+
+        // 왼손 앵커
+        let leftIndexTipAnchor = AnchorEntity(
+            .hand(.left, location: .indexFingerTip),
+            trackingMode: .continuous
+        )
+        content.add(leftIndexTipAnchor)
+
+        let leftThumbTipAnchor = AnchorEntity(
+            .hand(.left, location: .thumbTip),
+            trackingMode: .continuous
+        )
+        content.add(leftThumbTipAnchor)
+
+        // 그리기 시스템 등록 및 설정
+        DrawingSystem.registerSystem()
+        DrawingSystem.rightIndexTipAnchor = rightIndexTipAnchor
+        DrawingSystem.rightThumbTipAnchor = rightThumbTipAnchor
+        DrawingSystem.leftIndexTipAnchor = leftIndexTipAnchor
+        DrawingSystem.leftThumbTipAnchor = leftThumbTipAnchor
+        DrawingSystem.drawingParent = drawingParent
+
+        // 초기 상태 적용
+        DrawingSystem.setDrawingEnabled(drawingState.isDrawingEnabled)
+        DrawingSystem.setErasingEnabled(drawingState.isErasingEnabled)
     }
 }
 
