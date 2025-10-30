@@ -36,8 +36,6 @@ struct FullImmersiveView: View {
     @State private var updateTimer: Timer?
     @ObservedObject var markerManager = MarkerVisibilityManager.shared
     
-    //    @State private var root = Entity()
-    
     @State private var worldAnchorEntityData: [UUID: WorldAnchorEntityData] =
     [:]
     // 임시 객체 상태일 때 타입이랑 uuid를 저장하는 친구
@@ -100,8 +98,6 @@ struct FullImmersiveView: View {
                 return
             }
             
-            //            content.add(root)
-            
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
                 named: "Immersive",
@@ -125,13 +121,6 @@ struct FullImmersiveView: View {
                 root?.addChild(mGroup)
                 self.memoGroup = mGroup
                 
-                // State 바인딩 (UI 스레드)
-//                DispatchQueue.main.async {
-                    
-                   
-//                }
-                
-                //                root.addChild(immersiveContentEntity)
             }
             
             // (보류) 따라다니는 headAnchor
@@ -378,7 +367,6 @@ struct FullImmersiveView: View {
             if let root {
                 root.addChild(tempObject)
             }
-//            root?.addChild(tempObject)
             
             print("객체 생성 완료")
             self.currentItem = tempObject
@@ -567,10 +555,10 @@ struct FullImmersiveView: View {
         }
 }
 
-//#Preview(immersionStyle: .full) {
-//    FullImmersiveView()
-//        .environment(AppModel())
-//}
+#Preview(immersionStyle: .full) {
+    FullImmersiveView()
+        .environment(AppModel())
+}
 
 // MARK: - Logic Extension
 extension FullImmersiveView {
