@@ -69,21 +69,23 @@ struct UserControlView: View {
                             drawingState.isDrawingEnabled = false
                             drawingState.isErasingEnabled = false
                             dismissWindow(id: appModel.drawingControlWindowID)
+                            
                         } else {
                             drawingState.isDrawingEnabled = true
                             drawingState.isErasingEnabled = true
                             openWindow(id: appModel.drawingControlWindowID)
+                            
                         }
                     }
                 } label: {
                     HStack(spacing: 8) {
                         Image(
                             systemName: drawingState.isDrawingEnabled
-                                ? "play.circle.fill" : "pause.circle.fill"
+                            ?  "pause.circle.fill" : "play.circle.fill"
                         )
                         .font(.system(size: 24))
 
-                        Text(drawingState.isDrawingEnabled ? "그리기" : "그리기 정지")
+                        Text(drawingState.isDrawingEnabled ? "그리기 정지" : "그리기")
                             .font(.system(size: 16, weight: .semibold))
                     }
                     .padding(.horizontal, 16)
