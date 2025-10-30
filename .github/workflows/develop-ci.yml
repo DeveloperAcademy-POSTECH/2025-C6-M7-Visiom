@@ -1,5 +1,5 @@
 # workflow 이름 
-name: Run Test
+name: Develop Build
 
 on: 
   # develop 브랜치에 push나 pull request 이번트가 일어났을 때 해당 workflow를 trigger
@@ -23,21 +23,44 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: latest-stable
+        xcode-version: '26.0.1'
 
-    - name: Install CocoaPods 📝
-      run: brew install cocoapods
-
-    - name: Install dependencies 📚
-      run: pod install --repo-update
-
-    - name: Start Xcode build 🛠
+    # 3️⃣ VisionOS 앱 빌드
+    - name: Build VisionOS App
       run: |
         xcodebuild \
-            -project Visiom/Visiom.xcodeproj \
-            -scheme YourApp \
-            -destination 'platform=visionOS Simulator,name=Apple Vision Pro,OS=26.0' \
-            clean build
+          -project Visiom.xcodeproj \
+          -scheme Visiom \
+          -configuration Release \
+          -destination 'generic/platform=visionOS' \
+          clean build | xcpretty
+
+    # 4️⃣ VisionOS 아카이브 생성
+    - name: Archive VisionOS App
+      run: |
+        xcodebuild \
+          -project Visiom.xcodeproj \
+          -scheme Visiom \
+          -configuration Release \
+          -destination 'generic/platform=visionOS' \
+          -archivePath ${{ github.workspace }}/build/Visiom.xcarchive \
+          clean archive | xcpretty
+
+    # 5️⃣ IPA 내보내기
+    - name: Export IPA
+      run: |
+        xcodebuild \
+          -exportArchive \
+          -archivePath ${{ github.workspace }}/build/Visiom.xcarchive \
+          -exportPath ${{ github.workspace }}/build/export \
+          -exportOptionsPlist ExportOptions.plist
+
+      # 6️⃣ 빌드 결과 업로드
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: VisionOS-Build
+        path: build/export/
     
 
     
