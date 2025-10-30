@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 class DrawingState: ObservableObject {
-    @Published var isDrawingEnabled = false
+    @Published var isDrawingEnabled = true
     @Published var isErasingEnabled = true
     @Published var drawingColor: Color = .blue
     
