@@ -17,6 +17,7 @@ struct UserControlView: View {
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @ObservedObject var markerManager = MarkerVisibilityManager.shared
 
     @StateObject private var drawingState = DrawingState()
 
@@ -85,10 +86,6 @@ struct UserControlView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(
-                        drawingState.isDrawingEnabled
-                            ? Color.green.opacity(0.7) : Color.red.opacity(0.7)
-                    )
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
@@ -103,9 +100,10 @@ struct UserControlView: View {
                     Text("필터")
                 }
                 Button {
+                    markerManager.isVisible.toggle()
 
                 } label: {
-                    Text("이동")
+                    Text(markerManager.isVisible ? "정지" : "이동")
                 }
             }
             .glassBackgroundEffect()
