@@ -30,7 +30,12 @@ struct FullImmersiveView: View {
     private static let handTracking = HandTrackingProvider()
     private static let worldTracking = WorldTrackingProvider()
     
-    @State private var root = Entity()
+    // teleport
+    @State private var position: SIMD3<Float> = [0, 0, 0]
+    @State private var root: Entity? = nil
+    @State private var updateTimer: Timer?
+    @ObservedObject var markerManager = MarkerVisibilityManager.shared
+    
     @State private var worldAnchorEntityData: [UUID: WorldAnchorEntityData] =
     [:]
     // 임시 객체 상태일 때 타입이랑 uuid를 저장하는 친구
@@ -84,22 +89,13 @@ struct FullImmersiveView: View {
         RealityView { content in
             await setupRealityView(content: content)
             
-            content.add(root)
             
-            let pGroup = Entity()
-            pGroup.name = "PhotoGroup"
-            pGroup.isEnabled = appModel.showPhotos
-            root.addChild(pGroup)
-            
-            let mGroup = Entity()
-            mGroup.name = "MemoGroup"
-            mGroup.isEnabled = appModel.showMemos
-            root.addChild(mGroup)
-            
-            // State 바인딩 (UI 스레드)
-            DispatchQueue.main.async {
-                self.photoGroup = pGroup
-                self.memoGroup = mGroup
+            // 이미 로드된 경우 중복 추가 방지
+            guard root == nil else {
+                if let existingRoot = root {
+                    content.add(existingRoot)
+                }
+                return
             }
             
             // 씬 갈아끼기
@@ -108,9 +104,22 @@ struct FullImmersiveView: View {
                 in: realityKitContentBundle
             ) {
                 immersiveContentEntity.generateCollisionShapes(recursive: true)
-                root.addChild(immersiveContentEntity)
+                root = immersiveContentEntity
+                content.add(immersiveContentEntity)
+                SceneManager.setupScene(in: immersiveContentEntity)
                 
                 
+                let pGroup = Entity()
+                pGroup.name = "PhotoGroup"
+                pGroup.isEnabled = appModel.showPhotos
+                root?.addChild(pGroup)
+                self.photoGroup = pGroup
+                
+                let mGroup = Entity()
+                mGroup.name = "MemoGroup"
+                mGroup.isEnabled = appModel.showMemos
+                root?.addChild(mGroup)
+                self.memoGroup = mGroup
             }
             
             // (보류) 따라다니는 headAnchor
@@ -129,7 +138,18 @@ struct FullImmersiveView: View {
             
             content.add(card)
             
-        } update: { content in
+        }update: { content in
+            // teleport
+            updateScenePosition()
+            updateMarkersVisibility()
+            
+            // root가 없으면 root 붙이기 스킵
+            guard let root = root else {
+                photoGroup?.isEnabled = appModel.showPhotos
+                memoGroup?.isEnabled  = appModel.showMemos
+                return
+            }
+            
             for (uuid, data) in worldAnchorEntityData {
                 // 부모가 없는 entity는 root 밑에 붙이기
                 if data.entity.parent == nil {
@@ -146,6 +166,8 @@ struct FullImmersiveView: View {
                 }
             }
             
+            
+            
             photoGroup?.isEnabled = appModel.showPhotos
             memoGroup?.isEnabled = appModel.showMemos
         }
@@ -161,6 +183,9 @@ struct FullImmersiveView: View {
             TapGesture()
                 .targetedToAnyEntity()
                 .onEnded { value in
+                    // teleport
+                    handleTap(on: value.entity)
+                    
                     let targetEntity = value.entity
                     let anchorUUIDString = targetEntity.name
                     guard !anchorUUIDString.isEmpty,
@@ -209,6 +234,15 @@ struct FullImmersiveView: View {
             else { return }
             await trackingHand(currentItem)
         }
+        .onAppear {
+            startTimer() // teleport
+        }
+        .onDisappear {
+            stopTimer()// teleport
+        }
+        .onReceive( markerManager.$isVisible) { _ in// teleport
+            updateMarkersVisibility()
+        }
         .onChange(of: appModel.itemAdd) { _, newValue in
             if let itemType = newValue {
                 print("함수호출")
@@ -250,13 +284,13 @@ struct FullImmersiveView: View {
                 case .added:
                     let subjectClone: ModelEntity
                     
-                    if tempItemType[update.anchor.id] == .photo {
+                    switch tempItemType[update.anchor.id] {
+                    case .photo:
                         subjectClone = photoButtonEntity.clone(recursive: true)
-                        (photoGroup ?? root).addChild(subjectClone)
-                    } else {
+                        (photoGroup ?? root)?.addChild(subjectClone)
+                    case .memo:
                         subjectClone = memoEntity.clone(recursive: true)
-                        (memoGroup ?? root).addChild(subjectClone)
-                        
+                        (memoGroup ?? root)?.addChild(subjectClone)
                         if let memotext = memoText[update.anchor.id],
                            !memotext.isEmpty
                         {
@@ -274,6 +308,9 @@ struct FullImmersiveView: View {
                             )
                             subjectClone.addChild(memoTextField)
                         }
+                    case .none:
+                        print("⚠️ tempItemType 없음: \(update.anchor.id) — 엔티티 생성 스킵")
+                        continue
                     }
                     subjectClone.name = update.anchor.id.uuidString
                     subjectClone.setTransformMatrix(
@@ -338,7 +375,10 @@ struct FullImmersiveView: View {
             tempObject = memoEntity.clone(recursive: true)
         }
         
-        root.addChild(tempObject)
+        if let root {
+            root.addChild(tempObject)
+        }
+        
         print("객체 생성 완료")
         self.currentItem = tempObject
         self.currentItemType = type
@@ -530,3 +570,49 @@ struct FullImmersiveView: View {
     FullImmersiveView()
         .environment(AppModel())
 }
+
+// MARK: - Logic Extension
+extension FullImmersiveView {
+    // MARK: Timer 관리
+    private func startTimer() {
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            updateScenePosition()
+        }
+    }
+    
+    private func stopTimer() {
+        updateTimer?.invalidate()
+    }
+    
+    // MARK: - Tap Handler
+    private func handleTap(on entity: Entity) {
+        let name = entity.name
+        print("Tapped on: \(name)")
+        
+        // 텔레포트 마커 탭 처리
+        if name.starts(with: "teleport_") {
+            // 마커의 위치로 텔레포트 (y=0.5로 설정)
+            let cubePosition = SIMD3<Float>(entity.position.x, 0.5, entity.position.z)
+            teleportTo(cubePosition)
+        }
+    }
+    
+    // MARK: - Teleport 이동
+    private func teleportTo(_ cubePosition: SIMD3<Float>) {
+        position = cubePosition
+        print("🌀 Teleported to cube at: \(position)")
+        updateScenePosition()
+    }
+    
+    // MARK: - 씬 업데이트
+    private func updateScenePosition() {
+        guard let root = root else { return }
+        SceneManager.updateScenePosition(root: root, position: position)
+    }
+    
+    private func updateMarkersVisibility() {
+        guard let root = root else { return }
+        SceneManager.updateMarkersVisibility(root: root, visible: markerManager.isVisible )
+    }
+}
+
