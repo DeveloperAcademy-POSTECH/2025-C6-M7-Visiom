@@ -44,7 +44,7 @@ struct TextFieldAttachmentView: View {
         self._text = text
         self.placeholder = placeholder
         self.width = width
-        self.height = width
+        self.height = height
         self.font = font
         self.alignment = alignment
         self.padding = padding
