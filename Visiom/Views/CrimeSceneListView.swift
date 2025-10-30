@@ -37,10 +37,10 @@ struct CrimeSceneListView: View {
                         }
                     }) {
                         CrimeSceneCard(
-                            imageName: "crimeSceneDummy",
-                            title: "Title",
+                            imageName: "crimeSceneDummy1",
+                            title: "          거여동 밀실 살인 사건",
                             description:
-                                "Description"
+                                "            2003년"
                         )
                     }
                     .buttonStyle(.plain)
@@ -54,10 +54,10 @@ struct CrimeSceneListView: View {
                         }
                     }) {
                         CrimeSceneCard(
-                            imageName: "crimeSceneDummy",
-                            title: "Title",
+                            imageName: "crimeSceneDummy2",
+                            title: "          서울 노량진 살인 사건",
                             description:
-                                "Description"
+                                "            3030년"
                         )
                     }
                     .buttonStyle(.plain)
@@ -71,10 +71,10 @@ struct CrimeSceneListView: View {
                         }
                     }) {
                         CrimeSceneCard(
-                            imageName: "crimeSceneDummy",
-                            title: "Title",
+                            imageName: "crimeSceneDummy3",
+                            title: "          남양주 아파트 밀실 살인 사건",
                             description:
-                                "Description"
+                                "            2010년"
                         )
                     }
                     .buttonStyle(.plain)
@@ -88,10 +88,10 @@ struct CrimeSceneListView: View {
                         }
                     }) {
                         CrimeSceneCard(
-                            imageName: "crimeSceneDummy",
-                            title: "Title",
+                            imageName: "crimeSceneDummy4",
+                            title: "          애플 아카데미 사건",
                             description:
-                                "Description"
+                                "            누가 범인일까"
                         )
                     }
                     .buttonStyle(.plain)
