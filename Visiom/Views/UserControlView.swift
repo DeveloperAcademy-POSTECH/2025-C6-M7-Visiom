@@ -17,16 +17,17 @@ struct UserControlView: View {
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(MemoStore.self) var memoStore
     @ObservedObject var markerManager = MarkerVisibilityManager.shared
 
     @EnvironmentObject var drawingState: DrawingState
     
     @State private var inputText: String = ""
-
+    
     var body: some View {
         if appModel.memoEditMode {
             TextFieldAttachmentView(
-                text: $inputText,
+                text: $inputText
             )
             Button("작성 완료") {
                 appModel.memoToAttach = inputText
@@ -44,25 +45,29 @@ struct UserControlView: View {
                         )
                     }
                 } label: {
-                    Text("나가기")
+                    Image(systemName: "arrow.uturn.left")
                 }
-
+                
                 Button {
                     appModel.itemAdd = .photo
                     print("사진 버튼 탭")
                 } label: {
-                    Text("사진")
+                    Image(systemName: "photo")
                 }
                 Button {
                     appModel.memoEditMode = true
+                    
+                    //                    let id = UUID()
+                    //                    memoStore.createDraft(id: id)
+                    //                    openWindow(id: appModel.memoEditWindowID, value: id)
                 } label: {
-                    Text("메모")
+                    Image(systemName: "text.document")
                 }
-                Button {
-
-                } label: {
-                    Text("스티커")
-                }
+                //            Button {
+                //
+                //            } label: {
+                //                Text("스티커")
+                //            }
                 Button {
                     Task{
                         if drawingState.isDrawingEnabled {
@@ -93,34 +98,29 @@ struct UserControlView: View {
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
-                Button {
-
-                } label: {
-                    Text("마네킹")
-                }
+                //            Button {
+                //
+                //            } label: {
+                //                Text("마네킹")
+                //            }
                 Button {
                     appModel.togglePhotos()
                     appModel.toggleMemos()
                     print("Button 눌림.")
-print("showPhotos: \(appModel.showPhotos)")
+                    print("showPhotos: \(appModel.showPhotos)")
                     print("showMemos: \(appModel.showMemos)")
                     
                 } label: {
-                    Text(appModel.showPhotos ? "visible" : "invisible")
+                    Image(systemName: appModel.showPhotos ? "eye" : "eye.slash")
                 }
                 Button {
                     markerManager.isVisible.toggle()
-
+                    
                 } label: {
-                    Text(markerManager.isVisible ? "정지" : "이동")
+                    Image(systemName: markerManager.isVisible ? "figure.run.circle.fill" : "figure.run.circle")
                 }
             }
             .glassBackgroundEffect()
         }
     }
-}
-
-#Preview(windowStyle: .automatic) {
-    UserControlView()
-        .environment(AppModel())
 }
