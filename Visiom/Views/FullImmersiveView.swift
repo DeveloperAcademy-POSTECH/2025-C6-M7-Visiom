@@ -84,7 +84,7 @@ struct FullImmersiveView: View {
             content.add(root)
             // 씬 갈아끼기
             if let immersiveContentEntity = try? await Entity(
-                named: "Immersive",
+                named: "01",
                 in: realityKitContentBundle
             ) {
                 immersiveContentEntity.generateCollisionShapes(recursive: true)
