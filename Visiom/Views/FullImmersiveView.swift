@@ -363,9 +363,6 @@ struct FullImmersiveView: View {
     private func makePlacement(type: UserControlBar) {
         guard !isPlaced else { return }
 
-        drawingState.isDrawingEnabled = false
-        drawingState.isErasingEnabled = false
-
         // 손을 따라다니는 임시 객체를 생성
         let tempObject: ModelEntity
         
