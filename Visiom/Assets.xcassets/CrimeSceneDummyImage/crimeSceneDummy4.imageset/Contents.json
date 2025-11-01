@@ -1,9 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "Back.png",
-      "idiom" : "vision",
-      "scale" : "2x"
+      "filename" : "dummy4.png",
+      "idiom" : "universal"
     }
   ],
   "info" : {

@@ -11,7 +11,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6F71FBC22E8A6EE100E60BDC /* Visiom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Visiom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F71FBC22E8A6EE100E60BDC /* Re:Chain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Re:Chain.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F71FBC62E8A6EE100E60BDC /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -60,7 +60,7 @@
 		6F71FBC32E8A6EE100E60BDC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6F71FBC22E8A6EE100E60BDC /* Visiom.app */,
+				6F71FBC22E8A6EE100E60BDC /* Re:Chain.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -96,7 +96,7 @@
 				6F71FBC72E8A6EE100E60BDC /* RealityKitContent */,
 			);
 			productName = Visiom;
-			productReference = 6F71FBC22E8A6EE100E60BDC /* Visiom.app */;
+			productReference = 6F71FBC22E8A6EE100E60BDC /* Re:Chain.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -161,17 +161,19 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S33G38SRJ3;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
+				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "손추적을 사용합니다. ";
+				INFOPLIST_KEY_NSWorldSensingUsageDescription = "월드트랙킹 사용합니다. ";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = C6.M7.Visiom;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Re:Chain";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "xros xrsimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -190,17 +192,19 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S33G38SRJ3;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
+				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "손추적을 사용합니다. ";
+				INFOPLIST_KEY_NSWorldSensingUsageDescription = "월드트랙킹 사용합니다. ";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = C6.M7.Visiom;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Re:Chain";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "xros xrsimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
