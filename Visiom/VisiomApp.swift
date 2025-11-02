@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct VisiomApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dismissWindow) private var dismissWindow
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
@@ -83,6 +84,7 @@ struct VisiomApp: App {
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background {
+                        appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
                         PhotoPipeline.cleanupTempFiles()
                         Task {
                             await collectionStore.flushSaves()

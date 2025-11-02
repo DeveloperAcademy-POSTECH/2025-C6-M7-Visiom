@@ -107,7 +107,11 @@ struct CrimeSceneListView: View {
             .padding(.bottom, 46)
             Spacer()
         }
+        .onAppear {
+            appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
+        }
     }
+        
 }
 
 #Preview(windowStyle: .automatic) {
