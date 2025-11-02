@@ -11,117 +11,96 @@ import SwiftUI
 
 // MARK: - Placement Extension
 extension FullImmersiveView {
-    
-    /// 객체 배치 시작
-    func makePlacement(type: UserControlBar) {
-        guard !isPlaced else { return }
-        
-        // 손을 따라다니는 임시 객체를 생성
-        let tempObject: ModelEntity
-        
-        if type == .photo {
-            tempObject = photoButtonEntity.clone(recursive: true)
-            
-            let newCol = collectionStore.createCollection()
-            collectionStore.renameCollection(
-                newCol.id,
-                to: newCol.id.uuidString
+
+    func makePlacement(type: UserControlBar) async {
+
+        // 현재 시간을 기준으로 기기의 포즈(위치와 방향)를 가져옴
+        let timestamp = CACurrentMediaTime()
+        guard
+            let deviceAnchor = await Self.worldTracking.queryDeviceAnchor(
+                atTimestamp: timestamp
             )
-            pendingCollectionIdForNextAnchor = newCol.id
-        } else {
-            tempObject = memoEntity.clone(recursive: true)
+        else {
+            print("ARKit Error: Failed to get device anchor.")
+            // 기기 위치를 못 가져오면 일단 원점에라도 생성
+            await createAnchor(at: matrix_identity_float4x4, for: type)
+            return
         }
-        
-        if let root {
-            root.addChild(tempObject)
-        }
-        
-        print("객체 생성 완료")
-        self.currentItem = tempObject
-        self.currentItemType = type
-        self.isPlaced = true
+
+        let deviceTransform = deviceAnchor.originFromAnchorTransform
+
+        // 기기의 위치
+        let devicePosition = SIMD3<Float>(
+            deviceTransform.columns.3.x,
+            deviceTransform.columns.3.y,
+            deviceTransform.columns.3.z
+        )
+        let deviceForwardVector = -SIMD3<Float>(
+            deviceTransform.columns.2.x,
+            deviceTransform.columns.2.y,
+            deviceTransform.columns.2.z
+        )
+
+        // 방향 벡터를 평평하게(이렇게 하면 수평 방향(X, Z)만 남음)
+        let flatForwardVector = normalize(
+            SIMD3<Float>(deviceForwardVector.x, 0, deviceForwardVector.z)
+        )
+
+        let distance: Float = 1.0
+
+        let headHeightOffset: Float = 0.0
+        // 최종 위치 = 눈높이 위치+평평한 방향*거리
+        let finalPosition =
+            devicePosition + flatForwardVector * distance
+            + SIMD3<Float>(0, headHeightOffset, 0)
+
+        // 최종 변환 행렬 (위치만 설정, 회전은 0)
+        let finalTransform = Transform(translation: finalPosition).matrix
+
+        // 이 위치에 앵커 생성 요청
+        await createAnchor(at: finalTransform, for: type)
+
     }
-    
-    /// 손 추적 및 배치 처리
-    func trackingHand(_ currentBall: ModelEntity) async {
-        // 직전 상태 저장
-        var tapDetectedLastFrame = true
-        
-        // 계속 핸드트래킹의 업데이트 받기
-        for await update in Self.handTracking.anchorUpdates {
-            guard isPlaced else { return }
-            
-            guard update.anchor.chirality == .right,
-                  update.anchor.isTracked,
-                  let skeleton = update.anchor.handSkeleton
-            else { continue }
-            
-            // 검지 끝 위치 가져오기
-            let indexTipJoint = skeleton.joint(.indexFingerTip)
-            let originFromWorld = update.anchor.originFromAnchorTransform
-            let indexTipTransform = originFromWorld * indexTipJoint.anchorFromJointTransform
-            let indexTipPosition = simd_make_float3(indexTipTransform.columns.3)
-            
-            // 객체 위치를 검지 끝 위치로 실시간 업데이트
-            await MainActor.run {
-                currentBall.setPosition(indexTipPosition, relativeTo: nil)
-            }
-            
-            // 탭 감지
-            // 엄지끝 위치 가져오기
-            let thumbTipJoint = skeleton.joint(.thumbTip)
-            let thumbTipTransform = originFromWorld * thumbTipJoint.anchorFromJointTransform
-            let thumbTipPosition = simd_make_float3(thumbTipTransform.columns.3)
-            
-            // 엄지끝~검지끝 사이의 거리 계산
-            let distance = simd_distance(indexTipPosition, thumbTipPosition)
-            let tapDetected = distance < 0.02  // 2cm 이내면 탭으로 인식
-            
-            // 탭 감지 + 직전 상태는 탭 상태가 아니어야 함
-            if tapDetected && !tapDetectedLastFrame {
-                await MainActor.run {
-                    print("placement")
-                    
-                    // ball의 최종 위치(월드 좌표) 가져와
-                    let finalPosition = currentBall.transformMatrix(relativeTo: nil)
-                    
-                    currentBall.removeFromParent()
-                    
-                    self.isPlaced = false
-                    self.currentItem = nil
-                    
-                    // 별도 Task에서 월드 앵커를 생성
-                    Task {
-                        do {
-                            // finalPosition의 최종 위치에 WorldAnchor를 생성
-                            let anchor = WorldAnchor(
-                                originFromAnchorTransform: finalPosition
-                            )
-                            // 생성된 WorldAnchor를 worldTracking 프로바이더에 추가
-                            try await Self.worldTracking.addAnchor(anchor)
-                            
-                            await MainActor.run {
-                                if let itemType = self.currentItemType {
-                                    tempItemType[anchor.id] = itemType
-                                    if itemType == .memo {
-                                        memoText[anchor.id] = appModel.memoToAttach
-                                        appModel.memoToAttach = ""
-                                    }
-                                }
-                                
-                                // 앵커ID와 컬렉션 ID를 연결함
-                                if let colId = pendingCollectionIdForNextAnchor {
-                                    anchorToCollection[anchor.id] = colId
-                                    pendingCollectionIdForNextAnchor = nil
-                                }
-                            }
-                        } catch {
-                            print("월드 앵커 추가 failed")
-                        }
+
+    func createAnchor(at transform: simd_float4x4, for type: UserControlBar)
+        async
+    {
+
+        await MainActor.run {
+            Task {
+                do {
+                    // 사용자 앞에 앵커 추가 (현재는 월드 원점에 아이덴티티 변환으로 배치)
+                    let anchor = WorldAnchor(
+                        originFromAnchorTransform: transform
+                    )
+                    // 생성된 WorldAnchor를 worldTracking 프로바이더에 추가
+                    try await Self.worldTracking.addAnchor(anchor)
+
+                    if type == .memo {
+                        memoText[anchor.id] = appModel.memoToAttach
+                        appModel.memoToAttach = ""
                     }
+
+                    if type == .photo {
+                        let newCol = collectionStore.createCollection()
+                        collectionStore.renameCollection(
+                            newCol.id,
+                            to: newCol.id.uuidString
+                        )
+                        anchorToCollection[anchor.id] = newCol.id
+                    }
+
+                    if let colId = pendingCollectionIdForNextAnchor {
+                        anchorToCollection[anchor.id] = colId
+                        pendingCollectionIdForNextAnchor = nil
+                    }
+
+                } catch {
+                    print("월드 앵커 추가 failed")
                 }
             }
-            tapDetectedLastFrame = tapDetected
         }
+
+        print("객체 생성 완료")
     }
 }
