@@ -79,12 +79,22 @@ class AppModel {
     @MainActor
     func exitFullImmersive(
         dismissImmersiveSpace: DismissImmersiveSpaceAction,
+        dismissWindow: DismissWindowAction,
         openWindow: OpenWindowAction
     ) async {
         guard immersiveSpaceState == .open else { return }
         immersiveSpaceState = .inTransition
 
         await dismissImmersiveSpace()
+        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
+    }
+    
+    func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
+        dismissWindow(id: photoCollectionWindowID)
+        dismissWindow(id: drawingControlWindowID)
+        dismissWindow(id: memoEditWindowID)
+        dismissWindow(id: userControlWindowID)
+        print("Window 모두 닫음")
     }
 }

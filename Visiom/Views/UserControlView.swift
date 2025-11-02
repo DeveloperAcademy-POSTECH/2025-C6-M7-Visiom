@@ -69,6 +69,7 @@ extension UserControlView {
             Task {
                 await appModel.exitFullImmersive(
                     dismissImmersiveSpace: dismissImmersiveSpace,
+                    dismissWindow: dismissWindow,
                     openWindow: openWindow
                 )
             }
