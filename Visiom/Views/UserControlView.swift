@@ -14,113 +14,158 @@ enum UserControlBar: String {
 
 struct UserControlView: View {
     @Environment(AppModel.self) var appModel
-    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
-    @Environment(\.openWindow) private var openWindow
-    @Environment(\.dismissWindow) private var dismissWindow
     @Environment(MemoStore.self) var memoStore
-    @ObservedObject var markerManager = MarkerVisibilityManager.shared
-
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.openWindow) private var openWindow
     @EnvironmentObject var drawingState: DrawingState
     
-    @State private var inputText: String = ""
+    @ObservedObject var markerManager = MarkerVisibilityManager.shared
+    
+    @State var state: InteractionState = .idle
     
     var body: some View {
-        if appModel.memoEditMode {
-            TextFieldAttachmentView(
-                text: $inputText
-            )
-            Button("작성 완료") {
-                appModel.memoToAttach = inputText
-                inputText = ""
-                appModel.memoEditMode = false
-                appModel.itemAdd = .memo
-            }
-        } else {
-            HStack {
+        HStack(spacing: 12) {
+            ForEach(UserControlItem.allCases, id: \.self) { item in
                 Button {
-                    Task {
-                        await appModel.exitFullImmersive(
-                            dismissImmersiveSpace: dismissImmersiveSpace,
-                            openWindow: openWindow
-                        )
-                    }
+                    handleTap(item)
                 } label: {
-                    Image(systemName: "arrow.uturn.left")
-                }
-                
-                Button {
-                    appModel.itemAdd = .photo
-                    print("사진 버튼 탭")
-                } label: {
-                    Image(systemName: "photo")
-                }
-                Button {
-                    appModel.memoEditMode = true
-                    
-                    //                    let id = UUID()
-                    //                    memoStore.createDraft(id: id)
-                    //                    openWindow(id: appModel.memoEditWindowID, value: id)
-                } label: {
-                    Image(systemName: "text.document")
-                }
-                //            Button {
-                //
-                //            } label: {
-                //                Text("스티커")
-                //            }
-                Button {
-                    Task{
-                        if drawingState.isDrawingEnabled {
-                            drawingState.isDrawingEnabled = false
-                            drawingState.isErasingEnabled = false
-                            dismissWindow(id: appModel.drawingControlWindowID)
-                            
-                        } else {
-                            drawingState.isDrawingEnabled = true
-                            drawingState.isErasingEnabled = true
-                            openWindow(id: appModel.drawingControlWindowID)
-                            
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(
-                            systemName: drawingState.isDrawingEnabled
-                            ?  "pause.circle.fill" : "play.circle.fill"
-                        )
+                    Image(systemName: iconName(for: item))
                         .font(.system(size: 24))
-
-                        Text(drawingState.isDrawingEnabled ? "그리기 정지" : "그리기")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .opacity(isEnabled(item) ? 1.0 : 0.3)
+                        .padding(12)
                 }
-                //            Button {
-                //
-                //            } label: {
-                //                Text("마네킹")
-                //            }
-                Button {
-                    appModel.togglePhotos()
-                    appModel.toggleMemos()
-                    print("Button 눌림.")
-                    print("showPhotos: \(appModel.showPhotos)")
-                    print("showMemos: \(appModel.showMemos)")
-                    
-                } label: {
-                    Image(systemName: appModel.showPhotos ? "eye" : "eye.slash")
-                }
-                Button {
-                    markerManager.isVisible.toggle()
-                    
-                } label: {
-                    Image(systemName: markerManager.isVisible ? "figure.run.circle.fill" : "figure.run.circle")
+                .buttonStyle(.plain)
+                .disabled(!isEnabled(item))
+                
+                if item == .back || item == .mannequin || item == .visibility {
+                    VDivider(height: 60)
                 }
             }
-            .glassBackgroundEffect()
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(width: 800, height: 100)
+        .background(
+            RoundedRectangle(cornerRadius: 50, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+    }
+}
+
+extension UserControlView {
+    
+    // 버튼 동작 분기
+    private func handleTap(_ item: UserControlItem) {
+        guard UserControlItemLogic.isEnabled(item, when: state) else { return }
+        let oldState = state
+        state = UserControlItemLogic.apply(item, from: oldState)
+        
+        switch item {
+            // 뒤로가기
+        case .back:
+            Task {
+                await appModel.exitFullImmersive(
+                    dismissImmersiveSpace: dismissImmersiveSpace,
+                    openWindow: openWindow
+                )
+            }
+            
+            // 사진 배치
+        case .photo:
+            if case .placing(.photo) = state {
+                appModel.itemAdd = .photo
+                print("📸 사진 배치 시작")
+            } else {
+                appModel.itemAdd = nil
+                print("📸 사진 배치 종료")
+            }
+            
+            // 메모 작성
+        case .memo:
+            if case .placing(.memo) = state {
+                print("📝 메모 작성 시작")
+            } else {
+                print("📝 메모 모드 종료")
+            }
+            
+            // 숫자 스티커
+        case .number:
+            if case .placing(.number) = state {
+                print("🔢 숫자 배치 시작")
+            } else {
+                print("🔢 숫자 배치 종료")
+            }
+            
+            // 스티커
+        case .sticker:
+            if case .placing(.sticker) = state {
+                print("🎯 스티커 배치 시작")
+            } else {
+                print("🎯 스티커 배치 종료")
+            }
+            
+            // 마네킹
+        case .mannequin:
+            if case .placing(.mannequin) = state {
+                print("🧍 마네킹 배치 시작")
+            } else {
+                print("🧍 마네킹 배치 종료")
+            }
+            
+            // 드로잉
+        case .drawing:
+            if state == .drawing{
+                drawingState.isDrawingEnabled = true
+                drawingState.isErasingEnabled = true
+                openWindow(id: appModel.drawingControlWindowID)
+                print("✏️ 드로잉 모드 시작")
+            } else {
+                drawingState.isDrawingEnabled = false
+                drawingState.isErasingEnabled = false
+                dismissWindow(id: appModel.drawingControlWindowID)
+                print("✏️ 드로잉 모드 종료")
+            }
+            
+            // 가시성 토글
+        case .visibility:
+            appModel.togglePhotos()
+            appModel.toggleMemos()
+            
+            // 보드(타임라인)
+        case .board:
+            if state == .board {
+                print("🗂️ 보드 열기")
+            } else {
+                print("🗂️ 보드 닫기")
+            }
+            
+            // 이동
+        case .moving:
+            markerManager.isVisible.toggle()
+        }
+    }
+
+    private func iconName(for item: UserControlItem) -> String {
+        state.activeItem == item ? item.selectedIcon : item.icon
+    }
+    
+    private func isEnabled(_ item: UserControlItem) -> Bool {
+        UserControlItemLogic.isEnabled(item, when: state)
+    }
+}
+
+struct VDivider: View {
+    var height: CGFloat = 60
+    var opacity: Double = 0.28
+    
+    var body: some View {
+        Rectangle()
+            .fill(.white.opacity(opacity))
+            .frame(width: 1, height: height)
+            .cornerRadius(0.5)
+            .padding(12)
     }
 }
