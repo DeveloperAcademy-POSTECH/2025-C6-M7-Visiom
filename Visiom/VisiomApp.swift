@@ -14,21 +14,30 @@ struct VisiomApp: App {
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
     @StateObject private var drawingState = DrawingState()
-
+    
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
             CrimeSceneListView()
                 .environment(appModel)
                 .environment(memoStore)
         }.defaultSize(CGSize(width: 1191, height: 477))
-
+        
+        WindowGroup(id: appModel.userControlWindowID) {
+            UserControlView()
+                .environment(appModel)
+                .environment(memoStore)
+                .environmentObject(drawingState)
+        }
+        
+        // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
+        // 추후 삭제 예정
         WindowGroup(id: "PhotoCollectionList") {
             PhotoCollectionListView()
-                .environment(appModel)
+            //                .environment(appModel)
                 .environment(collectionStore)
                 .environment(memoStore)
         }
-
+        
         WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
             $collectionID in
             if let id = collectionID {

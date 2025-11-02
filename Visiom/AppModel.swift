@@ -19,6 +19,7 @@ class AppModel {
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let drawingControlWindowID = "DrawingControlWindow"
     let memoEditWindowID = "MemoEditWindow"
+    let userControlWindowID = "UserControlWindow"
 
     enum ImmersiveSpaceState {
         case closed
