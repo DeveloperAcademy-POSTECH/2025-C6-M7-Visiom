@@ -123,20 +123,5 @@ extension FullImmersiveView {
             root?.addChild(mGroup)
             self.memoGroup = mGroup
         }
-        
-        // UserControlView 카드 추가
-        let card = ViewAttachmentEntity()
-        card.attachment = ViewAttachmentComponent(
-            rootView: UserControlView()
-                .environment(appModel)
-                .environment(memoStore)
-        )
-        card.position = [0, 1.2, -0.9]
-        card.components.set(InputTargetComponent())
-        card.generateCollisionShapes(recursive: true)
-        content.add(card)
     }
-    
-    
-    
 }
