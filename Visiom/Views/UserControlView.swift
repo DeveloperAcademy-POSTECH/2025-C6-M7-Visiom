@@ -151,7 +151,7 @@ extension UserControlView {
             // 이동
         case .moving:
 
-                let entity = TeleportEntity.createMarker()
+                let entity = AREntityFactory.createMarker()
                 
                 let info = EntityInfo(
                     name: "구 #\(entityCounter[.sphere]!)",
