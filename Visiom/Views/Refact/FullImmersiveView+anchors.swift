@@ -67,8 +67,14 @@ extension FullImmersiveView {
 
         switch itemType {
         case .photo:
-            subjectClone = AREntityFactory.createPhotoButton()
-            photoGroup?.addChild(subjectClone) ?? root?.addChild(subjectClone)
+            do {
+                subjectClone = try await AREntityFactory.createPhotoButton()
+                photoGroup?.addChild(subjectClone)
+                    ?? root?.addChild(subjectClone)
+            } catch {
+                print("Failed to create photo sticker entity: \(error)")
+                return
+            }
         case .memo:
             subjectClone = AREntityFactory.createMemoBox()
             memoGroup?.addChild(subjectClone) ?? root?.addChild(subjectClone)

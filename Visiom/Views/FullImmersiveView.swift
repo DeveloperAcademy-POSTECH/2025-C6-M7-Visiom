@@ -79,6 +79,7 @@ struct FullImmersiveView: View {
         }
         .modifier(DragGestureImproved())
         .modifier(ScaleAndRotateGesture())
+        .modifier(ScaleGesture())
         .gesture(
             TapGesture()
                 .targetedToAnyEntity()
