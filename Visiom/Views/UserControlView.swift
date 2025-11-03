@@ -90,8 +90,10 @@ extension UserControlView {
         // 숫자 스티커
         case .number:
             if case .placing(.number) = state {
+                appModel.itemAdd = .number
                 print("🔢 숫자 배치 시작")
             } else {
+                appModel.itemAdd = nil
                 print("🔢 숫자 배치 종료")
             }
 
@@ -108,8 +110,10 @@ extension UserControlView {
         // 마네킹
         case .mannequin:
             if case .placing(.mannequin) = state {
+                appModel.itemAdd = .mannequin
                 print("🧍 마네킹 배치 시작")
             } else {
+                appModel.itemAdd = nil
                 print("🧍 마네킹 배치 종료")
             }
 

@@ -37,6 +37,7 @@ struct FullImmersiveView: View {
     @State var pendingItemType: [UUID: UserControlItem] = [:]
 
     @State var memoText: [UUID: String] = [:]
+    @State var numberPickerCount = 0
 
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
