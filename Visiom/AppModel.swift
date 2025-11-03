@@ -19,6 +19,7 @@ class AppModel {
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let drawingControlWindowID = "DrawingControlWindow"
     let memoEditWindowID = "MemoEditWindow"
+    let userControlWindowID = "UserControlWindow"
 
     enum ImmersiveSpaceState {
         case closed
@@ -78,12 +79,21 @@ class AppModel {
     @MainActor
     func exitFullImmersive(
         dismissImmersiveSpace: DismissImmersiveSpaceAction,
+        dismissWindow: DismissWindowAction,
         openWindow: OpenWindowAction
     ) async {
         guard immersiveSpaceState == .open else { return }
         immersiveSpaceState = .inTransition
 
         await dismissImmersiveSpace()
+        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
+    }
+    
+    func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
+        dismissWindow(id: photoCollectionWindowID)
+        dismissWindow(id: drawingControlWindowID)
+        dismissWindow(id: memoEditWindowID)
+        dismissWindow(id: userControlWindowID)
     }
 }

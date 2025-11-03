@@ -10,25 +10,37 @@ import SwiftUI
 @main
 struct VisiomApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.openWindow) private var openWindow
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
     @StateObject private var drawingState = DrawingState()
-
+    
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
             CrimeSceneListView()
                 .environment(appModel)
                 .environment(memoStore)
         }.defaultSize(CGSize(width: 1191, height: 477))
-
+        
+        WindowGroup(id: appModel.userControlWindowID) {
+            UserControlView()
+                .environment(appModel)
+                .environment(memoStore)
+                .environmentObject(drawingState)
+        }.defaultSize(CGSize(width: 700, height: 100))
+            .windowResizability(.contentSize)
+        
+        // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
+        // 추후 삭제 예정
         WindowGroup(id: "PhotoCollectionList") {
             PhotoCollectionListView()
-                .environment(appModel)
+            //                .environment(appModel)
                 .environment(collectionStore)
                 .environment(memoStore)
         }
-
+        
         WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
             $collectionID in
             if let id = collectionID {
@@ -69,10 +81,13 @@ struct VisiomApp: App {
                     appModel.immersiveSpaceState = .open
                 }
                 .onDisappear {
+                    openWindow(id: appModel.crimeSceneListWindowID)
+                    appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
                     appModel.immersiveSpaceState = .closed
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background {
+                        appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
                         PhotoPipeline.cleanupTempFiles()
                         Task {
                             await collectionStore.flushSaves()
