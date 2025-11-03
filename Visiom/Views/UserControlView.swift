@@ -87,6 +87,8 @@ extension UserControlView {
             // 메모 작성
         case .memo:
             if case .placing(.memo) = state {
+                let memo = memoStore.createMemo(initialText: "")
+                openWindow(id: appModel.memoEditWindowID, value: memo.id)
                 print("📝 메모 작성 시작")
             } else {
                 print("📝 메모 모드 종료")
@@ -148,7 +150,7 @@ extension UserControlView {
             markerManager.isVisible.toggle()
         }
     }
-
+    
     private func iconName(for item: UserControlItem) -> String {
         state.activeItem == item ? item.selectedIcon : item.icon
     }
