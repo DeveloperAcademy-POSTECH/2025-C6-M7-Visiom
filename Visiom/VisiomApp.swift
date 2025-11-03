@@ -31,6 +31,7 @@ struct VisiomApp: App {
                 .environmentObject(drawingState)
         }.defaultSize(CGSize(width: 700, height: 100))
             .windowResizability(.contentSize)
+            .windowStyle(.plain)
         
         // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
         // 추후 삭제 예정
