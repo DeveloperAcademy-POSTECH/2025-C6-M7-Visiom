@@ -11,6 +11,7 @@ import SwiftUI
 struct VisiomApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.openWindow) private var openWindow
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
@@ -80,6 +81,8 @@ struct VisiomApp: App {
                     appModel.immersiveSpaceState = .open
                 }
                 .onDisappear {
+                    openWindow(id: appModel.crimeSceneListWindowID)
+                    appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
                     appModel.immersiveSpaceState = .closed
                 }
                 .onChange(of: scenePhase) { _, phase in

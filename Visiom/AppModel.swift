@@ -95,6 +95,5 @@ class AppModel {
         dismissWindow(id: drawingControlWindowID)
         dismissWindow(id: memoEditWindowID)
         dismissWindow(id: userControlWindowID)
-        print("Window 모두 닫음")
     }
 }
