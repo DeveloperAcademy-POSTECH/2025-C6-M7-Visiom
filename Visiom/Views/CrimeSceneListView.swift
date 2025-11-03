@@ -11,7 +11,6 @@ import SwiftUI
 struct CrimeSceneListView: View {
     @Environment(AppModel.self) var appModel
     @Environment(\.dismissWindow) private var dismissWindow
-    @Environment(\.openWindow) private var openWindow
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
 
     var body: some View {
@@ -36,7 +35,6 @@ struct CrimeSceneListView: View {
                                 dismissWindow: dismissWindow
                             )
                         }
-                        openWindow(id: appModel.userControlWindowID)
                     }) {
                         CrimeSceneCard(
                             imageName: "crimeSceneDummy1",
@@ -54,7 +52,6 @@ struct CrimeSceneListView: View {
                                 dismissWindow: dismissWindow
                             )
                         }
-                        openWindow(id: appModel.userControlWindowID)
                     }) {
                         CrimeSceneCard(
                             imageName: "crimeSceneDummy2",
@@ -72,7 +69,6 @@ struct CrimeSceneListView: View {
                                 dismissWindow: dismissWindow
                             )
                         }
-                        openWindow(id: appModel.userControlWindowID)
                     }) {
                         CrimeSceneCard(
                             imageName: "crimeSceneDummy3",
@@ -90,7 +86,6 @@ struct CrimeSceneListView: View {
                                 dismissWindow: dismissWindow
                             )
                         }
-                        openWindow(id: appModel.userControlWindowID)
                     }) {
                         CrimeSceneCard(
                             imageName: "crimeSceneDummy4",
@@ -107,11 +102,7 @@ struct CrimeSceneListView: View {
             .padding(.bottom, 46)
             Spacer()
         }
-        .onAppear {
-            appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
-        }
     }
-        
 }
 
 #Preview(windowStyle: .automatic) {
