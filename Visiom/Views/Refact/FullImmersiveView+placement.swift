@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - Placement Extension
 extension FullImmersiveView {
 
-    func makePlacement(type: UserControlBar) async {
+    func makePlacement(type: UserControlItem) async {
 
         // 현재 시간을 기준으로 기기의 포즈(위치와 방향)를 가져옴
         let timestamp = CACurrentMediaTime()
@@ -62,10 +62,9 @@ extension FullImmersiveView {
 
     }
 
-    func createAnchor(at transform: simd_float4x4, for type: UserControlBar)
+    func createAnchor(at transform: simd_float4x4, for type: UserControlItem)
         async
     {
-
         await MainActor.run {
             Task {
                 do {
@@ -75,6 +74,8 @@ extension FullImmersiveView {
                     )
                     // 생성된 WorldAnchor를 worldTracking 프로바이더에 추가
                     try await Self.worldTracking.addAnchor(anchor)
+
+                    pendingItemType[anchor.id] = type
 
                     if type == .memo {
                         memoText[anchor.id] = appModel.memoToAttach
