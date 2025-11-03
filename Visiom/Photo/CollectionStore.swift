@@ -21,7 +21,7 @@ final class CollectionStore {
     func load() async {
         do {
             let url = try FileLocations.collectionsIndexFile()
-            let decoded = try await persistence.load(from: url)
+            let decoded: [PhotoCollection] = try await persistence.load(from: url)
             self.collections = decoded
         } catch {
             print("Load collections error:", error)

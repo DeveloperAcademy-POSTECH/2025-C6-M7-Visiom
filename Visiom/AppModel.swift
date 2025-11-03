@@ -28,9 +28,8 @@ class AppModel {
     var itemAdd: UserControlBar? = nil
     var markersVisible: Bool = true
 
-    var memoEditMode: Bool = false
-    var memoToAttach: String = ""
-    
+    var memoToAnchorID: UUID? = nil
+
     // visible/invisible 상태 관리
     var showPhotos: Bool = true
     var showMemos: Bool = true

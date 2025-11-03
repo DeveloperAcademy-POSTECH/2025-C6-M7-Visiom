@@ -22,12 +22,26 @@ struct MemoEditView: View {
     }
     
     var body: some View {
-        TextFieldAttachmentView(
-            text: textBinding
-        )
-        Button("작성 완료") {
-            if memoStore.commit(id: memoID) {
-                dismissWindow(id: appModel.memoEditWindowID)
+        ZStack {
+            Color(red: 0.35, green: 0.69, blue: 1)
+                        .ignoresSafeArea()
+            VStack {
+                TextFieldAttachmentView(
+                    text: textBinding,
+                    placeholder: "메모를 입력하세요",
+                    width: 525,
+                    height: 440,
+                    font: .system(size: 48),
+                    cornerRadius: 0,
+                )
+                .background(Color.clear)
+                
+                Button("작성 완료") {
+                    if memoStore.commit(id: memoID) {
+                        appModel.memoToAnchorID = memoID
+                        dismissWindow(id: appModel.memoEditWindowID)
+                    }
+                }
             }
         }
     }
