@@ -150,11 +150,10 @@ struct ScaleAndRotateGesture: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                RotateGesture3D(constrainedToAxis: .y)
+                RotateGesture3D()
                     .simultaneously(with: MagnifyGesture())
-                    .targetedToAnyEntity()
+                    .targetedToEntity(where: .has(BloodStickerComponent.self))
                     .onChanged { value in
-
                         // Cache the entity's initial scale and orientation when the gesture starts
                         if !isActive {
                             isActive = true

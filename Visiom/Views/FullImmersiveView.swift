@@ -33,6 +33,7 @@ struct FullImmersiveView: View {
 
     @State var anchorToCollection: [UUID: UUID] = [:]
     @State var pendingCollectionIdForNextAnchor: UUID? = nil
+    @State var pendingItemType: [UUID: UserControlItem] = [:]
 
     @State var memoText: [UUID: String] = [:]
 
@@ -78,6 +79,7 @@ struct FullImmersiveView: View {
             memoGroup?.isEnabled = newValue
         }
         .modifier(DragGestureImproved())
+        .modifier(ScaleAndRotateGesture())
         .gesture(
             LongPressGesture(minimumDuration: 0.75)
                 .targetedToAnyEntity()

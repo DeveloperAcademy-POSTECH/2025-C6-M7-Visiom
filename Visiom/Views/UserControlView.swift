@@ -7,11 +7,6 @@
 
 import SwiftUI
 
-enum UserControlBar: String {
-    case photo
-    case memo
-}
-
 struct UserControlView: View {
     @Environment(AppModel.self) var appModel
     @Environment(MemoStore.self) var memoStore
@@ -42,7 +37,7 @@ struct UserControlView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(!isEnabled(item))
-                
+
                 if item == .back || item == .mannequin || item == .visibility {
                     VDivider(height: 60)
                 }
@@ -59,15 +54,15 @@ struct UserControlView: View {
 }
 
 extension UserControlView {
-    
+
     // 버튼 동작 분기
     private func handleTap(_ item: UserControlItem) {
         guard UserControlItemLogic.isEnabled(item, when: state) else { return }
         let oldState = state
         state = UserControlItemLogic.apply(item, from: oldState)
-        
+
         switch item {
-            // 뒤로가기
+        // 뒤로가기
         case .back:
             Task {
                 await appModel.exitFullImmersive(
@@ -76,8 +71,8 @@ extension UserControlView {
                     openWindow: openWindow
                 )
             }
-            
-            // 사진 배치
+
+        // 사진 배치
         case .photo:
             if case .placing(.photo) = state {
                 appModel.itemAdd = .photo
@@ -86,42 +81,44 @@ extension UserControlView {
                 appModel.itemAdd = nil
                 print("📸 사진 배치 종료")
             }
-            
-            // 메모 작성
+
+        // 메모 작성
         case .memo:
             if case .placing(.memo) = state {
                 print("📝 메모 작성 시작")
             } else {
                 print("📝 메모 모드 종료")
             }
-            
-            // 숫자 스티커
+
+        // 숫자 스티커
         case .number:
             if case .placing(.number) = state {
                 print("🔢 숫자 배치 시작")
             } else {
                 print("🔢 숫자 배치 종료")
             }
-            
-            // 스티커
+
+        // 스티커
         case .sticker:
             if case .placing(.sticker) = state {
+                appModel.itemAdd = .sticker
                 print("🎯 스티커 배치 시작")
             } else {
+                appModel.itemAdd = nil
                 print("🎯 스티커 배치 종료")
             }
-            
-            // 마네킹
+
+        // 마네킹
         case .mannequin:
             if case .placing(.mannequin) = state {
                 print("🧍 마네킹 배치 시작")
             } else {
                 print("🧍 마네킹 배치 종료")
             }
-            
-            // 드로잉
+
+        // 드로잉
         case .drawing:
-            if state == .drawing{
+            if state == .drawing {
                 drawingState.isDrawingEnabled = true
                 drawingState.isErasingEnabled = true
                 openWindow(id: appModel.drawingControlWindowID)
@@ -132,13 +129,13 @@ extension UserControlView {
                 dismissWindow(id: appModel.drawingControlWindowID)
                 print("✏️ 드로잉 모드 종료")
             }
-            
-            // 가시성 토글
+
+        // 가시성 토글
         case .visibility:
             appModel.togglePhotos()
             appModel.toggleMemos()
-            
-            // 보드(타임라인)
+
+        // 보드(타임라인)
         case .board:
             if state == .board {
                 openWindow(id:appModel.TimeLineWindowID)
@@ -147,8 +144,8 @@ extension UserControlView {
                 dismissWindow(id: appModel.TimeLineWindowID)
                 print("🗂️ 보드 닫기")
             }
-            
-            // 이동
+
+        // 이동
         case .moving:
 
                 let entity = AREntityFactory.createMarker()
@@ -165,7 +162,7 @@ extension UserControlView {
     private func iconName(for item: UserControlItem) -> String {
         state.activeItem == item ? item.selectedIcon : item.icon
     }
-    
+
     private func isEnabled(_ item: UserControlItem) -> Bool {
         UserControlItemLogic.isEnabled(item, when: state)
     }
@@ -174,7 +171,7 @@ extension UserControlView {
 struct VDivider: View {
     var height: CGFloat = 60
     var opacity: Double = 0.28
-    
+
     var body: some View {
         Rectangle()
             .fill(.white.opacity(opacity))

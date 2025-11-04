@@ -26,12 +26,12 @@ class AppModel {
     }
 
     var immersiveSpaceState = ImmersiveSpaceState.closed
-    var itemAdd: UserControlBar? = nil
+    var itemAdd: UserControlItem? = nil
     var markersVisible: Bool = true
 
     var memoEditMode: Bool = false
     var memoToAttach: String = ""
-    
+
     // visible/invisible 상태 관리
     var showPhotos: Bool = true
     var showMemos: Bool = true
@@ -40,8 +40,8 @@ class AppModel {
         markersVisible.toggle()
         print("Markers visibility: \(markersVisible)")  // TODO 삭제
     }
-    
-    func togglePhotos(){
+
+    func togglePhotos() {
         showPhotos.toggle()
     }
     func toggleMemos() {
@@ -87,7 +87,7 @@ class AppModel {
         closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
     }
-    
+
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
         dismissWindow(id: drawingControlWindowID)

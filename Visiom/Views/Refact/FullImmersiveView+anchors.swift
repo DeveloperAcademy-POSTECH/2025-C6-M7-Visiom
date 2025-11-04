@@ -19,7 +19,7 @@ extension FullImmersiveView {
             for await update in Self.worldTracking.anchorUpdates {
                 switch update.event {
                 case .added:
-                    handleAnchorAdded(update.anchor)
+                    await handleAnchorAdded(update.anchor)
                 case .updated:
                     do {
                         try handleAnchorUpdated(update.anchor)
@@ -34,37 +34,42 @@ extension FullImmersiveView {
     }
 
     /// 앵커 추가 처리
-    func handleAnchorAdded(_ anchor: WorldAnchor) {
+    func handleAnchorAdded(_ anchor: WorldAnchor) async {
         // 임시로 저장된 데이터 가져오기
         //        guard var data = anchorManager.getAnchor(id: anchor.id) else { return }
 
-        let itemType: UserControlBar
-        var collectionID: UUID? = nil
-        var memo: String = ""
-
-        if let colId = anchorToCollection[anchor.id] {
-            itemType = .photo
-            collectionID = colId
-            anchorToCollection.removeValue(forKey: anchor.id)
-
-        } else if let memoTextValue = memoText[anchor.id] {
-            itemType = .memo
-            memo = memoTextValue
-            memoText.removeValue(forKey: anchor.id)
-
-        } else {
+        guard let itemType = pendingItemType.removeValue(forKey: anchor.id)
+        else {
             print(
-                "⚠️ handleAnchorAdded: No hint found for anchor \(anchor.id). Ignoring."
+                "⚠️ handleAnchorAdded: No pending itemType hint found for anchor \(anchor.id). Ignoring."
             )
             return
         }
 
+        var collectionID: UUID? = nil
+        var memo: String = ""
+
+        switch itemType {
+        case .photo:
+            collectionID = anchorToCollection.removeValue(forKey: anchor.id)
+            if collectionID == nil {
+                print(
+                    "handleAnchorAdded: Photo itemType hint found, but no matching collectionID in anchorToCollection."
+                )
+            }
+        case .memo:
+            memo = memoText.removeValue(forKey: anchor.id) ?? ""
+        default:
+            break
+        }
+
         let subjectClone: ModelEntity
 
-        if itemType == .photo {
+        switch itemType {
+        case .photo:
             subjectClone = AREntityFactory.createPhotoButton()
             photoGroup?.addChild(subjectClone) ?? root?.addChild(subjectClone)
-        } else {
+        case .memo:
             subjectClone = AREntityFactory.createMemoBox()
             memoGroup?.addChild(subjectClone) ?? root?.addChild(subjectClone)
 
@@ -79,6 +84,18 @@ extension FullImmersiveView {
                 )
                 subjectClone.addChild(textOverlay)
             }
+
+        case .sticker:
+            do {
+                subjectClone = try await AREntityFactory.createBooldSticker()
+                root?.addChild(subjectClone)
+            } catch {
+                print("Failed to create photo sticker entity: \(error)")
+                return
+            }
+        default:
+            print("default: Unhandled itemType. Returning.")
+            return
         }
 
         subjectClone.name = anchor.id.uuidString

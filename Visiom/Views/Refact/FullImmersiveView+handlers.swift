@@ -34,8 +34,23 @@ extension FullImmersiveView {
             tapPhotoButton(anchorUUID)
         case .memo:
             tapMemoButton(memoId: anchorUUID)
+        case .number:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .sticker:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .mannequin:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .drawing:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .visibility:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .board:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .back:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .moving:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
         }
-
     }
 
     /// 롱프레스 제스처 처리
@@ -43,7 +58,6 @@ extension FullImmersiveView {
         guard let anchorUUID = UUID(uuidString: targetEntity.name) else {
             return
         }
-
         Task {
             await removeWorldAnchor(by: anchorUUID)
         }
