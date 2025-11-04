@@ -19,13 +19,13 @@ class DrawingSystem: System {
     static var rightThumbTipAnchor: AnchorEntity?
     static var rightPreviousPosition: SIMD3<Float>?
     static var isDrawing = false
-    static var isDrawingEnabled = true
+    static var isDrawingEnabled = false
     
     // MARK: - 왼손 (지우기)
     static var leftIndexTipAnchor: AnchorEntity?
     static var leftThumbTipAnchor: AnchorEntity?
     static var isErasing = false
-    static var isErasingEnabled = true
+    static var isErasingEnabled = false
     
     // MARK: - 그리기 설정
     static var drawingColor: UIColor = .systemBlue

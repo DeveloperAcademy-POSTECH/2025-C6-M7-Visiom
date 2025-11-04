@@ -106,8 +106,11 @@ extension FullImmersiveView {
         ) {
             immersiveContentEntity.generateCollisionShapes(recursive: true)
             root = immersiveContentEntity
-            content.add(immersiveContentEntity)
-            SceneManager.setupScene(in: immersiveContentEntity)
+            content.add(root!)
+            
+            if let sceneContent = root!.findEntity(named: "Root") {
+                self.sceneContent = sceneContent
+            }
             
             // Photo 그룹 생성
             let pGroup = Entity()
