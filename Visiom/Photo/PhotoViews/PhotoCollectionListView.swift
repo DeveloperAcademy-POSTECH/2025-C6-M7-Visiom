@@ -45,7 +45,7 @@ struct PhotoCollectionListView: View {
                     Button {
                         let newCol = collectionStore.createCollection()
                         collectionStore.renameCollection(newCol.id, to: newCol.id.uuidString)
-                        openWindow(id: "PhotoCollectionWindow", value: newCol.id)
+                        openWindow(id: appModel.TimeLineWindowID, value: newCol.id)
                     } label: {
                         Label("새 컬렉션", systemImage: "plus")
                     }

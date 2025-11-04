@@ -36,7 +36,7 @@ struct VisiomApp: App {
         
         // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
         // 추후 삭제 예정
-        WindowGroup(id: "PhotoCollectionList") {
+        WindowGroup(id: appModel.photoCollectionWindowID) {
             PhotoCollectionListView()
             //                .environment(appModel)
                 .environment(collectionStore)
@@ -73,7 +73,7 @@ struct VisiomApp: App {
         .defaultSize(CGSize(width: 200, height: 220))
         .windowResizability(.contentSize)
         
-        WindowGroup(id: "entityList") {
+        WindowGroup(id: appModel.TimeLineWindowID) {
             TimeListView()
                 .environment(entityManager)
         }

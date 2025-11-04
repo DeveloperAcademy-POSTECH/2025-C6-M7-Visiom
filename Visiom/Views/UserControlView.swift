@@ -141,10 +141,10 @@ extension UserControlView {
             // 보드(타임라인)
         case .board:
             if state == .board {
-                openWindow(id:"entityList")
+                openWindow(id:appModel.TimeLineWindowID)
                 print("🗂️ 보드 열기")
             } else {
-                dismissWindow(id: "entityList")
+                dismissWindow(id: appModel.TimeLineWindowID)
                 print("🗂️ 보드 닫기")
             }
             
