@@ -150,11 +150,10 @@ struct ScaleAndRotateGesture: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                RotateGesture3D(constrainedToAxis: .y)
+                RotateGesture3D()
                     .simultaneously(with: MagnifyGesture())
-                    .targetedToAnyEntity()
+                    .targetedToEntity(where: .has(ScaleRotationComponent.self))
                     .onChanged { value in
-
                         // Cache the entity's initial scale and orientation when the gesture starts
                         if !isActive {
                             isActive = true
@@ -205,6 +204,52 @@ struct ScaleAndRotateGesture: ViewModifier {
                             vector: .init(repeating: 0.0)
                         )
 
+                    }
+            )
+    }
+}
+
+struct ScaleGesture: ViewModifier {
+    @State var isActive: Bool = false
+    @State var initialScale: SIMD3<Float> = .init(repeating: 1.0)
+
+    func body(content: Content) -> some View {
+        content
+            .gesture(
+                MagnifyGesture()
+                    .targetedToEntity(where: .has(OnlyScaleComponent.self))
+                    .onChanged { value in
+                        // Cache the entity's initial scale and orientation when the gesture starts
+                        if !isActive {
+                            isActive = true
+                            initialScale = value.entity.scale
+                        }
+
+                        // Handle scale (see example 011)
+                        let magnificationF = Float(value.magnification)  // convert from CGFloat to Float...
+                        let minScale: Float = 0.25
+                        let maxScale: Float = 3
+                        let newScaleX = min(
+                            max(initialScale.x * magnificationF, minScale),
+                            maxScale
+                        )
+                        let newScaleY = min(
+                            max(initialScale.y * magnificationF, minScale),
+                            maxScale
+                        )
+                        let newScaleZ = min(
+                            max(initialScale.z * magnificationF, minScale),
+                            maxScale
+                        )
+                        value.entity.setScale(
+                            .init(x: newScaleX, y: newScaleY, z: newScaleZ),
+                            relativeTo: value.entity.parent!
+                        )
+                    }
+                    .onEnded { value in
+                        // Clean up when the gesture has ended
+                        isActive = false
+                        initialScale = .init(repeating: 1.0)
                     }
             )
     }

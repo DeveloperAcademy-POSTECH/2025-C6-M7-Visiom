@@ -11,20 +11,6 @@ import SwiftUI
 
 // MARK: - Handlers Extension
 extension FullImmersiveView {
-    
-    // MARK: - Timer 관리
-    
-    func startTimer() {
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true)
-        { _ in
-            updateScenePosition()
-        }
-    }
-    
-    func stopTimer() {
-        updateTimer?.invalidate()
-    }
-    
     // MARK: - Gesture Handlers
     
     /// 엔티티 탭 처리
@@ -47,8 +33,23 @@ extension FullImmersiveView {
             tapPhotoButton(anchorUUID)
         case .memo:
             tapMemoButton(anchorUUID)
+        case .number:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .sticker:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .mannequin:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .drawing:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .visibility:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .board:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .back:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
+        case .moving:
+            tapPhotoButton(anchorUUID)  // 갈아껴야함
         }
-        
     }
     
     /// 롱프레스 제스처 처리
@@ -56,26 +57,9 @@ extension FullImmersiveView {
         guard let anchorUUID = UUID(uuidString: targetEntity.name) else {
             return
         }
-        
+
         Task {
             await removeWorldAnchor(by: anchorUUID)
-        }
-    }
-    
-    /// Teleport 마커 탭 처리
-    func handleTap(on entity: Entity) {
-        let name = entity.name
-        print("Tapped on: \(name)")
-        
-        // 텔레포트 마커 탭 처리
-        if name.starts(with: "teleport_") {
-            // 마커의 위치로 텔레포트 (y=0.5로 설정)
-            let cubePosition = SIMD3<Float>(
-                entity.position.x,
-                0.5,
-                entity.position.z
-            )
-            teleportTo(cubePosition)
         }
     }
     
@@ -101,31 +85,42 @@ extension FullImmersiveView {
         
         openWindow(id: appModel.memoEditWindowID, value: memoId)
     }
-    
-    // MARK: - Teleport
-    
-    /// 텔레포트 이동
-    func teleportTo(_ cubePosition: SIMD3<Float>) {
-        position = cubePosition
-        print("🌀 Teleported to cube at: \(position)")
-        updateScenePosition()
+
+    var teleportTapWaypoint: some Gesture {
+        TapGesture()
+            .targetedToAnyEntity()
+            .onEnded { value in
+                tapToTeleport(value: value)
+                handleEntityTap(value.entity) // 추후 리팩토링 필요
+            }
     }
     
-    // MARK: - Scene Updates
-    
-    /// 씬 위치 업데이트
-    func updateScenePosition() {
-        guard let root = root else { return }
-        SceneManager.updateScenePosition(root: root, position: position)
+    var teloportDragWaypoint: some Gesture {
+        DragGesture()
+            .targetedToAnyEntity()
+            .onChanged { value in
+                value.entity.position = value.convert(value.location3D, from: .local, to: value.entity.parent!)
+            }
     }
-    
-    /// 마커 가시성 업데이트
-    func updateMarkersVisibility() {
-        guard let root = root else { return }
-        SceneManager.updateMarkersVisibility(
-            root: root,
-            visible: markerManager.isVisible
-        )
+
+    func tapToTeleport(value: EntityTargetValue<TapGesture.Value>) {
+        guard let sceneContent = self.root else { return }
+
+        // Calculate the vector from the origin to the tapped position
+        let vectorToTap = value.entity.position
+
+        // Normalize the vector to get a direction from the origin to the tapped position
+        let direction = normalize(vectorToTap)
+
+        // Calculate the distance (or magnitude) between the origin and the tapped position
+        let distance = length(vectorToTap)
+
+        // Calculate the new position by inverting the direction multiplied by the distance
+        let newPosition = -direction * distance
+
+        // Update sceneOffset's X and Z components, leave Y as it is
+        sceneContent.position.x = newPosition.x
+        sceneContent.position.z = newPosition.z
     }
     
     /// 엔티티 계층 구조 업데이트
@@ -158,4 +153,6 @@ extension FullImmersiveView {
         photoGroup?.isEnabled = appModel.showPhotos
         memoGroup?.isEnabled = appModel.showMemos
     }
+    
+    
 }

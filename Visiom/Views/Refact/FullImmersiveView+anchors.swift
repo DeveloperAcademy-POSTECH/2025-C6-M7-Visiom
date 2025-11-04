@@ -45,6 +45,21 @@ extension FullImmersiveView {
             handleMemoAnchorAdded(anchor, memoID: memoId)
             return
         }
+        
+        guard let itemType = pendingItemType.removeValue(forKey: anchor.id) else { return }
+        
+        switch itemType {
+            case .sticker:
+                handleStickerAnchorAdded(anchor)
+            case .number:
+                handleNumberAnchorAdded(anchor)
+            case .mannequin:
+                handleMannequinAnchorAdded(anchor)
+
+            // 이미 메모/포토는 위에서 리턴됨
+            case .memo, .photo:
+                print("ℹ️ handleAnchorAdded: \(itemType) is handled via explicit maps.")
+            }
     }
     
     private func handlePhotoAnchorAdded(_ anchor: WorldAnchor, collectionID: UUID?) {
@@ -96,6 +111,63 @@ extension FullImmersiveView {
             collectionID: nil
         )
         
+        anchorManager.addAnchor(data)
+    }
+    
+    // 스티커
+    private func handleStickerAnchorAdded(_ anchor: WorldAnchor) { //수정
+        guard let parent = root else { return }
+        let e = AREntityFactory.createBooldSticker()
+        parent.addChild(e)
+        e.name = anchor.id.uuidString
+        e.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
+
+        let data = AnchorData(
+            id: anchor.id, anchor: anchor, entity: e,
+            itemType: .sticker, memoText: "", collectionID: nil
+        )
+        anchorManager.addAnchor(data)
+    }
+
+    // 넘버 (텍스트 오버레이 포함)
+    private func handleNumberAnchorAdded(_ anchor: WorldAnchor) { //수정
+        guard let parent = root else { return }
+        numberPickerCount += 1 //수정
+        let label = "\(numberPickerCount)" //수정
+
+        let plate = AREntityFactory.createNumberPlate() // 간단한 평판/버튼 엔티티 (필요시 구현)
+        parent.addChild(plate)
+
+        let overlay = AREntityFactory.createMemoTextOverlay(text: label)
+        plate.addChild(overlay)
+        overlay.setPosition(
+            [0, 0, max(ARConstants.Position.memoTextZOffset, 0.01)],
+            relativeTo: plate
+        )
+        overlay.components.set(BillboardComponent())
+
+        plate.name = anchor.id.uuidString
+        plate.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
+
+        let data = AnchorData(
+            id: anchor.id, anchor: anchor, entity: plate,
+            itemType: .number, memoText: label, collectionID: nil
+        )
+        anchorManager.addAnchor(data)
+    }
+
+    // 마네킹
+    private func handleMannequinAnchorAdded(_ anchor: WorldAnchor) { //수정
+        guard let parent = root else { return }
+        let mannequin = AREntityFactory.createBody() // 인체/마네킹 엔티티 (필요시 async → sync로 래핑)
+        parent.addChild(mannequin)
+        mannequin.name = anchor.id.uuidString
+        mannequin.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
+
+        let data = AnchorData(
+            id: anchor.id, anchor: anchor, entity: mannequin,
+            itemType: .mannequin, memoText: "", collectionID: nil
+        )
         anchorManager.addAnchor(data)
     }
     
