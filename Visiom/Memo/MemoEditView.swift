@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct MemoEditView: View {
-    @Environment(MemoStore.self) var memoStore
     @Environment(AppModel.self) var appModel
+    @Environment(MemoStore.self) var memoStore
     @Environment(\.dismissWindow) private var dismissWindow
     
     let memoID: UUID

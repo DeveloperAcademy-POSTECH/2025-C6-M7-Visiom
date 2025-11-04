@@ -22,7 +22,6 @@ struct VisiomApp: App {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
             CrimeSceneListView()
                 .environment(appModel)
-                .environment(memoStore)
         }.defaultSize(CGSize(width: 1191, height: 477))
         
         WindowGroup(id: appModel.userControlWindowID) {
@@ -35,21 +34,11 @@ struct VisiomApp: App {
             .windowResizability(.contentSize)
             .windowStyle(.plain)
         
-        // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
-        // 추후 삭제 예정
-//        WindowGroup(id: appModel.photoCollectionWindowID) {
-//            PhotoCollectionListView()
-//                            .environment(appModel)
-//                .environment(collectionStore)
-//                .environment(memoStore)
-//        }
-        
         WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
             $collectionID in
             if let id = collectionID {
                 PhotoCollectionView(collectionID: id)
                     .environment(collectionStore)
-                    .environment(memoStore)
             } else {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
@@ -58,7 +47,6 @@ struct VisiomApp: App {
         WindowGroup(id: appModel.drawingControlWindowID) {
             DrawingControlView()
                 .environmentObject(drawingState)
-                .environment(memoStore)
         }.windowResizability(.contentSize)
         
         WindowGroup(id: appModel.memoEditWindowID, for: UUID.self) {

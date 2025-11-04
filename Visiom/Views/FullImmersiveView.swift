@@ -12,9 +12,10 @@ import SwiftUI
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
-    @Environment(MemoStore.self) var memoStore
     @Environment(CollectionStore.self) var collectionStore
     @Environment(EntityManager.self) private var entityManager
+    @Environment(MemoStore.self) var memoStore
+    
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
     
