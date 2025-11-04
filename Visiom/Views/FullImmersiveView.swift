@@ -98,7 +98,7 @@ struct FullImmersiveView: View {
                 }
         )
         .gesture(teleportTapWaypoint)
-        .gesture(teloportDragWaypoint)
+        .gesture(teleportDragWaypoint)
         .task {
             await FullImmersiveView.startARSession()
         }

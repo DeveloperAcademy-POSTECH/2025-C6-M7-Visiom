@@ -95,7 +95,7 @@ extension FullImmersiveView {
             }
     }
     
-    var teloportDragWaypoint: some Gesture {
+    var teleportDragWaypoint: some Gesture {
         DragGesture()
             .targetedToAnyEntity()
             .onChanged { value in
