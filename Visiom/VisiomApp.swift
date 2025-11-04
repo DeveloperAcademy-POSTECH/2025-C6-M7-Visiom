@@ -37,12 +37,12 @@ struct VisiomApp: App {
         
         // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
         // 추후 삭제 예정
-        WindowGroup(id: appModel.photoCollectionWindowID) {
-            PhotoCollectionListView()
-            //                .environment(appModel)
-                .environment(collectionStore)
-                .environment(memoStore)
-        }
+//        WindowGroup(id: appModel.photoCollectionWindowID) {
+//            PhotoCollectionListView()
+//                            .environment(appModel)
+//                .environment(collectionStore)
+//                .environment(memoStore)
+//        }
         
         WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
             $collectionID in
