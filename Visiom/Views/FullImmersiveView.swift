@@ -14,6 +14,7 @@ struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
     @Environment(MemoStore.self) var memoStore
     @Environment(CollectionStore.self) var collectionStore
+    @Environment(EntityManager.self) private var entityManager
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
 
@@ -27,10 +28,8 @@ struct FullImmersiveView: View {
     static let worldTracking = WorldTrackingProvider()
 
     // teleport
-    @State var position: SIMD3<Float> = [0, 0, 0]
     @State var root: Entity? = nil
-    @State var updateTimer: Timer?
-    @ObservedObject var markerManager = MarkerVisibilityManager.shared
+    @State var sceneContent: Entity?
 
     @State var anchorToCollection: [UUID: UUID] = [:]
     @State var pendingCollectionIdForNextAnchor: UUID? = nil
@@ -48,11 +47,14 @@ struct FullImmersiveView: View {
             await setupRealityView(content: content)
             await setupScene(content: content)
         } update: { content in
-            // teleport
-            updateScenePosition()
-            updateMarkersVisibility()
             updateEntityHierarchy()
             updateGroupVisibility()
+            
+            for entityInfo in entityManager.entities {
+                              if entityInfo.entity.parent == nil {
+                                  content.add(entityInfo.entity)
+                              }
+                          }
         }
         .onChange(of: drawingState.isDrawingEnabled) {
             DrawingSystem.isDrawingEnabled = drawingState.isDrawingEnabled
@@ -77,34 +79,19 @@ struct FullImmersiveView: View {
         }
         .modifier(DragGestureImproved())
         .gesture(
-            TapGesture()
-                .targetedToAnyEntity()
-                .onEnded { value in
-                    handleTap(on: value.entity)
-                    handleEntityTap(value.entity)
-                }
-        )
-        .gesture(
             LongPressGesture(minimumDuration: 0.75)
                 .targetedToAnyEntity()
                 .onEnded { value in
                     handleLongPress(value.entity)
                 }
         )
+        .gesture(teleportTapWaypoint)
+        .gesture(teloportDragWaypoint)
         .task {
             await FullImmersiveView.startARSession()
         }
         .task {
             await observeAnchorUpdates()
-        }
-        .onAppear {
-            startTimer()
-        }
-        .onDisappear {
-            stopTimer()
-        }
-        .onReceive(markerManager.$isVisible) { _ in
-            updateMarkersVisibility()
         }
     }
 }

@@ -15,14 +15,17 @@ enum UserControlBar: String {
 struct UserControlView: View {
     @Environment(AppModel.self) var appModel
     @Environment(MemoStore.self) var memoStore
+    @Environment(EntityManager.self) private var entityManager
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.dismissWindow) private var dismissWindow
     @Environment(\.openWindow) private var openWindow
     @EnvironmentObject var drawingState: DrawingState
     
-    @ObservedObject var markerManager = MarkerVisibilityManager.shared
+//    @ObservedObject var markerManager = MarkerVisibilityManager.shared
     
     @State var state: InteractionState = .idle
+    
+    @State private var entityCounter: [EntityType: Int] = [.sphere: 0, .box: 0]
     
     var body: some View {
         HStack(spacing: 12) {
@@ -138,14 +141,24 @@ extension UserControlView {
             // 보드(타임라인)
         case .board:
             if state == .board {
+                openWindow(id:appModel.TimeLineWindowID)
                 print("🗂️ 보드 열기")
             } else {
+                dismissWindow(id: appModel.TimeLineWindowID)
                 print("🗂️ 보드 닫기")
             }
             
             // 이동
         case .moving:
-            markerManager.isVisible.toggle()
+
+                let entity = AREntityFactory.createMarker()
+                
+                let info = EntityInfo(
+                    name: "구 #\(entityCounter[.sphere]!)",
+                    entity: entity,
+                    type: .sphere
+                )
+                entityManager.addEntity(info)
         }
     }
 

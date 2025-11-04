@@ -15,6 +15,7 @@ struct VisiomApp: App {
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
+    @State private var entityManager = EntityManager()
     @StateObject private var drawingState = DrawingState()
     
     var body: some Scene {
@@ -28,13 +29,14 @@ struct VisiomApp: App {
             UserControlView()
                 .environment(appModel)
                 .environment(memoStore)
+                .environment(entityManager)
                 .environmentObject(drawingState)
         }.defaultSize(CGSize(width: 700, height: 100))
             .windowResizability(.contentSize)
         
         // 시뮬레이션에서 Photo Collection을 테스트 하기 위한 Window
         // 추후 삭제 예정
-        WindowGroup(id: "PhotoCollectionList") {
+        WindowGroup(id: appModel.photoCollectionWindowID) {
             PhotoCollectionListView()
             //                .environment(appModel)
                 .environment(collectionStore)
@@ -71,10 +73,17 @@ struct VisiomApp: App {
         .defaultSize(CGSize(width: 200, height: 220))
         .windowResizability(.contentSize)
         
+        WindowGroup(id: appModel.TimeLineWindowID) {
+            TimeListView()
+                .environment(entityManager)
+        }
+        .defaultSize(width: 400, height: 600)
+        
         ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
             FullImmersiveView()
                 .environment(appModel)
                 .environment(collectionStore)
+                .environment(entityManager)
                 .environmentObject(drawingState)
                 .environment(memoStore)
                 .onAppear {
