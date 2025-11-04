@@ -10,36 +10,40 @@ import RealityKit
 import RealityKitContent
 import SwiftUI
 
-struct BloodStickerComponent: Component, Codable {}
+struct ScaleRotationComponent: Component, Codable {}
+struct OnlyScaleComponent: Component, Codable {}
 
 enum AREntityFactory {
 
     /// 사진 버튼 엔티티 생성
-    static func createPhotoButton() -> ModelEntity {
-        let entity = ModelEntity(
-            mesh: .generateCylinder(
-                height: ARConstants.Dimensions.photoButtonHeight,
-                radius: ARConstants.Dimensions.photoButtonRadius
-            ),
-            materials: [
-                SimpleMaterial(
-                    color: ARConstants.Colors.photoButton,
-                    isMetallic: false
-                )
-            ]
-        )
+    static func createPhotoButton() async throws -> ModelEntity {
 
-        // 콜리전 및 인터랙션 설정
-        let collision = CollisionComponent(shapes: [
-            .generateSphere(radius: ARConstants.Dimensions.photoButtonRadius)
-        ])
-        let input = InputTargetComponent()
-        entity.components.set([collision, input])
+        // 원본 entity 로드 (ModelEntity라고 가정하지 않음)
+        let root = try await Entity(named: "btn", in: realityKitContentBundle)
 
-        // 회전 적용
-        entity.transform.rotation = ARConstants.Rotation.photoButtonRotation
+        // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
+        guard let meshEntity = findFirstEntityWithModelComponent(in: root)
+        else {
+            fatalError("arrow usdz 안에서 ModelComponent 가진 entity 못 찾음")
+        }
 
-        return entity
+        // ModelEntity 확보 - 이미 ModelEntity면 캐스팅 아니면 ModelComponent로 새 ModelEntity 구성
+        let modelEntity: ModelEntity
+        if let casted = meshEntity as? ModelEntity {
+            modelEntity = casted
+        } else if let modelComp = meshEntity.components[ModelComponent.self] {
+            modelEntity = ModelEntity()
+            modelEntity.components.set(modelComp)
+        } else {
+            fatalError("ModelComponent를 가진 엔티티를 찾았지만 구성 추출에 실패")
+        }
+
+        let clone = modelEntity.clone(recursive: true)
+
+        clone.generateCollisionShapes(recursive: true)
+        clone.components.set(InputTargetComponent())
+
+        return clone
     }
 
     /// 메모 박스 엔티티 생성
@@ -71,7 +75,7 @@ enum AREntityFactory {
 
         return entity
     }
-    
+
     static func createBooldSticker() async throws -> ModelEntity {
 
         // 원본 entity 로드 (ModelEntity라고 가정하지 않음)
@@ -97,7 +101,70 @@ enum AREntityFactory {
         let clone = modelEntity.clone(recursive: true)
 
         clone.generateCollisionShapes(recursive: true)
-        clone.components.set([InputTargetComponent(), BloodStickerComponent()])
+        clone.components.set([InputTargetComponent(), ScaleRotationComponent()])
+
+        return clone
+    }
+
+    static func createNumberPicker() async throws -> ModelEntity {
+
+        // 원본 entity 로드 (ModelEntity라고 가정하지 않음)
+        let root = try await Entity(
+            named: "picker",
+            in: realityKitContentBundle
+        )
+
+        // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
+        guard let meshEntity = findFirstEntityWithModelComponent(in: root)
+        else {
+            fatalError("arrow usdz 안에서 ModelComponent 가진 entity 못 찾음")
+        }
+
+        // ModelEntity 확보 - 이미 ModelEntity면 캐스팅 아니면 ModelComponent로 새 ModelEntity 구성
+        let modelEntity: ModelEntity
+        if let casted = meshEntity as? ModelEntity {
+            modelEntity = casted
+        } else if let modelComp = meshEntity.components[ModelComponent.self] {
+            modelEntity = ModelEntity()
+            modelEntity.components.set(modelComp)
+        } else {
+            fatalError("ModelComponent를 가진 엔티티를 찾았지만 구성 추출에 실패")
+        }
+
+        let clone = modelEntity.clone(recursive: true)
+
+        clone.generateCollisionShapes(recursive: true)
+        clone.components.set([InputTargetComponent(), OnlyScaleComponent()])
+
+        return clone
+    }
+
+    static func createBody() async throws -> ModelEntity {
+
+        // 원본 entity 로드 (ModelEntity라고 가정하지 않음)
+        let root = try await Entity(named: "body", in: realityKitContentBundle)
+
+        // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
+        guard let meshEntity = findFirstEntityWithModelComponent(in: root)
+        else {
+            fatalError("arrow usdz 안에서 ModelComponent 가진 entity 못 찾음")
+        }
+
+        // ModelEntity 확보 - 이미 ModelEntity면 캐스팅 아니면 ModelComponent로 새 ModelEntity 구성
+        let modelEntity: ModelEntity
+        if let casted = meshEntity as? ModelEntity {
+            modelEntity = casted
+        } else if let modelComp = meshEntity.components[ModelComponent.self] {
+            modelEntity = ModelEntity()
+            modelEntity.components.set(modelComp)
+        } else {
+            fatalError("ModelComponent를 가진 엔티티를 찾았지만 구성 추출에 실패")
+        }
+
+        let clone = modelEntity.clone(recursive: true)
+
+        clone.generateCollisionShapes(recursive: true)
+        clone.components.set([InputTargetComponent(), ScaleRotationComponent()])
 
         return clone
     }
@@ -182,30 +249,45 @@ enum AREntityFactory {
     {
         switch itemType {
         case .photo:
-            return createPhotoButton()
+            do {
+                return try await createPhotoButton()
+            } catch {
+                print("Failed to create sticker entity: \(error)")
+                return ModelEntity()
+            }
         case .memo:
             return createMemoBox()
         case .number:
-            return createPhotoButton()
+            do {
+                return try await createNumberPicker()
+            } catch {
+                print("Failed to create sticker entity: \(error)")
+                return ModelEntity()
+            }
         case .sticker:
             do {
                 return try await createBooldSticker()
             } catch {
                 print("Failed to create sticker entity: \(error)")
-                return createPhotoButton()
+                return ModelEntity()
             }
         case .mannequin:
-            return createPhotoButton()
+            do {
+                return try await createBody()
+            } catch {
+                print("Failed to create sticker entity: \(error)")
+                return ModelEntity()
+            }
         case .drawing:
-            return createPhotoButton()
+            return ModelEntity()
         case .visibility:
-            return createPhotoButton()
+            return ModelEntity()
         case .board:
-            return createPhotoButton()
+            return ModelEntity()
         case .back:
-            return createPhotoButton()
+            return ModelEntity()
         case .moving:
-            return createPhotoButton()
+            return ModelEntity()
         }
     }
 }

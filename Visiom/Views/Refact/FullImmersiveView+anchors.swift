@@ -41,7 +41,7 @@ extension FullImmersiveView {
         guard let itemType = pendingItemType.removeValue(forKey: anchor.id)
         else {
             print(
-                "⚠️ handleAnchorAdded: No pending itemType hint found for anchor \(anchor.id). Ignoring."
+                "handleAnchorAdded: No pending itemType hint found for anchor \(anchor.id). Ignoring."
             )
             return
         }
@@ -67,8 +67,14 @@ extension FullImmersiveView {
 
         switch itemType {
         case .photo:
-            subjectClone = AREntityFactory.createPhotoButton()
-            photoGroup?.addChild(subjectClone) ?? root?.addChild(subjectClone)
+            do {
+                subjectClone = try await AREntityFactory.createPhotoButton()
+                photoGroup?.addChild(subjectClone)
+                    ?? root?.addChild(subjectClone)
+            } catch {
+                print("Failed to create photo sticker entity: \(error)")
+                return
+            }
         case .memo:
             subjectClone = AREntityFactory.createMemoBox()
             memoGroup?.addChild(subjectClone) ?? root?.addChild(subjectClone)
@@ -88,6 +94,36 @@ extension FullImmersiveView {
         case .sticker:
             do {
                 subjectClone = try await AREntityFactory.createBooldSticker()
+                root?.addChild(subjectClone)
+            } catch {
+                print("Failed to create photo sticker entity: \(error)")
+                return
+            }
+        case .number:
+            do {
+                numberPickerCount += 1
+                let count = "\(numberPickerCount)"
+
+                subjectClone = try await AREntityFactory.createNumberPicker()
+                root?.addChild(subjectClone)
+
+                let textOverlay = AREntityFactory.createMemoTextOverlay(
+                    text: count
+                )
+
+                textOverlay.setPosition(
+                    [0, 0, ARConstants.Position.memoTextZOffset],
+                    relativeTo: subjectClone
+                )
+                subjectClone.addChild(textOverlay)
+
+            } catch {
+                print("Failed to create photo sticker entity: \(error)")
+                return
+            }
+        case .mannequin:
+            do {
+                subjectClone = try await AREntityFactory.createBody()
                 root?.addChild(subjectClone)
             } catch {
                 print("Failed to create photo sticker entity: \(error)")

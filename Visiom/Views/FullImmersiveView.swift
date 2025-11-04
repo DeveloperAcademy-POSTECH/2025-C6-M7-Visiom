@@ -36,6 +36,7 @@ struct FullImmersiveView: View {
     @State var pendingItemType: [UUID: UserControlItem] = [:]
 
     @State var memoText: [UUID: String] = [:]
+    @State var numberPickerCount = 0
 
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
@@ -80,6 +81,7 @@ struct FullImmersiveView: View {
         }
         .modifier(DragGestureImproved())
         .modifier(ScaleAndRotateGesture())
+        .modifier(ScaleGesture())
         .gesture(
             LongPressGesture(minimumDuration: 0.75)
                 .targetedToAnyEntity()
