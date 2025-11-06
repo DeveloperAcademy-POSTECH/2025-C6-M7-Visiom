@@ -25,7 +25,7 @@ actor PersistenceActor {
     }()
     
     // Disk I/O를 직렬로 처리
-    func enqueueWrite(_ snapshot: [PhotoCollection], to url: URL, debounceMS: UInt64 = 120) {
+    func enqueueWrite<T: Codable>(_ snapshot: T, to url: URL, debounceMS: UInt64 = 120) {
         generation &+= 1
         let myGen = generation
         
@@ -66,11 +66,11 @@ actor PersistenceActor {
     }
     
     /// 파일에서 로드 후 PhotoCollection 배열로 반환
-    func load(from url: URL) async throws -> [PhotoCollection] {
+    func load<T: Decodable>(from url: URL) async throws -> T {
         if let data = try? Data(contentsOf: url) {
-            return try self.decoder.decode([PhotoCollection].self, from: data)
+            return try self.decoder.decode(T.self, from: data)
         } else {
-            return []
+            throw CocoaError(.fileReadNoSuchFile)
         }
     }
     

@@ -184,21 +184,22 @@ enum AREntityFactory {
         return nil
     }
 
-    /// 제어 패널 뷰 엔티티 생성
-    static func createControlPanel(
-        appModel: AppModel
-    ) -> ViewAttachmentEntity {
-        let entity = ViewAttachmentEntity()
-        entity.attachment = ViewAttachmentComponent(
-            rootView: UserControlView()
-                .environment(appModel)
-        )
-        entity.position = ARConstants.Position.controlPanelPosition
-        entity.components.set(InputTargetComponent())
-        entity.generateCollisionShapes(recursive: true)
-
-        return entity
-    }
+//    /// 제어 패널 뷰 엔티티 생성
+//    static func createControlPanel(
+//        appModel: AppModel
+//    ) -> ViewAttachmentEntity {
+//        let entity = ViewAttachmentEntity()
+//        entity.attachment = ViewAttachmentComponent(
+//            rootView: UserControlView()
+//                .environment(appModel)
+//            
+//        )
+//        entity.position = ARConstants.Position.controlPanelPosition
+//        entity.components.set(InputTargetComponent())
+//        entity.generateCollisionShapes(recursive: true)
+//
+//        return entity
+//    }
 
     /// 메모 텍스트 오버레이 생성
     static func createMemoTextOverlay(text: String) -> ViewAttachmentEntity {

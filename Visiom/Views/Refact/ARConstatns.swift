@@ -50,7 +50,7 @@ enum ARConstants {
     // MARK: - 색상
     enum Colors {
         static let photoButton = UIColor.cyan
-        static let memoBackground = UIColor.yellow
+        static let memoBackground = UIColor(red: 0.35, green: 0.69, blue: 1, alpha: 1)
     }
     
     // MARK: - 텍스트

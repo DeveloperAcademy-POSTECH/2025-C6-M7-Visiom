@@ -11,29 +11,28 @@ import SwiftUI
 
 // MARK: - Handlers Extension
 extension FullImmersiveView {
-
     // MARK: - Gesture Handlers
-
+    
     /// 엔티티 탭 처리
     func handleEntityTap(_ targetEntity: Entity) {
         let anchorUUIDString = targetEntity.name
         guard !anchorUUIDString.isEmpty,
-            let anchorUUID = UUID(uuidString: anchorUUIDString)
+              let anchorUUID = UUID(uuidString: anchorUUIDString)
         else {
             print("Tapped entity has no valid UUID name.")
             return
         }
-
+        
         guard let data = anchorManager.getAnchor(id: anchorUUID) else {
             print("Tapped entity's UUID not found in AnchorManager.")
             return
         }
-
+        
         switch data.itemType {
         case .photo:
             tapPhotoButton(anchorUUID)
         case .memo:
-            tapMemoButton(memoId: anchorUUID)
+            tapMemoButton(anchorUUID)
         case .number:
             tapPhotoButton(anchorUUID)  // 갈아껴야함
         case .sticker:
@@ -52,17 +51,18 @@ extension FullImmersiveView {
             tapPhotoButton(anchorUUID)  // 갈아껴야함
         }
     }
-
+    
     /// 롱프레스 제스처 처리
     func handleLongPress(_ targetEntity: Entity) {
         guard let anchorUUID = UUID(uuidString: targetEntity.name) else {
             return
         }
+
         Task {
             await removeWorldAnchor(by: anchorUUID)
         }
     }
-
+    
     /// Photo 버튼 탭 처리
     func tapPhotoButton(_ anchorUUID: UUID) {
         print("Photobutton 클릭")
@@ -74,12 +74,18 @@ extension FullImmersiveView {
         openWindow(id: appModel.photoCollectionWindowID, value: colId)
         print("Opened collection window for \(colId)")
     }
-
-    /// Memo 버튼 탭 처리
-    func tapMemoButton(memoId: UUID) {
-        print("Memo 클릭, text: \(memoText[memoId] ?? "no memo")")
-    }
     
+    /// Memo 버튼 탭 처리
+    func tapMemoButton(_ anchorUUID: UUID) {
+        print("Memo 클릭")
+        guard let memoId = anchorToMemo[anchorUUID] else {
+            print("No memo mapped for anchor \(anchorUUID)")
+            return
+        }
+        
+        openWindow(id: appModel.memoEditWindowID, value: memoId)
+    }
+
     var teleportTapWaypoint: some Gesture {
         TapGesture()
             .targetedToAnyEntity()
@@ -89,7 +95,7 @@ extension FullImmersiveView {
             }
     }
     
-    var teloportDragWaypoint: some Gesture {
+    var teleportDragWaypoint: some Gesture {
         DragGesture()
             .targetedToAnyEntity()
             .onChanged { value in
@@ -116,7 +122,7 @@ extension FullImmersiveView {
         sceneContent.position.x = newPosition.x
         sceneContent.position.z = newPosition.z
     }
-
+    
     /// 엔티티 계층 구조 업데이트
     func updateEntityHierarchy() {
         guard let root = root else {
@@ -124,13 +130,13 @@ extension FullImmersiveView {
             memoGroup?.isEnabled = appModel.showMemos
             return
         }
-
+        
         for data in anchorManager.anchorDataMap.values {
             // 부모가 없는 entity는 root 밑에 붙이기
             if data.entity.parent == nil {
                 root.addChild(data.entity)
             }
-
+            
             // root 밑에 있는 entity 부모 찾아주기
             if data.entity.parent === root {
                 if data.itemType == .photo, let pg = photoGroup {
@@ -141,7 +147,7 @@ extension FullImmersiveView {
             }
         }
     }
-
+    
     /// 그룹 가시성 업데이트
     func updateGroupVisibility() {
         photoGroup?.isEnabled = appModel.showPhotos

@@ -12,26 +12,30 @@ import SwiftUI
 
 struct FullImmersiveView: View {
     @Environment(AppModel.self) var appModel
-    @Environment(MemoStore.self) var memoStore
     @Environment(CollectionStore.self) var collectionStore
     @Environment(EntityManager.self) private var entityManager
+    @Environment(MemoStore.self) var memoStore
+    
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
-
+    
     // 그리기 전역 상태
     @EnvironmentObject var drawingState: DrawingState
     // 공간 추적 세션
     @State var spatialSession: SpatialTrackingSession?
-
+    
     static let arSession = ARKitSession()
     static let handTracking = HandTrackingProvider()
     static let worldTracking = WorldTrackingProvider()
-
+    
     // teleport
     @State var root: Entity? = nil
+    
     @State var sceneContent: Entity?
 
     @State var anchorToCollection: [UUID: UUID] = [:]
+    @State var anchorToMemo: [UUID: UUID] = [:]
+    
     @State var pendingCollectionIdForNextAnchor: UUID? = nil
     @State var pendingItemType: [UUID: UserControlItem] = [:]
 
@@ -40,10 +44,10 @@ struct FullImmersiveView: View {
 
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
-
+    
     // MARK: - ViewModels (상태 관리 분리)
     @StateObject var anchorManager = AnchorManager()
-
+    
     var body: some View {
         RealityView { content in
             await setupRealityView(content: content)
@@ -65,12 +69,16 @@ struct FullImmersiveView: View {
             DrawingSystem.isErasingEnabled = drawingState.isErasingEnabled
         }
         .onChange(of: appModel.itemAdd) { _, newValue in
-            if let itemType = newValue {
-                print("함수호출")
-                Task {
-                    await makePlacement(type: itemType)
-                }
+            if newValue == .photo {
+                Task { await makePlacement(type: .photo) }
                 appModel.itemAdd = nil
+            }
+        }
+        .onChange(of: appModel.memoToAnchorID) { _, memoID in
+            guard let memoID else { return }
+            Task {
+                await placeMemoAnchor(for: memoID)
+                await MainActor.run { appModel.memoToAnchorID = nil }
             }
         }
         .onChange(of: appModel.showPhotos) { _, newValue in
@@ -90,7 +98,7 @@ struct FullImmersiveView: View {
                 }
         )
         .gesture(teleportTapWaypoint)
-        .gesture(teloportDragWaypoint)
+        .gesture(teleportDragWaypoint)
         .task {
             await FullImmersiveView.startARSession()
         }
