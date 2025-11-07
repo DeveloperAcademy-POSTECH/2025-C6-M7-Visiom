@@ -37,20 +37,24 @@ final class PhotoViewModel {
     // 앨범에서 선택된 항목 처리
     func importFromPhotosPicker(_ items: [PhotosPickerItem], downsampleTo: CGFloat = 1600) async {
         guard !items.isEmpty else { return }
-        defer { isLoading = false }
+        isLoading = true
         
         let tempURLs = await PhotoPipeline.savePickerItemsToTempURLs(items, downsampleTo: downsampleTo)
         _ = store.addTempImageURLs(tempURLs, to: collectionID)
         refreshFromDisk()
+        
+        isLoading = false
     }
     
     // Files에서 선택된 URL 처리
     func importFromFiles(_ urls: [URL]) async {
         guard !urls.isEmpty else { return }
         isLoading = true
-        defer { isLoading = false }
+
         store.addFiles(urls, to: collectionID)
         refreshFromDisk()
+        
+        isLoading = false
     }
     
     func remove(at offsets: IndexSet) {
