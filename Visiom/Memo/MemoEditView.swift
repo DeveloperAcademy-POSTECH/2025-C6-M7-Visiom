@@ -48,7 +48,6 @@ struct MemoEditView: View {
                         Text("인식 중: \(speechRecognizer.recognizedText)")
                             .font(.title3)
                             .foregroundStyle(.white.opacity(0.9))
-                            .lineLimit(2)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
