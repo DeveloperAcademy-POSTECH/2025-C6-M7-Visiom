@@ -12,7 +12,7 @@ struct CrimeSceneCard: View {
     let description: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
             Image(imageName)
                 .resizable()
                 .scaledToFill()
@@ -20,31 +20,42 @@ struct CrimeSceneCard: View {
                 .frame(maxWidth: .infinity)
                 .clipShape(
                     UnevenRoundedRectangle(
-                        topLeadingRadius: 32,  // 왼쪽 위 모서리
+                        topLeadingRadius: 32,
                         bottomLeadingRadius: 0,
                         bottomTrailingRadius: 0,
-                        topTrailingRadius: 32  // 오른쪽 위 모서리
+                        topTrailingRadius: 32
                     )
                 )
+                .clipped()
 
             VStack(alignment: .leading) {
                 Text(title)
                     .font(.system(size: 17, weight: .medium))
-                    .lineSpacing(5)
 
                 Text(description)
                     .font(.system(size: 13, weight: .medium))
-                    .lineSpacing(5)
             }
             .padding(.top, 12)
-            .padding(.bottom, 28)
-            .padding(.leading, 26)
-            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .padding(.horizontal, 26)
+            .padding(.bottom, 26)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: .topLeading
+            )
         }
-        .frame(width: 267, height: 308)
-        .glassBackgroundEffect()
-        .cornerRadius(32)
-        .hoverEffect()
 
+        .frame(width: 267, height: 308)
+
+        .background(
+            RoundedRectangle(cornerRadius: 32)
+                .fill(.clear)
+        )
+
+        .clipShape(RoundedRectangle(cornerRadius: 32))
+        .contentShape(RoundedRectangle(cornerRadius: 32))
+        .glassBackgroundEffect()
+        .contentShape(RoundedRectangle(cornerRadius: 32))
+        .hoverEffect()
     }
 }
