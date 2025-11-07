@@ -166,6 +166,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
 				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "손추적을 사용합니다. ";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성을 텍스트로 변환하기 위해 음성 인식 권한이 필요합니다.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성 입력을 위해 마이크 접근 권한이 필요합니다.";
 				INFOPLIST_KEY_NSWorldSensingUsageDescription = "월드트랙킹 사용합니다. ";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -197,6 +199,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
 				INFOPLIST_KEY_NSHandsTrackingUsageDescription = "손추적을 사용합니다. ";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "음성을 텍스트로 변환하기 위해 음성 인식 권한이 필요합니다.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "음성 입력을 위해 마이크 접근 권한이 필요합니다.";
 				INFOPLIST_KEY_NSWorldSensingUsageDescription = "월드트랙킹 사용합니다. ";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

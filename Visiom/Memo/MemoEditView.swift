@@ -14,6 +14,8 @@ struct MemoEditView: View {
     
     let memoID: UUID
     
+    @State private var speechRecognizer = SpeechRecognizer(locale: Locale(identifier: "ko-KR"))
+    
     private var textBinding: Binding<String> {
         Binding(
             get: { memoStore.memo(id: memoID)?.text ?? "" },
@@ -24,7 +26,7 @@ struct MemoEditView: View {
     var body: some View {
         ZStack {
             Color(red: 0.35, green: 0.69, blue: 1)
-                        .ignoresSafeArea()
+                .ignoresSafeArea()
             VStack {
                 TextFieldAttachmentView(
                     text: textBinding,
@@ -36,13 +38,62 @@ struct MemoEditView: View {
                 )
                 .background(Color.clear)
                 
-                Button("작성 완료") {
-                    if memoStore.commit(id: memoID) {
-                        appModel.memoToAnchorID = memoID
-                        dismissWindow(id: appModel.memoEditWindowID)
+                // 실시간 인식 텍스트 표시 (선택사항)
+                if speechRecognizer.isRecording && !speechRecognizer.recognizedText.isEmpty {
+                    HStack {
+                        Image(systemName: "waveform")
+                            .foregroundStyle(.white)
+                            .symbolEffect(.variableColor.iterative, isActive: true)
+                        
+                        Text("인식 중: \(speechRecognizer.recognizedText)")
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.9))
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                
+                // 버튼들
+                HStack(spacing: 16) {
+                    
+                    // 음성 입력 버튼
+                    STTButton(
+                        speechRecognizer: speechRecognizer,
+                        text: textBinding
+                    )
+                    
+                    // 작성 완료 버튼
+                    Button("작성 완료") {
+                        // 녹음 중이면 먼저 중지
+                        if speechRecognizer.isRecording {
+                            speechRecognizer.stopRecording()
+                        }
+                        
+                        if memoStore.commit(id: memoID) {
+                            appModel.memoToAnchorID = memoID
+                            dismissWindow(id: appModel.memoEditWindowID)
+                        }
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.green.opacity(0.3))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.green, lineWidth: 2)
+                    )
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(40)
         }
+        .animation(.easeInOut(duration: 0.3), value: speechRecognizer.isRecording)
     }
 }
+
