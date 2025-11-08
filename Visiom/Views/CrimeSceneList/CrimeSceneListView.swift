@@ -15,6 +15,8 @@ struct CrimeSceneListView: View {
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
 
     @State private var isLoading = false
+    @State private var progress: Double = 0.0
+
     let crimeScenes = CrimeScene.mockData
 
     var body: some View {
@@ -36,14 +38,28 @@ struct CrimeSceneListView: View {
                         Button(action: {
                             Task {
                                 isLoading = true
+                                progress = 0.0
+
+                                Task {
+                                    while progress < 1.0 {
+                                        try? await Task.sleep(
+                                            nanoseconds: 30_000_000
+                                        )
+                                        await MainActor.run {
+                                            progress += 0.03
+                                        }
+                                    }
+                                }
 
                                 await appModel.enterFullImmersive(
                                     openImmersiveSpace: openImmersiveSpace,
                                     dismissWindow: dismissWindow
                                 )
+                                progress = 1.0
                                 isLoading = false
+
+                                openWindow(id: appModel.userControlWindowID)
                             }
-                            openWindow(id: appModel.userControlWindowID)
                         }) {
                             CrimeSceneCard(
                                 imageName: crimeScene.imageName,
@@ -64,14 +80,12 @@ struct CrimeSceneListView: View {
             appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         }
         .disabled(isLoading)
-        //        .fullScreenCover(isPresented: $isLoading) {
-        //            CrimeSceneLoadingView()
-        //        }
         .overlay {
             if isLoading {
                 ZStack {
-                    Color.black.opacity(0.3).ignoresSafeArea()
-                    CrimeSceneLoadingView()
+                    Color.black.opacity(0.3)
+                        .clipShape(RoundedRectangle(cornerRadius: 44))
+                    CrimeSceneLoadingView(progress: progress)
                 }
             }
         }

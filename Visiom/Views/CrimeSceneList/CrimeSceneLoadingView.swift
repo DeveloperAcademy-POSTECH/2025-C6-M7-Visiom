@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CrimeSceneLoadingView: View {
+    let progress: Double
+
     var body: some View {
         VStack(spacing: 20) {
             Image("icon")
@@ -18,10 +20,11 @@ struct CrimeSceneLoadingView: View {
                 .font(.title3)
                 .foregroundStyle(.white)
 
-            ProgressView()
+            ProgressView(value: progress)
                 .progressViewStyle(.linear)
                 .foregroundStyle(.white)
                 .frame(width: 228)
+                .tint(.white)
         }
         .padding(.vertical, 40)
         .padding(.horizontal, 50)
