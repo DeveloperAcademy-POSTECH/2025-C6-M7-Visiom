@@ -17,22 +17,30 @@ struct PhotoCollectionView: View {
     @State private var showPhotoPicker = false
     @State private var importErrorMessage: String? = nil
     
+    @State private var isImporting = true
     let collectionID: UUID
     
     var body: some View {
         NavigationStack {
-            Group {
-                if let photoViewModel {
-                    PhotoCollectionContent(photoViewModel: photoViewModel)
-                } else {
-                    ProgressView()
+            ZStack{
+                Group {
+                    if let photoViewModel {
+                        PhotoCollectionContent(photoViewModel: photoViewModel)
+                    } else {
+                        ProgressView()
+                    }
                 }
-            }
-            .navigationTitle("사진 보기")
-            .toolbar { importToolbar }
-            .overlay {
-                if let photoViewModel, photoViewModel.isLoading {
-                    LoadingOverlay()
+                .navigationTitle("사진 보기")
+                .toolbar { importToolbar }
+                // 로딩 오버레이
+                if isImporting && showFileImporter{
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    
+                    ProgressView("Loading...")
+                        .padding()
+                        .background(.regularMaterial)
+                        .cornerRadius(10)
                 }
             }
         }
@@ -50,15 +58,7 @@ struct PhotoCollectionView: View {
             allowedContentTypes: [.jpeg, .png, .heic, .tiff],
             allowsMultipleSelection: true
         ) { result in
-            switch result {
-            case .success(let urls):
-                guard !urls.isEmpty else { return }
-                importFromFiles(urls)
-            case .failure(let error):
-                let nsError = error as NSError
-                if nsError.code == NSUserCancelledError { return }
-                importErrorMessage = nsError.localizedDescription
-            }
+            handleFileImport(result)
         }
         // 실패 알림
         .alert("가져오기 실패", isPresented: Binding(
@@ -73,6 +73,30 @@ struct PhotoCollectionView: View {
             if photoViewModel == nil {
                 photoViewModel = PhotoViewModel(store: collectionStore, collectionID: collectionID)
             }
+        }
+    }
+    
+    private func handleFileImport(_ result: Result<[URL], Error>) {
+        
+        switch result {
+        case .success(let urls):
+            
+            Task {
+                
+                
+                if let photoViewModel = photoViewModel {
+                    await photoViewModel.importFromFiles(urls)
+                } else {
+                    importErrorMessage = "뷰를 준비 중입니다. 잠시 후 다시 시도해주세요."
+                }
+                
+                
+                isImporting = false
+            }
+            
+        case .failure(let error):
+            print("File import failed: \(error)")
+            isImporting = false
         }
     }
     
@@ -107,12 +131,3 @@ struct PhotoCollectionView: View {
     }
 }
 
-private struct LoadingOverlay: View {
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.02).ignoresSafeArea()
-            ProgressView().controlSize(.large)
-        }
-        .transition(.opacity)
-    }
-}
