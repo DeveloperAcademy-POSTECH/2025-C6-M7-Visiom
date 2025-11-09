@@ -11,7 +11,7 @@ struct MemoEditView: View {
     @Environment(AppModel.self) var appModel
     @Environment(MemoStore.self) var memoStore
     @Environment(\.dismissWindow) private var dismissWindow
-    
+
     let memoID: UUID
     
     @State private var speechRecognizer = SpeechRecognizer(locale: Locale(identifier: "ko-KR"))
@@ -22,13 +22,13 @@ struct MemoEditView: View {
             set: { memoStore.updateText(id: memoID, to: $0) }
         )
     }
-    
+
     var body: some View {
         ZStack {
             Color(red: 0.35, green: 0.69, blue: 1)
                 .ignoresSafeArea()
             VStack {
-                TextFieldAttachmentView(
+                MultilineTextFieldAttachmentView(
                     text: textBinding,
                     placeholder: "메모를 입력하세요",
                     width: 525,
