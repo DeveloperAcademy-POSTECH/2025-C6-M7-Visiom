@@ -4,6 +4,7 @@
 //
 //  Created by 윤창현 on 9/29/25.
 //
+// 완료
 
 import SwiftUI
 
@@ -14,39 +15,39 @@ class AppModel {
     let fullImmersiveSpaceID = "FullImmersiveSpace"
     let crimeSceneListWindowID = "CrimeSceneListWindow"
     let photoCollectionWindowID = "PhotoCollectionWindow"
-    let drawingControlWindowID = "DrawingControlWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let TimeLineWindowID = "TimeLineWindow"
-
+    let TimeLineWindowID = "TimeLineWindow"     // 소문자 리펙토링 필요
+    
     enum ImmersiveSpaceState {
         case closed
         case inTransition
         case open
     }
-
+    
     var immersiveSpaceState = ImmersiveSpaceState.closed
     var itemAdd: UserControlItem? = nil
-    var markersVisible: Bool = true
-
     var memoToAnchorID: UUID? = nil
-
+    
     // visible/invisible 상태 관리
+    var markersVisible: Bool = true
     var showPhotos: Bool = true
     var showMemos: Bool = true
-
+    var showTeleports: Bool = true
+    
     func toggleMarkers() {
         markersVisible.toggle()
-        print("Markers visibility: \(markersVisible)")  // TODO 삭제
     }
-
     func togglePhotos() {
         showPhotos.toggle()
     }
     func toggleMemos() {
         showMemos.toggle()
     }
-
+    func toggleTeleports(){
+        showTeleports.toggle()
+    }
+    
     //Full Immersive 진입 처리 함수
     @MainActor
     func enterFullImmersive(
@@ -71,7 +72,7 @@ class AppModel {
             }
         }
     }
-
+    
     //Full Immersive 나가기 처리 함수
     @MainActor
     func exitFullImmersive(
@@ -81,16 +82,39 @@ class AppModel {
     ) async {
         guard immersiveSpaceState == .open else { return }
         immersiveSpaceState = .inTransition
-
+        
         await dismissImmersiveSpace()
         closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
     }
-
+    
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
-        dismissWindow(id: drawingControlWindowID)
         dismissWindow(id: memoEditWindowID)
         dismissWindow(id: userControlWindowID)
+        dismissWindow(id: TimeLineWindowID)
     }
+    
+    enum Route { case photoCollection(UUID), memoEdit(UUID) }
+    
+    func open(routeString: String, openWindow: OpenWindowAction) {
+        if routeString.hasPrefix("PhotoCollectionWindowID:"),
+           let uuidStr = routeString.split(separator: ":").last,
+           let id = UUID(uuidString: String(uuidStr)) {
+            openWindow(id: photoCollectionWindowID, value: id)
+        } else if routeString.hasPrefix("MemoEditWindowID:"),
+                  let uuidStr = routeString.split(separator: ":").last,
+                  let id = UUID(uuidString: String(uuidStr)) {
+            openWindow(id: memoEditWindowID, value: id)
+        }
+    }
+    
+    func dismiss(routeString: String, dismissWindow: DismissWindowAction) {
+        if routeString.hasPrefix("PhotoCollectionWindowID:") {
+            dismissWindow(id: photoCollectionWindowID)
+        } else if routeString.hasPrefix("MemoEditWindowID:") {
+            dismissWindow(id: memoEditWindowID)
+        }
+    }
+    
 }

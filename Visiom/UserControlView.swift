@@ -4,19 +4,16 @@
 //
 //  Created by 제하맥 on 10/23/25.
 //
+// 완료
 
 import SwiftUI
 
 struct UserControlView: View {
     @Environment(AppModel.self) var appModel
     @Environment(MemoStore.self) var memoStore
-    @Environment(EntityManager.self) private var entityManager
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.dismissWindow) private var dismissWindow
     @Environment(\.openWindow) private var openWindow
-    @EnvironmentObject var drawingState: DrawingState
-    
-//    @ObservedObject var markerManager = MarkerVisibilityManager.shared
     
     @State var state: InteractionState = .idle
     
@@ -38,7 +35,7 @@ struct UserControlView: View {
                 .buttonStyle(.plain)
                 .disabled(!isEnabled(item))
 
-                if item == .back || item == .mannequin || item == .visibility {
+                if item == .back || item == .visibility {
                     VDivider(height: 60)
                 }
             }
@@ -54,15 +51,15 @@ struct UserControlView: View {
 }
 
 extension UserControlView {
-
+    
     // 버튼 동작 분기
     private func handleTap(_ item: UserControlItem) {
         guard UserControlItemLogic.isEnabled(item, when: state) else { return }
         let oldState = state
         state = UserControlItemLogic.apply(item, from: oldState)
-
+        
         switch item {
-        // 뒤로가기
+            // 뒤로가기
         case .back:
             Task {
                 await appModel.exitFullImmersive(
@@ -71,18 +68,18 @@ extension UserControlView {
                     openWindow: openWindow
                 )
             }
-
-        // 사진 배치
-        case .photo:
-            if case .placing(.photo) = state {
-                appModel.itemAdd = .photo
+            
+            // 사진 배치
+        case .photoCollection:
+            if case .placing(.photoCollection) = state {
+                appModel.itemAdd = .photoCollection
                 print("📸 사진 배치 시작")
             } else {
                 appModel.itemAdd = nil
                 print("📸 사진 배치 종료")
             }
-
-        // 메모 작성
+            
+            // 메모 작성
         case .memo:
             if case .placing(.memo) = state {
                 let memo = memoStore.createMemo(initialText: "")
@@ -91,57 +88,12 @@ extension UserControlView {
             } else {
                 print("📝 메모 모드 종료")
             }
-
-        // 숫자 스티커
-        case .number:
-            if case .placing(.number) = state {
-                appModel.itemAdd = .number
-                print("🔢 숫자 배치 시작")
-            } else {
-                appModel.itemAdd = nil
-                print("🔢 숫자 배치 종료")
-            }
-
-        // 스티커
-        case .sticker:
-            if case .placing(.sticker) = state {
-                appModel.itemAdd = .sticker
-                print("🎯 스티커 배치 시작")
-            } else {
-                appModel.itemAdd = nil
-                print("🎯 스티커 배치 종료")
-            }
-
-        // 마네킹
-        case .mannequin:
-            if case .placing(.mannequin) = state {
-                appModel.itemAdd = .mannequin
-                print("🧍 마네킹 배치 시작")
-            } else {
-                appModel.itemAdd = nil
-                print("🧍 마네킹 배치 종료")
-            }
-
-        // 드로잉
-        case .drawing:
-            if state == .drawing {
-                drawingState.isDrawingEnabled = true
-                drawingState.isErasingEnabled = true
-                openWindow(id: appModel.drawingControlWindowID)
-                print("✏️ 드로잉 모드 시작")
-            } else {
-                drawingState.isDrawingEnabled = false
-                drawingState.isErasingEnabled = false
-                dismissWindow(id: appModel.drawingControlWindowID)
-                print("✏️ 드로잉 모드 종료")
-            }
-
-        // 가시성 토글
+            // 가시성 토글
         case .visibility:
             appModel.togglePhotos()
             appModel.toggleMemos()
-
-        // 보드(타임라인)
+            
+            // 보드(타임라인)
         case .board:
             if state == .board {
                 openWindow(id:appModel.TimeLineWindowID)
@@ -150,25 +102,23 @@ extension UserControlView {
                 dismissWindow(id: appModel.TimeLineWindowID)
                 print("🗂️ 보드 닫기")
             }
-
-        // 이동
-        case .moving:
-
-                let entity = AREntityFactory.createMarker()
-                
-                let info = EntityInfo(
-                    name: "구 #\(entityCounter[.sphere]!)",
-                    entity: entity,
-                    type: .sphere
-                )
-                entityManager.addEntity(info)
+            
+            // 이동
+        case .teleport:
+            if case .placing(.teleport) = state{
+                appModel.itemAdd = .teleport
+                print("⚡️ 텔레포트 배치 시작")
+            } else {
+                appModel.itemAdd = nil
+                print("⚡️ 텔레포트 배치 종료")
+            }
         }
     }
     
     private func iconName(for item: UserControlItem) -> String {
         state.activeItem == item ? item.selectedIcon : item.icon
     }
-
+    
     private func isEnabled(_ item: UserControlItem) -> Bool {
         UserControlItemLogic.isEnabled(item, when: state)
     }

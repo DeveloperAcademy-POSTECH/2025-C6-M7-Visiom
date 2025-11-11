@@ -25,21 +25,9 @@ struct UserControlItemLogic {
                 return false
             }
         }
-        
-        // 드로잉 중 : 다른 기능 불가
-        if state == .drawing {
-            switch item {
-            case .drawing:
-                return true
-            case .back:
-                return true
-            default :
-                return false
-            }
-        }
-        
+
         // 이동 모드 : 모든 기능 사용 가능
-        if state == .moving {
+        if state == .teleport {
             switch item {
             default:
                 return true
@@ -51,7 +39,7 @@ struct UserControlItemLogic {
             switch item {
             case .board:
                 return true
-            case .visibility, .moving, .back:
+            case .visibility, .teleport, .back:
                 return true
             default:
                 return false
@@ -63,7 +51,7 @@ struct UserControlItemLogic {
             switch item {
             case .visibility:
                 return true
-            case .moving, .board, .back:
+            case .teleport, .board, .back:
                 return true
             default:
                 return false
@@ -80,19 +68,13 @@ struct UserControlItemLogic {
         case .back:
             return .idle
             
-        case .photo, .memo, .number, .sticker, .mannequin:
+        case .photoCollection, .memo, .teleport:
             // 배치 시작/해제
             if case .placing(let t) = state, t == item {
                 return .idle
             } else {
                 return .placing(item)
             }
-            
-        case .drawing:
-            return state == .drawing ? .idle : .drawing
-            
-        case .moving:
-            return state == .moving ? .idle : .moving
             
         case .board:
             return state == .board ? .idle : .board

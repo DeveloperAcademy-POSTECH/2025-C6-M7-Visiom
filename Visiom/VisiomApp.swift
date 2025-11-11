@@ -16,7 +16,6 @@ struct VisiomApp: App {
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
     @State private var entityManager = EntityManager()
-    @StateObject private var drawingState = DrawingState()
     
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
@@ -28,8 +27,6 @@ struct VisiomApp: App {
             UserControlView()
                 .environment(appModel)
                 .environment(memoStore)
-                .environment(entityManager)
-                .environmentObject(drawingState)
         }.defaultSize(CGSize(width: 700, height: 100))
             .windowResizability(.contentSize)
             .windowStyle(.plain)
@@ -43,11 +40,6 @@ struct VisiomApp: App {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
         }
-        
-        WindowGroup(id: appModel.drawingControlWindowID) {
-            DrawingControlView()
-                .environmentObject(drawingState)
-        }.windowResizability(.contentSize)
         
         WindowGroup(id: appModel.memoEditWindowID, for: UUID.self) {
             $memoID in
@@ -73,7 +65,6 @@ struct VisiomApp: App {
                 .environment(appModel)
                 .environment(collectionStore)
                 .environment(entityManager)
-                .environmentObject(drawingState)
                 .environment(memoStore)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
