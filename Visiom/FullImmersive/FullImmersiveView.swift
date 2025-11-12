@@ -79,20 +79,6 @@ struct FullImmersiveView: View {
                 appModel.itemAdd = nil
             }
         }
-        .onChange(of: appModel.memoToAnchorID) { memoID in
-            guard let memoID else { return }
-            Task {
-                if let existing = anchorRegistry
-                    .all()
-                    .first(where: { $0.kind == EntityKind.memo.rawValue && $0.dataRef == memoID })
-                {
-                    await refreshMemoOverlay(anchorID: existing.id, memoID: memoID)
-                } else {
-                    await makePlacement(type: .memo)
-                }
-                await MainActor.run { appModel.memoToAnchorID = nil }
-            }
-        }
         /// visible/invisible 처리 부분
         /// 다른 방법이 있는지 찾아보기
         .onChange(of: appModel.showPhotos) { newValue in
