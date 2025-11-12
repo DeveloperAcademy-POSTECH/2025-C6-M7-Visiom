@@ -59,17 +59,46 @@ struct FullImmersiveView: View {
                 appModel.itemAdd = nil
             }
         }
+        .onChange(of: appModel.memoToAnchorID) { memoID in
+            guard let memoID else { return }
+            Task {
+                if let existing = anchorRegistry
+                    .all()
+                    .first(where: { $0.kind == EntityKind.memo.rawValue && $0.dataRef == memoID })
+                {
+                    await refreshMemoOverlay(anchorID: existing.id, memoID: memoID)   //수정: 추가됨
+                } else {
+                    await makePlacement(type: .memo)
+                }
+                await MainActor.run { appModel.memoToAnchorID = nil }
+            }
+        }
         .onChange(of: appModel.itemAdd) { newValue in
             if newValue == .teleport {
                 Task { await makePlacement(type: .teleport) }
                 appModel.itemAdd = nil
             }
         }
-        
-        .onChange(of: appModel.showPhotos) { _, newValue in
+        .onChange(of: appModel.memoToAnchorID) { memoID in
+            guard let memoID else { return }
+            Task {
+                if let existing = anchorRegistry
+                    .all()
+                    .first(where: { $0.kind == EntityKind.memo.rawValue && $0.dataRef == memoID })
+                {
+                    await refreshMemoOverlay(anchorID: existing.id, memoID: memoID)
+                } else {
+                    await makePlacement(type: .memo)
+                }
+                await MainActor.run { appModel.memoToAnchorID = nil }
+            }
+        }
+        /// visible/invisible 처리 부분
+        /// 다른 방법이 있는지 찾아보기
+        .onChange(of: appModel.showPhotos) { newValue in
             photoGroup?.isEnabled = newValue
         }
-        .onChange(of: appModel.showMemos) { _, newValue in
+        .onChange(of: appModel.showMemos) { newValue in
             memoGroup?.isEnabled = newValue
         }
         .simultaneousGesture(tapEntityGesture)

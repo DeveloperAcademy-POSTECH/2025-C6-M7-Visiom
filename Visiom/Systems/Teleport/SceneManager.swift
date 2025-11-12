@@ -4,7 +4,6 @@
 //
 //  Created by 윤창현 on 10/20/25.
 //
-
 import RealityKit
 import SwiftUI
 
@@ -69,7 +68,7 @@ class SceneManager {
         // 씬을 클릭한 큐브 위치의 반대 방향으로 설정
         // position이 큐브 좌표이므로, 씬을 -position으로 이동시켜 사용자가 큐브 위치에 있는 것처럼 보이게 함
         let currentY = root.position.y
-        root.position = SIMD3<Float>(-position.x, -position.y, -position.z)
+        root.position = SIMD3<Float>(-position.x, currentY, -position.z)
     }
     
     // MARK: - Update Markers Visibility
