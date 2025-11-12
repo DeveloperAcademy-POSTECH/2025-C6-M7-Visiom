@@ -66,7 +66,7 @@ struct FullImmersiveView: View {
                     .all()
                     .first(where: { $0.kind == EntityKind.memo.rawValue && $0.dataRef == memoID })
                 {
-                    await refreshMemoOverlay(anchorID: existing.id, memoID: memoID)   //수정: 추가됨
+                    await refreshMemoOverlay(anchorID: existing.id, memoID: memoID)
                 } else {
                     await makePlacement(type: .memo)
                 }

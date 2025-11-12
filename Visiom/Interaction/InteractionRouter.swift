@@ -154,7 +154,7 @@ public final class InteractionRouter {
         case .tap(_, _):
             // 텔레포트 해야한다고 알림
             NotificationCenter.default.post(name: .didRequestTeleport, object: entity)
-                    return true
+            return true
             
         case .drag(let e, var delta, let phase):
             delta.y = 0
