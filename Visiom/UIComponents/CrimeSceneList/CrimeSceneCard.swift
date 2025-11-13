@@ -94,7 +94,7 @@ struct CrimeSceneCard: View {
         .glassBackgroundEffect(
             in: RoundedRectangle(cornerRadius: 35, style: .continuous)
         )
-        .contentShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
         .hoverEffect()
     }
 }
