@@ -7,7 +7,7 @@
 //  앵커의 위치를 관리해줌
 //  앵커의 이동, 삭제, 생성을 데이터로 관리
 //
-
+import SwiftUI
 import Foundation
 import RealityKit
 import simd
@@ -148,6 +148,98 @@ public final class PlacementManager {
         onMoved?(record)
     }
     
+    private func updateLines() async {
+//        guard let content = content else { return }
+//        
+//        lines.forEach { $0.removeFromParent() }
+//        lines.removeAll()
+//        
+//        for i in 1..<entities.count {
+//            let line = await createLine(
+//                from: entities[i-1].position,
+//                to: entities[i].position
+//            )
+//            lines.append(line)
+//            content.add(line)
+//        }
+    }
+    
+    // Entity 사이 연결 선 만들기
+    private func createLine(from start: SIMD3<Float>, to end: SIMD3<Float>) async -> Entity {
+        let distance = simd_distance(start, end)
+        let direction = normalize(end - start)
+        
+        let lineModelName = "arrow"
+        
+        do {
+            // USDZ 모델 로드
+            let lineModel = try await Entity(named: lineModelName)
+            
+            // 모델의 경계 확인
+            let bounds = lineModel.visualBounds(relativeTo: nil)
+            
+            // 길이 축에 따른 원래 길이와 스케일 계산
+            let originalLength: Float
+            var scale = SIMD3<Float>(0.02, 0.01, 0.01)
+            
+ 
+            lineModel.scale = scale
+            
+            // 중간 지점에 위치
+            let midPoint = (start + end) / 2
+//            lineModel.position = midPoint
+            
+            // 🎯 위치 오프셋: 앞뒤로 밀려있으면 여기서 조절
+            lineModel.position = midPoint + SIMD3<Float>(0, 0, 0)  // Z축으로 0.1 이동
+            
+            // 회전 계산: 모델이 X축을 길이축으로 사용하므로 X축을 up 벡터로 사용
+            let up = SIMD3<Float>(1, 0, 0)
+            
+            if abs(dot(direction, up)) < 0.999 {
+                let rotationAxis = normalize(cross(up, direction))
+                let angle = acos(dot(up, direction))
+                lineModel.orientation = simd_quatf(angle: angle, axis: rotationAxis)
+            } else if dot(direction, up) < 0 {
+                // 반대 방향인 경우 180도 회전
+                let perpAxis = SIMD3<Float>(0, 1, 0)
+                lineModel.orientation = simd_quatf(angle: .pi, axis: perpAxis)
+            }
+            
+            return lineModel
+            
+        } catch {
+            print("❌ USDZ 로드 실패: \(error)")
+            // 실패 시 기본 실린더 반환
+            return createDefaultCylinder(from: start, to: end)
+        }
+        
+    }
+    
+    // 백업용 기본 실린더
+    private func createDefaultCylinder(from start: SIMD3<Float>, to end: SIMD3<Float>) -> ModelEntity {
+        let distance = simd_distance(start, end)
+        let direction = normalize(end - start)
+        
+        let cylinder = ModelEntity(
+            mesh: .generateCylinder(height: distance, radius: 0.005),
+            materials: [SimpleMaterial(color: .blue, isMetallic: false)]
+        )
+        
+        let midPoint = (start + end) / 2
+        cylinder.position = midPoint
+        
+        let up = SIMD3<Float>(0, 1, 0)
+        if abs(dot(direction, up)) < 0.999 {
+            let rotationAxis = normalize(cross(up, direction))
+            let angle = acos(dot(up, direction))
+            cylinder.orientation = simd_quatf(angle: angle, axis: rotationAxis)
+        } else if dot(direction, up) < 0 {
+            cylinder.orientation = simd_quatf(angle: .pi, axis: SIMD3<Float>(1, 0, 0))
+        }
+        
+        return cylinder
+    }
+    
     public func removeAnchor(anchorID: UUID) {
         anchorRegistry.remove(anchorID)
         onRemoved?(anchorID)
@@ -160,3 +252,4 @@ public final class PlacementManager {
         return t
     }
 }
+
