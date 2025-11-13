@@ -31,31 +31,7 @@ struct CrimeSceneCard: View {
                         .font(.system(size: 15, weight: .regular))
                         .frame(width: 68, height: 28)
                         .background(
-                            Capsule()
-                                .fill(
-                                    status == .solved
-                                        ? Color(
-                                            .sRGB,
-                                            red: 84 / 255,
-                                            green: 84 / 255,
-                                            blue: 84 / 255
-                                        )  // #5E5E5E21
-                                        : status == .investigating
-                                            ? Color(
-                                                .sRGB,
-                                                red: 208.0 / 255.0,
-                                                green: 208.0 / 255.0,
-                                                blue: 208.0 / 255.0,
-                                                opacity: 128.0 / 255.0
-                                            )  // #D0D0D080
-                                            : Color(
-                                                .sRGB,
-                                                red: 255.0 / 255.0,
-                                                green: 66.0 / 255.0,
-                                                blue: 69.0 / 255.0,
-                                                opacity: 1.0
-                                            )  // #FF4245
-                                )
+                            Capsule().fill(statusColor(status: status))
                         )
                 }
                 Spacer(minLength: 8)
@@ -63,23 +39,13 @@ struct CrimeSceneCard: View {
                     Text(occuredDate)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(
-                            Color(
-                                .sRGB,
-                                red: 84 / 255,
-                                green: 84 / 255,
-                                blue: 84 / 255
-                            )
+                            textColor()
                         )
                     Spacer()
                     Text(location)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(
-                            Color(
-                                .sRGB,
-                                red: 84 / 255,
-                                green: 84 / 255,
-                                blue: 84 / 255
-                            )
+                            textColor()
                         )
                 }
             }
@@ -97,4 +63,30 @@ struct CrimeSceneCard: View {
         .contentShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
         .hoverEffect()
     }
+}
+
+private func statusColor(status: CrimeSceneStatus) -> Color {
+    switch status {
+    case .coldcase:
+        return Color(.sRGB, red: 1.0, green: 66 / 255, blue: 69 / 255)
+    case .investigating:
+        return Color(
+            .sRGB,
+            red: 208 / 255,
+            green: 208 / 255,
+            blue: 208 / 255,
+            opacity: 128 / 255
+        )
+    case .solved:
+        return Color(
+            .sRGB,
+            red: 84 / 255,
+            green: 84 / 255,
+            blue: 84 / 255,
+        )
+    }
+}
+
+private func textColor() -> Color {
+    Color(.sRGB, red: 84 / 255, green: 84 / 255, blue: 84 / 255)
 }

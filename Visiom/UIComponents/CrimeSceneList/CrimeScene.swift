@@ -7,7 +7,7 @@
 import Foundation
 
 enum CrimeSceneStatus: String {
-    case unsolved = "미제"
+    case coldcase = "미제"
     case investigating = "수사 중"
     case solved = "완료"
 }
@@ -43,7 +43,7 @@ struct CrimeScene: Identifiable {
             title: "서울 노량진 살인 사건",
             occuredDate: "2025.10.8",
             location: "경상북도 포항시 청암로77",
-            status: .unsolved,
+            status: .coldcase,
             fileName: "Immersive"
         ),
         CrimeScene(
