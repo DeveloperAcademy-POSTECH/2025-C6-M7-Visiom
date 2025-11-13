@@ -18,9 +18,9 @@ struct CrimeSceneCard: View {
             Image(imageName)
                 .resizable()
                 .scaledToFill()
-                .frame(width: 280, height: 218)
-                .clipShape(RoundedRectangle(cornerRadius: 32))
-                .padding(.top, 8)
+                .frame(width: 270, height: 218)
+                .clipShape(RoundedRectangle(cornerRadius: 23))
+                .padding(12)
 
             VStack(alignment: .leading) {
                 HStack {
@@ -83,7 +83,6 @@ struct CrimeSceneCard: View {
                         )
                 }
             }
-            .padding(.top, 15)
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
             .frame(
@@ -92,9 +91,10 @@ struct CrimeSceneCard: View {
         }
 
         .frame(width: 296, height: 316)
-
-        .glassBackgroundEffect()
-        .contentShape(RoundedRectangle(cornerRadius: 32))
+        .glassBackgroundEffect(
+            in: RoundedRectangle(cornerRadius: 35, style: .continuous)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
         .hoverEffect()
     }
 }

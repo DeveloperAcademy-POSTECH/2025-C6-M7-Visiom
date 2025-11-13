@@ -31,7 +31,7 @@ struct CrimeSceneListView: View {
                     .tracking(0)
             }
             .padding(.leading, 24)
-            .padding(.vertical, 28.5)
+            .padding(.vertical, 22)
 
             Divider()
 
@@ -77,8 +77,7 @@ struct CrimeSceneListView: View {
                 }
             }
             .padding(.leading, 26)
-            .padding(.top, 31)
-            .padding(.bottom, 40)
+            .padding(.top, 21)
             Spacer()
         }
         .onAppear {
