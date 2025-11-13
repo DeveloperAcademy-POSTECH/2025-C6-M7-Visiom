@@ -9,51 +9,90 @@ import SwiftUI
 struct CrimeSceneCard: View {
     let imageName: String
     let title: String
-    let description: String
+    let occuredDate: String
+    let location: String
+    let status: CrimeSceneStatus
 
     var body: some View {
         VStack(spacing: 0) {
             Image(imageName)
                 .resizable()
                 .scaledToFill()
-                .frame(height: 218)
-                .frame(maxWidth: .infinity)
-                .clipShape(
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: 32,
-                        bottomLeadingRadius: 0,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: 32
-                    )
-                )
-                .clipped()
+                .frame(width: 280, height: 218)
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .padding(.top, 8)
 
             VStack(alignment: .leading) {
-                Text(title)
-                    .font(.system(size: 17, weight: .medium))
-
-                Text(description)
-                    .font(.system(size: 13, weight: .medium))
+                HStack {
+                    Text(title)
+                        .font(.system(size: 17, weight: .medium))
+                    Spacer()
+                    Text(status.rawValue)
+                        .font(.system(size: 15, weight: .regular))
+                        .frame(width: 68, height: 28)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    status == .solved
+                                        ? Color(
+                                            .sRGB,
+                                            red: 84 / 255,
+                                            green: 84 / 255,
+                                            blue: 84 / 255
+                                        )  // #5E5E5E21
+                                        : status == .investigating
+                                            ? Color(
+                                                .sRGB,
+                                                red: 208.0 / 255.0,
+                                                green: 208.0 / 255.0,
+                                                blue: 208.0 / 255.0,
+                                                opacity: 128.0 / 255.0
+                                            )  // #D0D0D080
+                                            : Color(
+                                                .sRGB,
+                                                red: 255.0 / 255.0,
+                                                green: 66.0 / 255.0,
+                                                blue: 69.0 / 255.0,
+                                                opacity: 1.0
+                                            )  // #FF4245
+                                )
+                        )
+                }
+                Spacer(minLength: 8)
+                HStack {
+                    Text(occuredDate)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(
+                            Color(
+                                .sRGB,
+                                red: 84 / 255,
+                                green: 84 / 255,
+                                blue: 84 / 255
+                            )
+                        )
+                    Spacer()
+                    Text(location)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(
+                            Color(
+                                .sRGB,
+                                red: 84 / 255,
+                                green: 84 / 255,
+                                blue: 84 / 255
+                            )
+                        )
+                }
             }
-            .padding(.top, 12)
-            .padding(.horizontal, 26)
-            .padding(.bottom, 26)
+            .padding(.top, 15)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
             .frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity,
                 alignment: .topLeading
             )
         }
 
-        .frame(width: 267, height: 308)
+        .frame(width: 296, height: 316)
 
-        .background(
-            RoundedRectangle(cornerRadius: 32)
-                .fill(.clear)
-        )
-
-        .clipShape(RoundedRectangle(cornerRadius: 32))
-        .contentShape(RoundedRectangle(cornerRadius: 32))
         .glassBackgroundEffect()
         .contentShape(RoundedRectangle(cornerRadius: 32))
         .hoverEffect()
