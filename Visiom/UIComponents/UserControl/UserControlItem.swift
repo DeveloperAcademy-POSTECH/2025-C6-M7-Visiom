@@ -15,6 +15,7 @@ enum UserControlItem: CaseIterable, Hashable {
     case visibility
     case board
     case teleport
+    case topView
     
     // 기본 icon
     var icon: String {
@@ -25,6 +26,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .visibility: return "eye"
         case .board:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk"
+        case .topView:    return "photo.artframe.circle"
         }
     }
     
@@ -37,6 +39,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .visibility: return "eye.slash"
         case .board:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk.motion"
+        case .topView:    return "photo.artframe.circle"
         }
     }
     
@@ -55,6 +58,7 @@ enum InteractionState: Equatable {
     case teleport                   // 이동
     case board                    //  보드
     case visibility    // visible/invisible
+    case topView // 위에서 보기
     
     var activeItem: UserControlItem? {
         switch self {
@@ -63,6 +67,7 @@ enum InteractionState: Equatable {
         case .board:          return .board
         case .visibility:     return .visibility
         case .idle:           return nil
+        case .topView:        return .topView
         }
     }
     

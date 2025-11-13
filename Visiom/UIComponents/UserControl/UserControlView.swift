@@ -111,6 +111,13 @@ extension UserControlView {
                 appModel.itemAdd = nil
                 print("⚡️ 텔레포트 배치 종료")
             }
+            
+        case .topView:
+            if case .topView = state {
+                appModel.showTopView = true
+            } else {
+                appModel.showTopView = false
+            }
         }
     }
     

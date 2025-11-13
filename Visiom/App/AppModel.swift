@@ -33,6 +33,7 @@ class AppModel {
     var showPhotos: Bool = true
     var showMemos: Bool = true
     var showTeleports: Bool = true
+    var showTopView: Bool = false
     
     func toggleMarkers() {
         markersVisible.toggle()
