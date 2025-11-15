@@ -95,7 +95,7 @@ public enum EntityFactory {
         return e
     }
 
-    public static func makeTimeline(anchorID: UUID) -> Entity {
+    public static func makeTimeline(anchorID: UUID, dataRef: UUID) -> Entity {
         let e = Entity()
         e.name = anchorID.uuidString  // entity 식별을 위해 앵커 id를 공유
         e.components.set(
@@ -105,7 +105,7 @@ public enum EntityFactory {
                 caps: [.place, .persist, .delete, .move, .tap],
                 // 일단 teleport랑 같은 collisiongroup 사용
                 collisionGroup: .teleport,
-                dataRef: nil
+                dataRef: dataRef
             )
         )
         applyCollisionFilter(e, group: .teleport, mask: [.teleport])

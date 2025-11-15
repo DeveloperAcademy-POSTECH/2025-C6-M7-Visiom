@@ -32,6 +32,7 @@ struct FullImmersiveView: View {
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
     @State var teleportGroup: Entity?
+    @State var timelineGroup: Entity?
     
     @State var anchorRegistry = AnchorRegistry()
     @State var placementManager: PlacementManager? = nil

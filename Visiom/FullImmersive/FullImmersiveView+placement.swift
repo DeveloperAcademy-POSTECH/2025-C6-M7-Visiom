@@ -153,6 +153,7 @@ extension FullImmersiveView {
             case .photoCollection: return (photoGroup ?? root)!
             case .memo:            return (memoGroup ?? root)!
             case .teleport:        return (root ?? Entity())
+            case .timeline:        return (timelineGroup ?? root)!
             }
         }()
         
@@ -166,6 +167,9 @@ extension FullImmersiveView {
             entity = EntityFactory.makeMemo(anchorID: rec.id, dataRef: ref)
         case .teleport:
             entity = EntityFactory.makeTeleport(anchorID: rec.id)
+        case .timeline:
+            guard let ref = rec.dataRef else { return }
+            entity = EntityFactory.makeTimeline(anchorID: rec.id, dataRef: ref)
         }
         
         

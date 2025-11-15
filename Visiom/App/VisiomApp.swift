@@ -15,6 +15,7 @@ struct VisiomApp: App {
     @State private var appModel = AppModel()
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
+    @State private var timelineStore = TimelineStore()
     @State private var entityManager = EntityManager()
 
     var body: some Scene {
@@ -54,9 +55,10 @@ struct VisiomApp: App {
         .defaultSize(CGSize(width: 200, height: 220))
         .windowResizability(.contentSize)
 
-        WindowGroup(id: appModel.TimeLineWindowID) {
-            TimeListView()
-                .environment(entityManager)
+        WindowGroup(id: appModel.timelineWindowID) {
+            TimelineView()
+                .environment(appModel)
+                .environment(timelineStore)
         }
         .defaultSize(width: 400, height: 600)
 
