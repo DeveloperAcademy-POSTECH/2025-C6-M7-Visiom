@@ -12,10 +12,6 @@ import simd
 enum ARConstants {
     // MARK: - 기하학 치수 (단위: 미터)
     enum Dimensions {
-        /// 사진 버튼 반지름
-        static let photoButtonRadius: Float = 0.03
-        /// 사진 버튼 높이
-        static let photoButtonHeight: Float = 0.005
         /// 메모 박스 크기 (정사각형)
         static let memoBoxSize: Float = 0.1
         /// 메모 박스 깊이
