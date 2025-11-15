@@ -16,13 +16,13 @@ struct VisiomApp: App {
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
     @State private var entityManager = EntityManager()
-    
+
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
             CrimeSceneListView()
                 .environment(appModel)
-        }.defaultSize(CGSize(width: 1191, height: 477))
-        
+        }.defaultSize(CGSize(width: 1191, height: 500))
+
         WindowGroup(id: appModel.userControlWindowID) {
             UserControlView()
                 .environment(appModel)
@@ -30,7 +30,7 @@ struct VisiomApp: App {
         }.defaultSize(CGSize(width: 700, height: 100))
             .windowResizability(.contentSize)
             .windowStyle(.plain)
-        
+
         WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
             $collectionID in
             if let id = collectionID {
@@ -40,7 +40,7 @@ struct VisiomApp: App {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
         }
-        
+
         WindowGroup(id: appModel.memoEditWindowID, for: UUID.self) {
             $memoID in
             if let id = memoID {
@@ -53,13 +53,13 @@ struct VisiomApp: App {
         }
         .defaultSize(CGSize(width: 200, height: 220))
         .windowResizability(.contentSize)
-        
+
         WindowGroup(id: appModel.TimeLineWindowID) {
             TimeListView()
                 .environment(entityManager)
         }
         .defaultSize(width: 400, height: 600)
-        
+
         ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
             FullImmersiveView()
                 .environment(appModel)
@@ -71,12 +71,16 @@ struct VisiomApp: App {
                 }
                 .onDisappear {
                     openWindow(id: appModel.crimeSceneListWindowID)
-                    appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
+                    appModel.closeImmersiveAuxWindows(
+                        dismissWindow: dismissWindow
+                    )
                     appModel.immersiveSpaceState = .closed
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background {
-                        appModel.closeImmersiveAuxWindows(dismissWindow: dismissWindow)
+                        appModel.closeImmersiveAuxWindows(
+                            dismissWindow: dismissWindow
+                        )
                         PhotoPipeline.cleanupTempFiles()
                         Task {
                             await collectionStore.flushSaves()

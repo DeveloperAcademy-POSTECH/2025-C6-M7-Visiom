@@ -9,53 +9,84 @@ import SwiftUI
 struct CrimeSceneCard: View {
     let imageName: String
     let title: String
-    let description: String
+    let occuredDate: String
+    let location: String
+    let status: CrimeSceneStatus
 
     var body: some View {
         VStack(spacing: 0) {
             Image(imageName)
                 .resizable()
                 .scaledToFill()
-                .frame(height: 218)
-                .frame(maxWidth: .infinity)
-                .clipShape(
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: 32,
-                        bottomLeadingRadius: 0,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: 32
-                    )
-                )
-                .clipped()
+                .frame(width: 270, height: 218)
+                .clipShape(RoundedRectangle(cornerRadius: 23))
+                .padding(12)
 
             VStack(alignment: .leading) {
-                Text(title)
-                    .font(.system(size: 17, weight: .medium))
-
-                Text(description)
-                    .font(.system(size: 13, weight: .medium))
+                HStack {
+                    Text(title)
+                        .font(.system(size: 17, weight: .medium))
+                    Spacer()
+                    Text(status.rawValue)
+                        .font(.system(size: 15, weight: .regular))
+                        .frame(width: 68, height: 28)
+                        .background(
+                            Capsule().fill(statusColor(status: status))
+                        )
+                }
+                Spacer(minLength: 8)
+                HStack {
+                    Text(occuredDate)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(
+                            textColor()
+                        )
+                    Spacer()
+                    Text(location)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(
+                            textColor()
+                        )
+                }
             }
-            .padding(.top, 12)
-            .padding(.horizontal, 26)
-            .padding(.bottom, 26)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
             .frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity,
                 alignment: .topLeading
             )
         }
 
-        .frame(width: 267, height: 308)
-
-        .background(
-            RoundedRectangle(cornerRadius: 32)
-                .fill(.clear)
+        .frame(width: 296, height: 316)
+        .glassBackgroundEffect(
+            in: RoundedRectangle(cornerRadius: 35, style: .continuous)
         )
-
-        .clipShape(RoundedRectangle(cornerRadius: 32))
-        .contentShape(RoundedRectangle(cornerRadius: 32))
-        .glassBackgroundEffect()
-        .contentShape(RoundedRectangle(cornerRadius: 32))
+        .contentShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
         .hoverEffect()
     }
+}
+
+private func statusColor(status: CrimeSceneStatus) -> Color {
+    switch status {
+    case .coldcase:
+        return Color(.sRGB, red: 1.0, green: 66 / 255, blue: 69 / 255)
+    case .investigating:
+        return Color(
+            .sRGB,
+            red: 208 / 255,
+            green: 208 / 255,
+            blue: 208 / 255,
+            opacity: 128 / 255
+        )
+    case .solved:
+        return Color(
+            .sRGB,
+            red: 84 / 255,
+            green: 84 / 255,
+            blue: 84 / 255,
+        )
+    }
+}
+
+private func textColor() -> Color {
+    Color(.sRGB, red: 84 / 255, green: 84 / 255, blue: 84 / 255)
 }
