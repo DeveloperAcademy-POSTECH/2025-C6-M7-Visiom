@@ -12,18 +12,19 @@
 import Foundation
 import RealityKit
 
-
 public enum EntityFactory {
-    
+
     // 3D 화면을 그리면서 applyCollisionFilter함수가 반복적으로 호출됨
     // 따라서 오버헤드 발생 가능성 있음
     // 그러므로 inline으로 처리
     @inline(__always)
-    private static func applyCollisionFilter(_ e: Entity,
-                                             group: CollisionGroup,
-                                             mask: CollisionGroup) {
+    private static func applyCollisionFilter(
+        _ e: Entity,
+        group: CollisionGroup,
+        mask: CollisionGroup
+    ) {
         e.generateCollisionShapes(recursive: true)
-        
+
         if var cc = e.components[CollisionComponent.self] {
             // 이미 CollisionComponent 가 있다면
             // 충돌 규칙만 적용
@@ -42,46 +43,71 @@ public enum EntityFactory {
             e.components.set(cc)
         }
     }
-    
-    public static func makePhotoCollection(anchorID: UUID, dataRef: UUID) -> Entity {
+
+    public static func makePhotoCollection(anchorID: UUID, dataRef: UUID)
+        -> Entity
+    {
         let e = Entity()
-        e.name = anchorID.uuidString        // entity 식별을 위해 앵커 id를 공유
-        e.components.set(InteractionPolicyComponent(
-            kind: .photoCollection,
-            // photoCollection entity가 허용하는 상호작용
-            caps: [.place, .persist, .delete, .move, .tap],
-            collisionGroup: .content,
-            dataRef: dataRef
-        ))
+        e.name = anchorID.uuidString  // entity 식별을 위해 앵커 id를 공유
+        e.components.set(
+            InteractionPolicyComponent(
+                kind: .photoCollection,
+                // photoCollection entity가 허용하는 상호작용
+                caps: [.place, .persist, .delete, .move, .tap],
+                collisionGroup: .content,
+                dataRef: dataRef
+            )
+        )
         applyCollisionFilter(e, group: .content, mask: [.content])
-        
+
         return e
     }
-    
+
     public static func makeMemo(anchorID: UUID, dataRef: UUID) -> Entity {
         let e = Entity()
-        e.name = anchorID.uuidString        // entity 식별을 위해 앵커 id를 공유
-        e.components.set(InteractionPolicyComponent(
-            kind: .memo,
-            // memo entity 가 허용하는 상호작용
-            caps: [.place, .persist, .delete, .move, .tap],
-            collisionGroup: .content,
-            dataRef: dataRef
-        ))
+        e.name = anchorID.uuidString  // entity 식별을 위해 앵커 id를 공유
+        e.components.set(
+            InteractionPolicyComponent(
+                kind: .memo,
+                // memo entity 가 허용하는 상호작용
+                caps: [.place, .persist, .delete, .move, .tap],
+                collisionGroup: .content,
+                dataRef: dataRef
+            )
+        )
         applyCollisionFilter(e, group: .content, mask: [.content])
         return e
     }
 
     public static func makeTeleport(anchorID: UUID) -> Entity {
         let e = Entity()
-        e.name = anchorID.uuidString       // entity 식별을 위해 앵커 id를 공유
-        e.components.set(InteractionPolicyComponent(
-            kind: .teleport,
-            // teleport entity가 허용하는 상호작용
-            caps: [.place, .persist, .delete, .move, .tap],
-            collisionGroup: .teleport,
-            dataRef: nil
-        ))
+        e.name = anchorID.uuidString  // entity 식별을 위해 앵커 id를 공유
+        e.components.set(
+            InteractionPolicyComponent(
+                kind: .teleport,
+                // teleport entity가 허용하는 상호작용
+                caps: [.place, .persist, .delete, .move, .tap],
+                collisionGroup: .teleport,
+                dataRef: nil
+            )
+        )
+        applyCollisionFilter(e, group: .teleport, mask: [.teleport])
+        return e
+    }
+
+    public static func makeTimeline(anchorID: UUID) -> Entity {
+        let e = Entity()
+        e.name = anchorID.uuidString  // entity 식별을 위해 앵커 id를 공유
+        e.components.set(
+            InteractionPolicyComponent(
+                kind: .timeline,
+                // timeline entity가 허용하는 상호작용
+                caps: [.place, .persist, .delete, .move, .tap],
+                // 일단 teleport랑 같은 collisiongroup 사용
+                collisionGroup: .teleport,
+                dataRef: nil
+            )
+        )
         applyCollisionFilter(e, group: .teleport, mask: [.teleport])
         return e
     }
