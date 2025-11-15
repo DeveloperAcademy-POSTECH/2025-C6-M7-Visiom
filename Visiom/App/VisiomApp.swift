@@ -59,9 +59,9 @@ struct VisiomApp: App {
                 .environment(entityManager)
         }
         .defaultSize(width: 400, height: 600)
-
-        ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
-            FullImmersiveView()
+        
+        ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
+            MixedImmersiveView()
                 .environment(appModel)
                 .environment(collectionStore)
                 .environment(entityManager)
@@ -87,6 +87,35 @@ struct VisiomApp: App {
                     }
                 }
         }
-        .immersionStyle(selection: .constant(.full), in: .full)
+        .immersionStyle(selection: .constant(.mixed), in: .mixed)
+
+//        ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
+//            FullImmersiveView()
+//                .environment(appModel)
+//                .environment(collectionStore)
+//                .environment(entityManager)
+//                .environment(memoStore)
+//                .onAppear {
+//                    appModel.immersiveSpaceState = .open
+//                }
+//                .onDisappear {
+//                    appModel.closeImmersiveAuxWindows(
+//                        dismissWindow: dismissWindow
+//                    )
+//                    appModel.immersiveSpaceState = .closed
+//                }
+//                .onChange(of: scenePhase) { _, phase in
+//                    if phase == .background {
+//                        appModel.closeImmersiveAuxWindows(
+//                            dismissWindow: dismissWindow
+//                        )
+//                        PhotoPipeline.cleanupTempFiles()
+//                        Task {
+//                            await collectionStore.flushSaves()
+//                        }
+//                    }
+//                }
+//        }
+//        .immersionStyle(selection: .constant(.full), in: .full)
     }
 }
