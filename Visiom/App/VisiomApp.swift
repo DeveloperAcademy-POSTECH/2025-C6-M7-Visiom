@@ -70,7 +70,6 @@ struct VisiomApp: App {
                     appModel.immersiveSpaceState = .open
                 }
                 .onDisappear {
-                    openWindow(id: appModel.crimeSceneListWindowID)
                     appModel.closeImmersiveAuxWindows(
                         dismissWindow: dismissWindow
                     )
