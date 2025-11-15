@@ -78,6 +78,9 @@ public final class SceneBootstrap {
                 entity = EntityFactory.makeMemo(anchorID: rec.id, dataRef: ref)
             case "teleport":
                 entity = EntityFactory.makeTeleport(anchorID: rec.id)
+            case "timeline":
+                guard let ref = rec.dataRef else { continue }
+                entity = EntityFactory.makeTimeline(anchorID: rec.id, dataRef: ref)
             default:
                 continue
             }

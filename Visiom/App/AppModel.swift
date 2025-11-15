@@ -27,6 +27,7 @@ class AppModel {
     var immersiveSpaceState = ImmersiveSpaceState.closed
     var itemAdd: UserControlItem? = nil
     var memoToAnchorID: UUID? = nil
+    var timelineToAnchorID: UUID? = nil
 
     // visible/invisible 상태 관리
     var markersVisible: Bool = true

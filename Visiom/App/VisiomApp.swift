@@ -68,6 +68,7 @@ struct VisiomApp: App {
                 .environment(collectionStore)
                 .environment(entityManager)
                 .environment(memoStore)
+                .environment(timelineStore)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }

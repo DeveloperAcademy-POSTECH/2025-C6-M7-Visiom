@@ -24,10 +24,11 @@ struct TimelineView: View {
                     .tracking(0)
             }
             Button {
-                timelineStore.createTimeline(
+                let newTimeline = timelineStore.createTimeline(
                     title: "새 타임라인",
                     occurredTime: nil,
                 )
+                appModel.timelineToAnchorID = newTimeline.id
             } label: {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 32))

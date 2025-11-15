@@ -13,7 +13,7 @@ enum UserControlItem: CaseIterable, Hashable {
     case photoCollection
     case memo
     case visibility
-    case board
+    case timeline
     case teleport
     
     // 기본 icon
@@ -23,7 +23,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .photoCollection:      return "photo"
         case .memo:       return "rectangle.badge.plus"
         case .visibility: return "eye"
-        case .board:      return "text.line.first.and.arrowtriangle.forward"
+        case .timeline:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk"
         }
     }
@@ -35,7 +35,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .photoCollection:      return "photo.fill"
         case .memo:       return "rectangle.fill.badge.plus"
         case .visibility: return "eye.slash"
-        case .board:      return "text.line.first.and.arrowtriangle.forward"
+        case .timeline:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk.motion"
         }
     }
@@ -53,14 +53,14 @@ enum InteractionState: Equatable {
     case idle                     // 기본
     case placing(UserControlItem) // 사진/메모
     case teleport                   // 이동
-    case board                    //  보드
+    case timeline                    //  보드
     case visibility    // visible/invisible
     
     var activeItem: UserControlItem? {
         switch self {
         case .placing(let t): return t
         case .teleport:         return .teleport
-        case .board:          return .board
+        case .timeline:          return .timeline
         case .visibility:     return .visibility
         case .idle:           return nil
         }
