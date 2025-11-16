@@ -24,9 +24,9 @@ extension MixedImmersiveView {
             worldTracking: Self.worldTracking,
             anchorRegistry: anchorRegistry,
             persistence: persistence,
-            entityForAnchorID: { id in entityByAnchorID[id] },
-            setEntityForAnchorID: { id, e in entityByAnchorID[id] = e },
-            spawnEntity: { rec in await spawnEntity(rec) }
+            entityForAnchorID: { id in controller?.entityByAnchorID[id] },
+            setEntityForAnchorID: { id, e in controller?.entityByAnchorID[id] = e },
+            spawnEntity: { rec in await controller?.spawnEntity(rec) }
         )
         
         // 레코드가 없는 앵커가 추가된 경우(메모/임시 대기열 처리)
@@ -78,7 +78,7 @@ extension MixedImmersiveView {
         anchorRegistry.upsert(rec)
         
         // 스폰 맵 업데이트
-        entityByAnchorID[anchor.id] = entity
+        controller?.entityByAnchorID[anchor.id] = entity
         
         // 저장
         persistence?.save()
@@ -89,7 +89,7 @@ extension MixedImmersiveView {
     /// 월드 앵커 제거
     func removeWorldAnchor(by id: UUID) async {
         anchorRegistry.remove(id)
-        if let e = entityByAnchorID.removeValue(forKey: id) { e.removeFromParent() }
+        if let e = controller?.entityByAnchorID.removeValue(forKey: id) { e.removeFromParent() }
         persistence?.save()
         print("persistence?.save() 호출 : AnchorSystem.removeWorldAnchor")
     }
