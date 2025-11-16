@@ -65,19 +65,31 @@ struct TimelineCardView: View {
             Text(String(timelineIndex))
             VStack {
                 Text(title)
-                if occurredTime == nil {
-                    timeMissingView
-                } else {
-                    timeSetView
-                }
+                Text(!isSequenceCorrect ? "시간이 성립하지 않습니다" : "")
             }
-
+            if occurredTime == nil {
+                timeMissingView
+            } else {
+                timeSetView
+            }
+            Button {
+                timelineStore.deleteTimeline(id: id)
+            } label: {
+                Image(systemName: "trash")
+                    .foregroundColor(.gray)
+            }
+            .buttonStyle(.plain)
         }
-
         .glassBackgroundEffect(
             in: RoundedRectangle(cornerRadius: 35, style: .continuous)
         )
         .contentShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
         .hoverEffect()
+        .overlay(
+            RoundedRectangle(cornerRadius: 35, style: .continuous)
+                .stroke(
+                    !isSequenceCorrect ? Color.red : Color.clear,
+                )
+        )
     }
 }
