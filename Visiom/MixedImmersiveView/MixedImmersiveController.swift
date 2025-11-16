@@ -18,11 +18,11 @@ final class MixedImmersiveController {
     let anchorRegistry: AnchorRegistry
     let persistence: PersistenceManager
     let bootstrap: SceneBootstrap
-    let anchorSystem: AnchorSystem
     let placementManager: PlacementManager
     let openWindow: (String, Any?) -> Void
     let memoStore: MemoStore
     let collectionStore: CollectionStore
+    let windowIDPhotoCollection: String
 
     // MARK: - Entities
     weak var root: Entity?
@@ -39,20 +39,20 @@ final class MixedImmersiveController {
         anchorRegistry: AnchorRegistry,
         persistence: PersistenceManager,
         bootstrap: SceneBootstrap,
-        anchorSystem: AnchorSystem,
         placementManager: PlacementManager,
         memoStore: MemoStore,
         collectionStore: CollectionStore,
+        windowIDPhotoCollection: String,
         openWindow: @escaping (String, Any?) -> Void
     ) {
         self.worldTracking = worldTracking
         self.anchorRegistry = anchorRegistry
         self.persistence = persistence
         self.bootstrap = bootstrap
-        self.anchorSystem = anchorSystem
         self.placementManager = placementManager
         self.memoStore = memoStore
         self.collectionStore = collectionStore
+        self.windowIDPhotoCollection = windowIDPhotoCollection
         self.openWindow = openWindow
     }
 }
@@ -93,7 +93,7 @@ extension MixedImmersiveController {
         }
 
         // 1) 카메라 앞 위치 계산
-        let spawnPosition = computeSpawnPosition(cameraTransform: cameraTransform, type: type)
+        let spawnPosition = computePlacementPosition(cameraTransform: cameraTransform, type: type)
 
         // 2) PlacementManager.place 로 초기 AnchorRecord 생성
         let anchorID: UUID
@@ -177,7 +177,7 @@ extension MixedImmersiveController {
         persistence.save()
 
         // 4) 윈도우 열기
-        openWindow("PhotoCollectionWindow", photoCollection.id)
+        openWindow(windowIDPhotoCollection, photoCollection.id)
     }
 
     private func handleMemoPlacement(_ anchorRecord: AnchorRecord) async {
@@ -246,7 +246,7 @@ extension MixedImmersiveController {
 extension MixedImmersiveController {
 
     /// 카메라 앞 0.5m 위치 계산
-    private func computeSpawnPosition(cameraTransform: simd_float4x4, type: UserControlItem) -> SIMD3<Float> {
+    private func computePlacementPosition(cameraTransform: simd_float4x4, type: UserControlItem) -> SIMD3<Float> {
 
         // 카메라 위치
         let devicePosition = SIMD3<Float>(
