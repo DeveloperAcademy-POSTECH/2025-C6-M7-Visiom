@@ -1,5 +1,5 @@
 //
-//  MixedImmsersiveController.swift
+//  MixedImmersiveController.swift
 //  Visiom
 //
 //  Created by Elphie on 11/16/25.
