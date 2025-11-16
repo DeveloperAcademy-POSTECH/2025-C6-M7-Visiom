@@ -13,6 +13,7 @@ import Observation
 final class TimelineStore {
     private let persistence = PersistenceActor()
     var timelines: [Timeline] = []
+    var onTimelineDeleted: ((UUID) -> Void)?
 
     func load() async {
         do {
@@ -135,8 +136,12 @@ final class TimelineStore {
         guard let idx = timelines.firstIndex(where: { $0.id == id }) else {
             return
         }
+        let anchorID = timelines[idx].id
         timelines.remove(at: idx)
+
         normalizeIndices()
+
+        onTimelineDeleted?(anchorID)
     }
 
     /// 1,2,3,... 순서로 재정렬

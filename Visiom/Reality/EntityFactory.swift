@@ -102,7 +102,7 @@ public enum EntityFactory {
             InteractionPolicyComponent(
                 kind: .timeline,
                 // timeline entity가 허용하는 상호작용
-                caps: [.place, .persist, .delete, .move, .tap],
+                caps: [.place, .persist, .move, .tap],
                 // 일단 teleport랑 같은 collisiongroup 사용
                 collisionGroup: .teleport,
                 dataRef: dataRef

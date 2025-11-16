@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - Placement Extension
 extension FullImmersiveView {
 
-    func makePlacement(type: UserControlItem) async {
+    func makePlacement(type: UserControlItem, dataRef: UUID? = nil) async {
         // 현재 시간을 기준으로 기기의 포즈(위치와 방향)를 가져옴
         let timestamp = CACurrentMediaTime()
         guard
@@ -28,14 +28,16 @@ extension FullImmersiveView {
         // 이 위치에 앵커 생성 요청
         await createAnchor(
             usingCamera: deviceAnchor.originFromAnchorTransform,
-            for: type
+            for: type,
+            dataRef: dataRef
         )
 
     }
 
     func createAnchor(
         usingCamera cameraTransform: simd_float4x4,
-        for type: UserControlItem
+        for type: UserControlItem,
+        dataRef: UUID? = nil
     )
         async
     {
@@ -107,7 +109,7 @@ extension FullImmersiveView {
         case .timeline:
             anchorID = placementManager.place(
                 kind: .timeline,
-                dataRef: nil,
+                dataRef: dataRef,
                 forwardFrom: cameraTransform
             )
         default: fatalError("Unknown item type: \(type)")
@@ -174,9 +176,8 @@ extension FullImmersiveView {
                 persistence?.save()
 
             case .timeline:
-                guard let timelineID = appModel.timelineToAnchorID else {
-                    return
-                }
+                let timelineID = dataRef ?? appModel.timelineToAnchorID
+                guard let timelineID else { return }
 
                 var updated = rec
                 updated.dataRef = timelineID

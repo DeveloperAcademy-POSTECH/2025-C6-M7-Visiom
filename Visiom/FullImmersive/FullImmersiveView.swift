@@ -101,7 +101,7 @@ struct FullImmersiveView: View {
                 {
                     print("Timeline anchor already exists: \(existing.id)")
                 } else {
-                    await makePlacement(type: .timeline)
+                    await makePlacement(type: .timeline, dataRef: timelineID)
                 }
                 await MainActor.run { appModel.timelineToAnchorID = nil }
             }
@@ -127,6 +127,24 @@ struct FullImmersiveView: View {
             setupAnchorSystem()
             anchorSystem?.start()
             startInteractionPipelineIfReady()
+
+            // timeline 앵커 삭제
+            timelineStore.onTimelineDeleted = { timelineID in
+                Task {
+                    if let anchorID = anchorRegistry.records.values.first(
+                        where: {
+                            $0.kind == EntityKind.timeline.rawValue
+                                && $0.dataRef == timelineID
+                        })?.id
+                    {
+                        await removeWorldAnchor(by: anchorID)
+                    } else {
+                        print(
+                            "Timeline 삭제 알림 받았으나 연결된 앵커를 찾지 못함 for \(timelineID)"
+                        )
+                    }
+                }
+            }
 
             // 텔레포트 탭 알림 구독
             NotificationCenter.default.addObserver(
