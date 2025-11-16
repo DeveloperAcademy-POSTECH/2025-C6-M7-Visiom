@@ -13,7 +13,6 @@ import SwiftUI
 struct MixedImmersiveView: View {
     @Environment(AppModel.self) var appModel
     @Environment(CollectionStore.self) var collectionStore
-    @Environment(EntityManager.self) private var entityManager
     @Environment(MemoStore.self) var memoStore
     
     @Environment(\.openWindow) var openWindow
@@ -22,7 +21,6 @@ struct MixedImmersiveView: View {
     static let arSession = ARKitSession()
     static let worldTracking = WorldTrackingProvider()
     
-    // teleport
     @State var root: Entity? = nil
     @State var sceneContent: Entity?
 
@@ -46,6 +44,9 @@ struct MixedImmersiveView: View {
     @State private var inputSurface = SwiftUIInputSurface()
     @State private var router: InteractionRouter? = nil
     @State private var gestureBridge: GestureBridge? = nil
+    
+    @State private var controller: MixedImmersiveController? = nil
+
     
     var body: some View {
         RealityView { content in
