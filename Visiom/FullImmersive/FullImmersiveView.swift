@@ -114,6 +114,11 @@ struct FullImmersiveView: View {
         .onChange(of: appModel.showMemos) { newValue in
             memoGroup?.isEnabled = newValue
         }
+        .onChange(of: appModel.customHeight) { newValue in
+            Task {
+                await applyHeightAdjustment(customHeight: newValue)
+            }
+        }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
@@ -295,5 +300,37 @@ struct FullImmersiveView: View {
                 relativeTo: container
             )
         }
+    }
+
+    private func applyHeightAdjustment(customHeight: Float) async {
+        do {
+            // WorldTrackingProvider는 타임스탬프(Double)를 받음 최신 시각으로 쿼리
+            let now = CACurrentMediaTime()
+            if let deviceAnchor = await Self.worldTracking.queryDeviceAnchor(
+                atTimestamp: now
+
+            ) {
+                let userHeight = deviceAnchor.originFromAnchorTransform.columns
+                    .3.y
+
+                print("현재 높이: \(userHeight)m")
+                let offset = customHeight - userHeight
+
+                // MainActor에서 UI(root 엔티티) 업데이트
+                await MainActor.run {
+                    root?.setPosition(
+                        SIMD3<Float>(0, -offset, 0),
+                        relativeTo: nil
+                    )
+                    print(
+                        "시점 높이 적용됨: 원하는=\(customHeight), 실제=\(userHeight), offset=\(offset)"
+                    )
+                }
+            } else {
+                print("쿼리 실패. DeviceAnchor 못찾음")
+            }
+
+        }
+
     }
 }

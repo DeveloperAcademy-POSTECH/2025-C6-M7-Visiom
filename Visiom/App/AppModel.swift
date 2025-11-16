@@ -35,6 +35,8 @@ class AppModel {
     var showMemos: Bool = true
     var showTeleports: Bool = true
     var showTimelines: Bool = true
+    
+    var customHeight: Float = 1.60
 
     func toggleMarkers() {
         markersVisible.toggle()
