@@ -52,6 +52,11 @@ struct FullImmersiveView: View {
     var body: some View {
         RealityView { content in
             await buildRealityContent(content)
+            
+            setupPersistenceIfNeeded()
+            setupAnchorSystem()
+            anchorSystem?.start()
+            startInteractionPipelineIfReady()
         } update: { content in
             updateRealityContent(content)
         }
@@ -128,11 +133,6 @@ struct FullImmersiveView: View {
             await FullImmersiveView.startARSession()
         }
         .onAppear {
-            setupPersistenceIfNeeded()
-            setupAnchorSystem()
-            anchorSystem?.start()
-            startInteractionPipelineIfReady()
-
             // timeline 앵커 삭제
             timelineStore.onTimelineDeleted = { timelineID in
                 Task {
@@ -149,39 +149,10 @@ struct FullImmersiveView: View {
                         )
                     }
                 }
-            }
-
-            // 텔레포트 탭 알림 구독
-            NotificationCenter.default.addObserver(
-                forName: .didRequestTeleport,
-                object: nil,
-                queue: .main
-            ) { note in
-                guard let anyEntity = note.object as? Entity else { return }
-                // 탭된 비주얼에서 정책 컨테이너로 상승
-                guard let container = containerWithPolicy(from: anyEntity)
-                else { return }
-                guard let aID = container.anchorID,
-                    let rec = anchorRegistry.records[aID],
-                    let root = root
-                else { return }
-                // 앵커의 월드 위치로 텔레포트(= 씬을 반대로 이동)
-                let p = SIMD3<Float>(
-                    rec.worldMatrix.columns.3.x,
-                    rec.worldMatrix.columns.3.y,
-                    rec.worldMatrix.columns.3.z
-                )
-                SceneManager.updateScenePosition(root: root, position: p)
-            }
+            }     
         }
         .onDisappear {
             anchorSystem?.stop()
-            // 텔레포터 앱 알림 구독 해제
-            NotificationCenter.default.removeObserver(
-                self,
-                name: .didRequestTeleport,
-                object: nil
-            )
         }
     }
 

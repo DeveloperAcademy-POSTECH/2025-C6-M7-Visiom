@@ -38,6 +38,8 @@ class AppModel {
     
     var customHeight: Float = 1.60
 
+    var showTopView: Bool = false
+    
     func toggleMarkers() {
         markersVisible.toggle()
     }
