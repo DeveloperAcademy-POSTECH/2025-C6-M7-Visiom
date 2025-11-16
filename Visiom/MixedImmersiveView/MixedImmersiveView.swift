@@ -64,7 +64,7 @@ struct MixedImmersiveView: View {
                 appModel.itemAdd = nil
             }
         }
-        .onChange(of: appModel.memoToAnchorID) { memoID in
+        .onChange(of: memoStore.memoToAnchorID) { memoID in
             guard let memoID else { return }
             Task {
                 if let existing = anchorRegistry
@@ -75,7 +75,7 @@ struct MixedImmersiveView: View {
                 } else {
                     await makePlacement(type: .memo)
                 }
-                await MainActor.run { appModel.memoToAnchorID = nil }
+                await MainActor.run { memoStore.memoToAnchorID = nil }
             }
         }
         .onChange(of: appModel.itemAdd) { newValue in
