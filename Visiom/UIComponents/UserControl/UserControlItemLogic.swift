@@ -81,6 +81,9 @@ struct UserControlItemLogic {
             
         case .visibility:
             return state == .visibility ? .idle : .visibility
+        
+        case .topView:
+            return state == .topView ? .idle : .topView
         }
     }
 }
