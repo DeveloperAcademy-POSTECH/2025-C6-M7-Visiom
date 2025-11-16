@@ -22,7 +22,6 @@ struct MixedImmersiveView: View {
     static let worldTracking = WorldTrackingProvider()
     
     @State var root: Entity? = nil
-    //@State var sceneContent: Entity?
     
     @State var anchorToMemo: [UUID: UUID] = [:]
     @State var pendingItemType: [UUID: UserControlItem] = [:]

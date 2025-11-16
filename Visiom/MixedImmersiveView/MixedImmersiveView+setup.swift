@@ -134,8 +134,5 @@ extension MixedImmersiveView {
         
         // 디스크에서 앵커 복원 & 엔티티 스폰
         await bootstrap.restoreAndSpawn()
-        
-        // (선택) AnchorSystem도 여기서 세팅할 수 있음
-        // setupAnchorSystem() 안에서 필요하다면 controller 참고하도록 후속 리팩토링
     }
 }
