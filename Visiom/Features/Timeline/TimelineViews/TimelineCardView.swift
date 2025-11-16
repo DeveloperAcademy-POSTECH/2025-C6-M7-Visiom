@@ -12,10 +12,10 @@ struct TimelineCardView: View {
     @Environment(TimelineStore.self) var timelineStore
 
     let id: UUID
-    @State var title: String
-    @State var timelineIndex: Int
-    @State var occurredTime: Date?  // 사건 발생 시간
-    @State var isSequenceCorrect: Bool  // 시간에 따른 동선 성립 여부
+    let title: String
+    let timelineIndex: Int
+    let occurredTime: Date?  // 사건 발생 시간
+    let isSequenceCorrect: Bool  // 시간에 따른 동선 성립 여부
 
     var body: some View {
         HStack {
@@ -27,7 +27,6 @@ struct TimelineCardView: View {
                     selection: Binding(
                         get: { occurredTime ?? Date() },
                         set: { newValue in
-                            occurredTime = newValue
                             timelineStore.updateTimelineOccurredTime(
                                 id: id,
                                 to: newValue
