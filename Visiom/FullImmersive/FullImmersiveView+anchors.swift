@@ -50,7 +50,14 @@ extension FullImmersiveView {
         let memoText = memoStore.memo(id: memoID)?.text ?? ""
         
         
-        let entity =  AREntityFactory.createMemoBox()
+        let entity: ModelEntity
+        do {
+            entity = try await AREntityFactory.createMemoBox()
+        } catch {
+            print("❌ createMemoBox 실패:", error)
+            return
+        }
+        
         (memoGroup ?? root)?.addChild(entity)
         
         // 텍스트 오버레이 추가 (내용이 있을 때만)
