@@ -60,7 +60,7 @@ final class TimelineStore {
             createdAt: now,
             updatedAt: now,
         )
-        timelines.insert(timeline, at: 0)
+        timelines.append(timeline)
         scheduleSave()
         return timeline
     }
@@ -94,20 +94,6 @@ final class TimelineStore {
         timelines[idx].updatedAt = Date()
         scheduleSave()
     }
-
-    //    @discardableResult
-    //    func commit(id: UUID) -> Bool {
-    //        guard let idx = timelines.firstIndex(where: { $0.id == id }) else {
-    //            return false
-    //        }
-    //        let trimmedEmpty = timelines[idx].title.trimmingCharacters(
-    //            in: .whitespacesAndNewlines
-    //        ).isEmpty
-    //        guard !trimmedEmpty else { return false }
-    //        timelines[idx].updatedAt = Date()
-    //        scheduleSave()
-    //        return true
-    //    }
 
     /// 삭제
     func deleteTimeline(id: UUID) {

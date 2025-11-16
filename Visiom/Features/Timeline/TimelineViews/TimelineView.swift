@@ -37,19 +37,17 @@ struct TimelineView: View {
             Divider()
 
             ScrollView(.vertical) {
-                VStack(spacing: 24) {
-                    ForEach(
-                        timelineStore.timelines.sorted {
-                            $0.timelineIndex < $1.timelineIndex
+                LazyVStack(spacing: 24) {
+                    ForEach(timelineStore.timelines, id: \.id) { timeline in
+                        ReorderableTimelineCardView(item: timeline) {
+                            TimelineCardView(
+                                id: timeline.id,
+                                title: timeline.title,
+                                timelineIndex: timeline.timelineIndex,
+                                occurredTime: timeline.occurredTime,
+                                isSequenceCorrect: timeline.isSequenceCorrect
+                            )
                         }
-                    ) { timeline in
-                        TimelineCardView(
-                            id: timeline.id,
-                            title: timeline.title,
-                            timelineIndex: timeline.timelineIndex,
-                            occurredTime: timeline.occurredTime,
-                            isSequenceCorrect: timeline.isSequenceCorrect
-                        )
                     }
                 }
             }
