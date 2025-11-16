@@ -153,9 +153,9 @@ public final class InteractionRouter {
               pol.collisionGroup == .teleport else { return false }
         
         switch event {
-        case .tap(_, _):
-            // 텔레포트 해야한다고 알림
-            NotificationCenter.default.post(name: .didRequestTeleport, object: entity)
+        case .tap(let e, _):
+            guard let aID = e.anchorID else { return false }
+            ctx.placement.tapToTeleport(anchorID: aID)
             return true
             
         case .drag(let e, var delta, let phase):

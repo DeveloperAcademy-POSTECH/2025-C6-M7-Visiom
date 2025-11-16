@@ -36,6 +36,8 @@ class AppModel {
     var showTeleports: Bool = true
     var showTimelines: Bool = true
 
+    var showTopView: Bool = false
+    
     func toggleMarkers() {
         markersVisible.toggle()
     }
