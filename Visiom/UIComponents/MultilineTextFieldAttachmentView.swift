@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MultilineTextFieldAttachmentView: View {
-
+    
     @Binding var text: String
     let placeholder: String
     let width: CGFloat
@@ -18,7 +18,7 @@ struct MultilineTextFieldAttachmentView: View {
     let padding: CGFloat
     let cornerRadius: CGFloat
     let backgroundMaterial: Material
-
+    
     init(
         text: Binding<String>,
         placeholder: String = "Enter text",
@@ -40,7 +40,7 @@ struct MultilineTextFieldAttachmentView: View {
         self.cornerRadius = cornerRadius
         self.backgroundMaterial = backgroundMaterial
     }
-
+    
     var body: some View {
         ZStack(alignment: .topLeading) {
             if text.isEmpty {
@@ -48,15 +48,14 @@ struct MultilineTextFieldAttachmentView: View {
                     .font(font)
                     .padding(6)
             }
-
+            
             TextEditor(text: $text)
                 .font(font)
                 .padding(5)
                 .frame(width: width, height: height)
-                .multilineTextAlignment(alignment)
+                .multilineTextAlignment(alignment)                
         }
         .frame(width: width, height: height)
-        .background(backgroundMaterial)
         .cornerRadius(cornerRadius)
     }
 }
