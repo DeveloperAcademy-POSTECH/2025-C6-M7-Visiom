@@ -43,7 +43,7 @@ enum AREntityFactory {
     static func createPhotoCollectionButton() async throws -> ModelEntity {
 
         // 원본 entity 로드 (ModelEntity라고 가정하지 않음)
-        let root = try await Entity(named: "btn", in: realityKitContentBundle)
+        let root = try await Entity(named: "photo", in: realityKitContentBundle)
 
         // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
         guard let meshEntity = findFirstEntityWithModelComponent(in: root)
@@ -159,7 +159,10 @@ enum AREntityFactory {
                     )
                 )
                 .foregroundColor(.black)
-                .font(.system(size: ARConstants.TextFormatting.memoTextSize))
+                .font(.system(
+                    size: ARConstants.TextFormatting.memoTextSize,
+                    weight: ARConstants.TextFormatting.memoTextWeight
+                ))
         )
         return entity
     }
