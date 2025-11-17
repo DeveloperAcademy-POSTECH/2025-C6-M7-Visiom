@@ -36,6 +36,7 @@ struct MemoEditView: View {
                     font: .system(size: 48),
                     cornerRadius:32,
                 )
+                .foregroundColor(.black)
                 .background(Color.clear)
                 
                 // 실시간 인식 텍스트 표시 (선택사항)
