@@ -11,28 +11,35 @@ import SwiftUI
 @MainActor
 @Observable
 class AppModel {
-    let fullImmersiveSpaceID = "FullImmersiveSpace"
+    //let fullImmersiveSpaceID = "FullImmersiveSpace"
+    let mixedImmersiveSpaceID = "mixedImmersiveSpace"
     let crimeSceneListWindowID = "CrimeSceneListWindow"
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let TimeLineWindowID = "TimeLineWindow"     // 소문자 리펙토링 필요
-    
+    let timelineWindowID = "TimelineWindow"  // 소문자 리펙토링 필요
+
     enum ImmersiveSpaceState {
         case closed
         case inTransition
         case open
     }
-    
+
     var immersiveSpaceState = ImmersiveSpaceState.closed
     var itemAdd: UserControlItem? = nil
     var memoToAnchorID: UUID? = nil
-    
+    var timelineToAnchorID: UUID? = nil
+
     // visible/invisible 상태 관리
     var markersVisible: Bool = true
     var showPhotos: Bool = true
     var showMemos: Bool = true
     var showTeleports: Bool = true
+    var showTimelines: Bool = true
+    
+    var customHeight: Float = 1.60
+
+    var showTopView: Bool = false
     
     func toggleMarkers() {
         markersVisible.toggle()
@@ -43,13 +50,17 @@ class AppModel {
     func toggleMemos() {
         showMemos.toggle()
     }
-    func toggleTeleports(){
+    func toggleTeleports() {
         showTeleports.toggle()
     }
-    
-    //Full Immersive 진입 처리 함수
+
+    func toggleTimelines() {
+        showTimelines.toggle()
+    }
+
+    //Mixed Immersive 진입 처리 함수
     @MainActor
-    func enterFullImmersive(
+    func enterMixedImmersive(
         openImmersiveSpace: OpenImmersiveSpaceAction,
         dismissWindow: DismissWindowAction
     ) async {
@@ -60,7 +71,7 @@ class AppModel {
             return
         case .closed:
             immersiveSpaceState = .inTransition
-            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
+            switch await openImmersiveSpace(id: mixedImmersiveSpaceID) {
             case .opened:
                 dismissWindow(id: crimeSceneListWindowID)
                 break
@@ -71,43 +82,88 @@ class AppModel {
             }
         }
     }
-    
+
     //Full Immersive 나가기 처리 함수
     @MainActor
-    func exitFullImmersive(
+    func exitMixedImmersive(
         dismissImmersiveSpace: DismissImmersiveSpaceAction,
         dismissWindow: DismissWindowAction,
         openWindow: OpenWindowAction
     ) async {
         guard immersiveSpaceState == .open else { return }
         immersiveSpaceState = .inTransition
-        
+
         await dismissImmersiveSpace()
         closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
     }
+
+//    //Full Immersive 진입 처리 함수
+//    @MainActor
+//    func enterFullImmersive(
+//        openImmersiveSpace: OpenImmersiveSpaceAction,
+//        dismissWindow: DismissWindowAction
+//    ) async {
+//        switch immersiveSpaceState {
+//        case .open:
+//            return
+//        case .inTransition:
+//            return
+//        case .closed:
+//            immersiveSpaceState = .inTransition
+//            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
+//            case .opened:
+//                dismissWindow(id: crimeSceneListWindowID)
+//                break
+//            case .userCancelled, .error:
+//                immersiveSpaceState = .closed
+//            @unknown default:
+//                immersiveSpaceState = .closed
+//            }
+//        }
+//    }
+//    
+//    //Full Immersive 나가기 처리 함수
+//    @MainActor
+//    func exitFullImmersive(
+//        dismissImmersiveSpace: DismissImmersiveSpaceAction,
+//        dismissWindow: DismissWindowAction,
+//        openWindow: OpenWindowAction
+//    ) async {
+//        guard immersiveSpaceState == .open else { return }
+//        immersiveSpaceState = .inTransition
+//        
+//        await dismissImmersiveSpace()
+//        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
+//        openWindow(id: crimeSceneListWindowID)
+//    }
     
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
         dismissWindow(id: memoEditWindowID)
         dismissWindow(id: userControlWindowID)
-        dismissWindow(id: TimeLineWindowID)
+        dismissWindow(id: timelineWindowID)
     }
-    
-    enum Route { case photoCollection(UUID), memoEdit(UUID) }
-    
+
+    enum Route {
+        case photoCollection(UUID)
+        case memoEdit(UUID)
+    }
+
     func open(routeString: String, openWindow: OpenWindowAction) {
         if routeString.hasPrefix("PhotoCollectionWindowID:"),
-           let uuidStr = routeString.split(separator: ":").last,
-           let id = UUID(uuidString: String(uuidStr)) {
+            let uuidStr = routeString.split(separator: ":").last,
+            let id = UUID(uuidString: String(uuidStr))
+        {
             openWindow(id: photoCollectionWindowID, value: id)
         } else if routeString.hasPrefix("MemoEditWindowID:"),
-                  let uuidStr = routeString.split(separator: ":").last,
-                  let id = UUID(uuidString: String(uuidStr)) {
+            let uuidStr = routeString.split(separator: ":").last,
+            let id = UUID(uuidString: String(uuidStr))
+        {
             openWindow(id: memoEditWindowID, value: id)
         }
     }
-    
+
     func dismiss(routeString: String, dismissWindow: DismissWindowAction) {
         if routeString.hasPrefix("PhotoCollectionWindowID:") {
             dismissWindow(id: photoCollectionWindowID)

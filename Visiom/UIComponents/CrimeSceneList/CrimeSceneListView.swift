@@ -22,13 +22,16 @@ struct CrimeSceneListView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Image(systemName: "circle.fill")
+                Image("icon").frame(width: 48, height: 48).padding(
+                    .trailing,
+                    16
+                )
                 Text("Re:Chain")
-                    .font(.system(size: 29, weight: .regular))
+                    .font(.system(size: 32, weight: .bold))
                     .tracking(0)
             }
             .padding(.leading, 24)
-            .padding(.vertical, 28.5)
+            .padding(.vertical, 22)
 
             Divider()
 
@@ -51,7 +54,8 @@ struct CrimeSceneListView: View {
                                     }
                                 }
 
-                                await appModel.enterFullImmersive(
+//                                await appModel.enterFullImmersive(
+                                await appModel.enterMixedImmersive(
                                     openImmersiveSpace: openImmersiveSpace,
                                     dismissWindow: dismissWindow
                                 )
@@ -64,7 +68,9 @@ struct CrimeSceneListView: View {
                             CrimeSceneCard(
                                 imageName: crimeScene.imageName,
                                 title: crimeScene.title,
-                                description: crimeScene.description
+                                occuredDate: crimeScene.occuredDate,
+                                location: crimeScene.location,
+                                status: crimeScene.status
                             )
                         }
                         .buttonStyle(.plain)
@@ -72,8 +78,7 @@ struct CrimeSceneListView: View {
                 }
             }
             .padding(.leading, 26)
-            .padding(.top, 31)
-            .padding(.bottom, 46)
+            .padding(.top, 21)
             Spacer()
         }
         .onAppear {

@@ -72,7 +72,7 @@ struct MemoEditView: View {
                         }
                         
                         if memoStore.commit(id: memoID) {
-                            appModel.memoToAnchorID = memoID
+                            memoStore.memoToAnchorID = memoID
                             dismissWindow(id: appModel.memoEditWindowID)
                         }
                     }
