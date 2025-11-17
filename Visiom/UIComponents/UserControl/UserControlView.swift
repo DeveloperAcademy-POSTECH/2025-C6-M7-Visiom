@@ -93,12 +93,12 @@ extension UserControlView {
             appModel.toggleMemos()
             
             // 보드(타임라인)
-        case .board:
-            if state == .board {
-                openWindow(id:appModel.TimeLineWindowID)
+        case .timeline:
+            if state == .timeline {
+                openWindow(id:appModel.timelineWindowID)
                 print("🗂️ 보드 열기")
             } else {
-                dismissWindow(id: appModel.TimeLineWindowID)
+                dismissWindow(id: appModel.timelineWindowID)
                 print("🗂️ 보드 닫기")
             }
             
