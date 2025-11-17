@@ -150,6 +150,7 @@ extension FullImmersiveView {
                 )
             case .memo:
                 // 1) 생성한 Memo 정보 가져오기
+
                 guard let memoID: UUID = appModel.memoToAnchorID else { return }
 
                 // 2) 레코드에 dataRef 연결 후 upsert

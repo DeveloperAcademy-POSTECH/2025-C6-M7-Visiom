@@ -33,7 +33,7 @@ struct UserControlView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(!isEnabled(item))
-
+                
                 if item == .back || item == .visibility {
                     VDivider(height: 60)
                 }
@@ -61,7 +61,8 @@ extension UserControlView {
             // 뒤로가기
         case .back:
             Task {
-                await appModel.exitFullImmersive(
+            //await appModel.exitFullImmersive(
+                await appModel.exitMixedImmersive(
                     dismissImmersiveSpace: dismissImmersiveSpace,
                     dismissWindow: dismissWindow,
                     openWindow: openWindow
@@ -133,7 +134,7 @@ extension UserControlView {
 struct VDivider: View {
     var height: CGFloat = 60
     var opacity: Double = 0.28
-
+    
     var body: some View {
         Rectangle()
             .fill(.white.opacity(opacity))

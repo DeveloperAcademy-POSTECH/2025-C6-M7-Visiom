@@ -13,6 +13,7 @@ import Observation
 final class MemoStore {
     private let persistence = PersistenceActor()
     var memos: [Memo] = []
+    var memoToAnchorID: UUID? = nil
     
     init() {
         Task { await load() }

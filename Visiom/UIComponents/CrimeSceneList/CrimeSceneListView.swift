@@ -54,7 +54,8 @@ struct CrimeSceneListView: View {
                                     }
                                 }
 
-                                await appModel.enterFullImmersive(
+//                                await appModel.enterFullImmersive(
+                                await appModel.enterMixedImmersive(
                                     openImmersiveSpace: openImmersiveSpace,
                                     dismissWindow: dismissWindow
                                 )
