@@ -87,9 +87,4 @@ public final class PlacementManager {
         anchorRegistry.remove(anchorID)
         onRemoved?(anchorID)
     }
-    
-    private func applyTransform(_ rec: AnchorRecord, to entity: Entity){
-        entity.transform.matrix = rec.worldMatrix
-        entity.anchorID = rec.id
-    }
 }

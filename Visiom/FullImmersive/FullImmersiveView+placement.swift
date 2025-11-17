@@ -79,12 +79,7 @@ extension FullImmersiveView {
         default:
             spawnPos = devicePosition + flatForward * distance
         }
-
-        //        let headHeightOffset: Float = 0.0
-        //        let finalPos = devicePosition + flatForward * distance + SIMD3<Float>(0, headHeightOffset, 0)
-
-        let finalTransformWorld = Transform(translation: spawnPos).matrix
-
+                
         let anchorID: UUID
         switch type {
         case .photoCollection:
@@ -119,8 +114,10 @@ extension FullImmersiveView {
             print("⚠️ AnchorRecord not found for \(anchorID)")
             return
         }
-
-        rec.worldMatrix = finalTransformWorld
+        
+        var t = Transform(matrix: rec.worldMatrix)
+        t.translation = spawnPos
+        rec.worldMatrix = t.matrix
         anchorRegistry.upsert(rec)
 
         do {
