@@ -50,6 +50,12 @@ extension MixedImmersiveView {
         root = immersiveContentEntity
         content.add(immersiveContentEntity)
         
+        // 어디에서도 사용하지 않음
+        // 추후 삭제 예정
+//        if let sceneContent = root!.findEntity(named: "Root") {
+//            self.sceneContent = sceneContent
+//        }
+        
         // MARK: - 그룹 생성
         
         // Photo 그룹
@@ -72,6 +78,12 @@ extension MixedImmersiveView {
         tGroup.isEnabled = appModel.showTeleports
         immersiveContentEntity.addChild(tGroup)
         self.teleportGroup = tGroup
+        
+        let timeGroup = Entity()
+        timeGroup.name = "TimelineGroup"
+        timeGroup.isEnabled = appModel.showTimelines
+        root?.addChild(timeGroup)
+        self.timelineGroup = timeGroup
         
         // MARK: - Anchor / Persistence / Bootstrap 세팅
         

@@ -29,6 +29,7 @@ final class MixedImmersiveController {
     weak var photoGroup: Entity?
     weak var memoGroup: Entity?
     weak var teleportGroup: Entity?
+    weak var timelineGroup: Entity?
     
     // MARK: - Mapping
     var entityByAnchorID: [UUID: Entity] = [:]
@@ -61,20 +62,25 @@ final class MixedImmersiveController {
 extension MixedImmersiveController {
     
     // 카메라 포즈를 가져와서 실제 앵커 생성 함수로 넘기는 함수
-    func makePlacement(type: UserControlItem) async {
+    func makePlacement(type: UserControlItem, dataRef:UUID? = nil) async {
         // 현재 시간을 기준으로 기기의 포즈(위치와 방향)를 가져옴
         let timestamp = CACurrentMediaTime()
         guard let deviceAnchor = worldTracking.queryDeviceAnchor(atTimestamp: timestamp) else {
             print("⚠️ deviceAnchor unavailable")
             return
         }
-        await createAnchor(usingCamera: deviceAnchor.originFromAnchorTransform, for: type)
+        await createAnchor(
+            usingCamera: deviceAnchor.originFromAnchorTransform,
+            for: type,
+            dataRef: dataRef
+        )
     }
     
     func refreshScene(
         showPhotos: Bool,
         showMemos: Bool,
-        showTeleports: Bool
+        showTeleports: Bool,
+        showTimelines: Bool
     ) {
         /// 역할: entity 계층 구조 점검하기
         updateEntityHierarchy()
@@ -82,7 +88,8 @@ extension MixedImmersiveController {
         updateGroupVisibility(
             showPhotos: showPhotos,
             showMemos: showMemos,
-            showTeleports: showTeleports
+            showTeleports: showTeleports,
+            showTimelines: showTimelines
         )
     }
 }
@@ -91,7 +98,11 @@ extension MixedImmersiveController {
 extension MixedImmersiveController {
     
     // 카메라 기준으로 앵커를 하나 만들고 WorldAnchor과 Entity를 스폰하는 오케스트레이터
-    private func createAnchor(usingCamera cameraTransform: simd_float4x4, for type: UserControlItem) async {
+    private func createAnchor(
+        usingCamera cameraTransform: simd_float4x4,
+        for type: UserControlItem,
+        dataRef: UUID? = nil
+    ) async {
         
         // 1) 카메라 앞 위치 계산
         let spawnPosition = computePlacementPosition(cameraTransform: cameraTransform, type: type)
@@ -116,6 +127,12 @@ extension MixedImmersiveController {
                 kind: .teleport,
                 dataRef: nil,
                 forwardFrom: cameraTransform
+                )
+        case .timeline :
+            anchorID = placementManager.place(
+                kind: .timeline,
+                dataRef: dataRef,
+                forwardFrom: cameraTransform
             )
         default : fatalError("Unknown item type: \(type)")
         }
@@ -131,7 +148,7 @@ extension MixedImmersiveController {
         // 4) WorldAnchor 추가
         do {
             try await addWorldAnchor(for: anchorRecord)
-            await handlePlacement(for: type, anchorRecord: anchorRecord)
+            await handlePlacement(for: type, anchorRecord: anchorRecord, dataRef: dataRef)
         } catch {
             print("⚠️ 월드 앵커 추가 failed")
         }
@@ -144,7 +161,7 @@ extension MixedImmersiveController {
     }
     
     /// 종류별 후처리 + 스폰
-    private func handlePlacement(for type: UserControlItem, anchorRecord: AnchorRecord) async {
+    private func handlePlacement(for type: UserControlItem, anchorRecord: AnchorRecord, dataRef: UUID?) async {
         
         switch type {
         case .photoCollection:
@@ -153,6 +170,8 @@ extension MixedImmersiveController {
             await handleMemoPlacement(anchorRecord)
         case .teleport:
             await handleTeleportPlacement(anchorRecord)
+        case .timeline:
+            await handleTimelinePlacement(anchorRecord, dataRef: dataRef)
         default:
             break
         }
@@ -199,6 +218,21 @@ extension MixedImmersiveController {
         await spawnEntity(anchorRecord)
         persistence.save()
     }
+    
+    private func handleTimelinePlacement(_ anchorRecord: AnchorRecord, dataRef: UUID?) async {
+        guard let timelineID = dataRef else {
+            print("⚠️ timelineID missing")
+            return
+        }
+
+        var modifiedRecord = anchorRecord
+        modifiedRecord.dataRef = timelineID
+        anchorRegistry.upsert(modifiedRecord)
+
+        // 3) 즉시 스폰(런타임 표현) — 부트스트랩과 동일한 규약 사용
+        await spawnEntity(modifiedRecord)
+        persistence.save()
+    }
 }
 
 // MARK: - Spawn Entity
@@ -216,6 +250,7 @@ extension MixedImmersiveController {
             case .photoCollection: return photoGroup ?? root
             case .memo:            return memoGroup ?? root
             case .teleport:        return teleportGroup ?? root
+            case .timeline:        return timelineGroup ?? root
             }
         }()
         
@@ -230,6 +265,9 @@ extension MixedImmersiveController {
             entity = EntityFactory.makeMemo(anchorID: anchorRecord.id, dataRef: ref)
         case .teleport:
             entity = EntityFactory.makeTeleport(anchorID: anchorRecord.id)
+        case .timeline:
+            guard let ref = anchorRecord.dataRef else { return }
+            entity = EntityFactory.makeTimeline(anchorID: anchorRecord.id, dataRef: ref)
         }
         
         // Visual attach
@@ -268,7 +306,7 @@ extension MixedImmersiveController {
         let distance: Float = 0.5
         
         switch type {
-        case .teleport:
+        case .teleport, .timeline:
             return SIMD3<Float>(
                 devicePosition.x + flatForwardVector.x * distance,
                 0, // y=0 고정
@@ -306,6 +344,8 @@ extension MixedImmersiveController {
                     memoGroup?.addChild(entity)
                 case .teleport:
                     teleportGroup?.addChild(entity)
+                case .timeline:
+                    timelineGroup?.addChild(entity)
                 }
             }
         }
@@ -314,11 +354,13 @@ extension MixedImmersiveController {
     func updateGroupVisibility(
         showPhotos: Bool,
         showMemos: Bool,
-        showTeleports: Bool
+        showTeleports: Bool,
+        showTimelines: Bool
     ) {
         photoGroup?.isEnabled = showPhotos
         memoGroup?.isEnabled = showMemos
         teleportGroup?.isEnabled = showTeleports
+        timelineGroup?.isEnabled = showTimelines
     }
 }
 
@@ -345,5 +387,40 @@ extension MixedImmersiveController {
                 relativeTo: container
             )
         }
+    }
+}
+
+// MARK: - Height Adjustment
+extension MixedImmersiveController {
+    func applyHeightAdjustment(customHeight: Float) async {
+        do {
+            // WorldTrackingProvider는 타임스탬프(Double)를 받음 최신 시각으로 쿼리
+            let now = CACurrentMediaTime()
+            if let deviceAnchor = worldTracking.queryDeviceAnchor(
+                atTimestamp: now
+                
+            ) {
+                let userHeight = deviceAnchor.originFromAnchorTransform.columns
+                    .3.y
+                
+                print("현재 높이: \(userHeight)m")
+                let offset = customHeight - userHeight
+                
+                // MainActor에서 UI(root 엔티티) 업데이트
+                await MainActor.run {
+                    root?.setPosition(
+                        SIMD3<Float>(0, -offset, 0),
+                        relativeTo: nil
+                    )
+                    print(
+                        "시점 높이 적용됨: 원하는=\(customHeight), 실제=\(userHeight), offset=\(offset)"
+                    )
+                }
+            } else {
+                print("쿼리 실패. DeviceAnchor 못찾음")
+            }
+            
+        }
+        
     }
 }

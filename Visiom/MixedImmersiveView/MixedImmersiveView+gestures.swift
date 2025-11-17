@@ -12,7 +12,7 @@ extension MixedImmersiveView {
     @MainActor
     func startInteractionPipelineIfReady() {
         guard router == nil, gestureBridge == nil else { return }
-        guard let pm = placementManager, let ps = persistence else { return }
+        guard let placement = placementManager, let persistence = persistence else { return }
         
         let openRoute: (String) -> Void = { route in
             appModel.open(routeString: route, openWindow: openWindow)
@@ -22,22 +22,22 @@ extension MixedImmersiveView {
         }
         
         let ctx = InteractionContext(
-            placement: pm,
-            persistence: ps,
+            placement: placement,
+            persistence: persistence,
             openWindow: openRoute,
             dismissWindow: dismissRoute
         )
         router = InteractionRouter(context: ctx)
         gestureBridge = GestureBridge(surface: inputSurface, router: router!)
         
-        if pm.onMoved == nil {
+        if placement.onMoved == nil {
             placementManager?.onMoved = { [self] rec in
                 if let e = controller?.entityByAnchorID[rec.id] {
                     e.setTransformMatrix(rec.worldMatrix, relativeTo: nil)
                 }
             }
         }
-        if pm.onRemoved == nil {
+        if placement.onRemoved == nil {
             placementManager?.onRemoved = { [self] anchorID in
                 if let e = controller?.entityByAnchorID.removeValue(forKey: anchorID) {
                     e.removeFromParent()
