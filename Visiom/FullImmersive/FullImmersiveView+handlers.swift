@@ -19,7 +19,7 @@ extension FullImmersiveView {
             memoGroup?.isEnabled = appModel.showMemos
             return
         }
-        
+
         for entity in entityByAnchorID.values {
             // 1) 부모가 없으면 root 밑에 부착
             if entity.parent == nil {
@@ -27,19 +27,22 @@ extension FullImmersiveView {
             }
             // 2) root 바로 아래면 정책(kind)에 맞춰 그룹으로 이동
             if entity.parent === root,
-               let policy = entity.components[InteractionPolicyComponent.self] {
+                let policy = entity.components[InteractionPolicyComponent.self]
+            {
                 switch policy.kind {
                 case .photoCollection:
                     if let pg = photoGroup { pg.addChild(entity) }
                 case .memo:
                     if let mg = memoGroup { mg.addChild(entity) }
                 case .teleport:
-                    if let tg = teleportGroup { tg.addChild(entity)}
+                    if let tg = teleportGroup { tg.addChild(entity) }
+                case .timeline:
+                    if let tg = timelineGroup { tg.addChild(entity) }
                 }
             }
         }
     }
-    
+
     /// 그룹 가시성 업데이트
     func updateGroupVisibility() {
         photoGroup?.isEnabled = appModel.showPhotos

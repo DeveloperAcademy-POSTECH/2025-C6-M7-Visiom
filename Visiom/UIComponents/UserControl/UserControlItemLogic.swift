@@ -35,9 +35,9 @@ struct UserControlItemLogic {
         }
         
         // 보드 : 배치 불가
-        if state == .board {
+        if state == .timeline {
             switch item {
-            case .board:
+            case .timeline:
                 return true
             case .visibility, .teleport, .back:
                 return true
@@ -51,7 +51,7 @@ struct UserControlItemLogic {
             switch item {
             case .visibility:
                 return true
-            case .teleport, .board, .back:
+            case .teleport, .timeline, .back:
                 return true
             default:
                 return false
@@ -76,11 +76,14 @@ struct UserControlItemLogic {
                 return .placing(item)
             }
             
-        case .board:
-            return state == .board ? .idle : .board
+        case .timeline:
+            return state == .timeline ? .idle : .timeline
             
         case .visibility:
             return state == .visibility ? .idle : .visibility
+        
+        case .topView:
+            return state == .topView ? .idle : .topView
         }
     }
 }

@@ -110,6 +110,8 @@ public final class InteractionRouter {
                 return true
             case .teleport:
                 return false  // content 핸들러가 teleport는 다루지 않음
+            case .timeline:
+                return false
             }
             
         case .drag(let e, let delta, let phase):

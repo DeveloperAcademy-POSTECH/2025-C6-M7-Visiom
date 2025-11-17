@@ -15,13 +15,14 @@ struct FullImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(EntityManager.self) private var entityManager
     @Environment(MemoStore.self) var memoStore
-    
+    @Environment(TimelineStore.self) var timelineStore
+
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
-    
+
     static let arSession = ARKitSession()
     static let worldTracking = WorldTrackingProvider()
-    
+
     // teleport
     @State var root: Entity? = nil
     @State var sceneContent: Entity?
@@ -32,21 +33,22 @@ struct FullImmersiveView: View {
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
     @State var teleportGroup: Entity?
-    
+    @State var timelineGroup: Entity?
+
     @State var anchorRegistry = AnchorRegistry()
     @State var placementManager: PlacementManager? = nil
     @State var entityByAnchorID: [UUID: Entity] = [:]
-    
+
     // JSON 저장/복원 담당
     @State var persistence: PersistenceManager? = nil
     @State var bootstrap: SceneBootstrap? = nil
-    
+
     @State var anchorSystem: AnchorSystem? = nil
-    
+
     @State private var inputSurface = SwiftUIInputSurface()
     @State private var router: InteractionRouter? = nil
     @State private var gestureBridge: GestureBridge? = nil
-    
+
     var body: some View {
         RealityView { content in
             await buildRealityContent(content)
@@ -59,29 +61,54 @@ struct FullImmersiveView: View {
             updateRealityContent(content)
         }
         .onChange(of: appModel.itemAdd) { newValue in
-            if newValue == .photoCollection {
+            switch newValue {
+            case .photoCollection:
                 Task { await makePlacement(type: .photoCollection) }
-                appModel.itemAdd = nil
+            case .teleport:
+                Task { await makePlacement(type: .teleport) }
+            default:
+                break
             }
+
+            appModel.itemAdd = nil
         }
         .onChange(of: memoStore.memoToAnchorID) { memoID in
             guard let memoID else { return }
             Task {
-                if let existing = anchorRegistry
+                if let existing =
+                    anchorRegistry
                     .all()
-                    .first(where: { $0.kind == EntityKind.memo.rawValue && $0.dataRef == memoID })
+                    .first(where: {
+                        $0.kind == EntityKind.memo.rawValue
+                            && $0.dataRef == memoID
+                    })
                 {
-                    await refreshMemoOverlay(anchorID: existing.id, memoID: memoID)
+                    await refreshMemoOverlay(
+                        anchorID: existing.id,
+                        memoID: memoID
+                    )
                 } else {
                     await makePlacement(type: .memo)
                 }
                 await MainActor.run { memoStore.memoToAnchorID = nil }
             }
         }
-        .onChange(of: appModel.itemAdd) { newValue in
-            if newValue == .teleport {
-                Task { await makePlacement(type: .teleport) }
-                appModel.itemAdd = nil
+        .onChange(of: appModel.timelineToAnchorID) { timelineID in
+            guard let timelineID else { return }
+            Task {
+                if let existing =
+                    anchorRegistry
+                    .all()
+                    .first(where: {
+                        $0.kind == EntityKind.timeline.rawValue
+                            && $0.dataRef == timelineID
+                    })
+                {
+                    print("Timeline anchor already exists: \(existing.id)")
+                } else {
+                    await makePlacement(type: .timeline, dataRef: timelineID)
+                }
+                await MainActor.run { appModel.timelineToAnchorID = nil }
             }
         }
         /// visible/invisible 처리 부분
@@ -92,23 +119,47 @@ struct FullImmersiveView: View {
         .onChange(of: appModel.showMemos) { newValue in
             memoGroup?.isEnabled = newValue
         }
+        .onChange(of: appModel.customHeight) { newValue in
+            Task {
+                await applyHeightAdjustment(customHeight: newValue)
+            }
+        }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
-        
+
         /// AR 세션 관리
         .task {
             await FullImmersiveView.startARSession()
+        }
+        .onAppear {
+            // timeline 앵커 삭제
+            timelineStore.onTimelineDeleted = { timelineID in
+                Task {
+                    if let anchorID = anchorRegistry.records.values.first(
+                        where: {
+                            $0.kind == EntityKind.timeline.rawValue
+                                && $0.dataRef == timelineID
+                        })?.id
+                    {
+                        await removeWorldAnchor(by: anchorID)
+                    } else {
+                        print(
+                            "Timeline 삭제 알림 받았으나 연결된 앵커를 찾지 못함 for \(timelineID)"
+                        )
+                    }
+                }
+            }     
         }
         .onDisappear {
             anchorSystem?.stop()
         }
     }
-    
+
     private func updateRealityContent(_ content: RealityViewContent) {
         refreshScene()
     }
-    
+
     private func refreshScene() {
         /// 역할: entity 계층 구조 점검하기
         /// entity new! 설계 적용 후에는 정말 필요한게 맞는지 점검 필요
@@ -117,24 +168,24 @@ struct FullImmersiveView: View {
         /// 함수 내부 구조 변경 필요할 수도
         updateGroupVisibility()
     }
-    
+
     private func buildRealityContent(_ content: RealityViewContent) async {
         await setupScene(content: content)
         await MainActor.run { startInteractionPipelineIfReady() }
     }
-    
+
     @MainActor
     func startInteractionPipelineIfReady() {
         guard router == nil, gestureBridge == nil else { return }
         guard let pm = placementManager, let ps = persistence else { return }
-        
+
         let openRoute: (String) -> Void = { route in
             appModel.open(routeString: route, openWindow: openWindow)
         }
         let dismissRoute: (String) -> Void = { route in
             appModel.dismiss(routeString: route, dismissWindow: dismissWindow)
         }
-        
+
         let ctx = InteractionContext(
             placement: pm,
             persistence: ps,
@@ -143,7 +194,7 @@ struct FullImmersiveView: View {
         )
         router = InteractionRouter(context: ctx)
         gestureBridge = GestureBridge(surface: inputSurface, router: router!)
-        
+
         if pm.onMoved == nil {
             placementManager?.onMoved = { [self] rec in
                 if let e = self.entityByAnchorID[rec.id] {
@@ -161,7 +212,7 @@ struct FullImmersiveView: View {
             }
         }
     }
-    
+
     // MARK: - Gestures (분리)
     private var tapEntityGesture: some Gesture {
         TapGesture()
@@ -173,7 +224,7 @@ struct FullImmersiveView: View {
                 inputSurface.onTap?(.zero, wp)
             }
     }
-    
+
     private var longPressEntityGesture: some Gesture {
         LongPressGesture(minimumDuration: 0.75)
             .targetedToAnyEntity()
@@ -182,13 +233,17 @@ struct FullImmersiveView: View {
                 inputSurface.onLongPress?(.zero)
             }
     }
-    
+
     private var dragEntityGesture: some Gesture {
         DragGesture()
             .targetedToAnyEntity()
             .onChanged { value in
                 inputSurface.setLastHitEntity(value.entity)
-                let pNow = value.convert(value.location3D, from: .local, to: value.entity.parent!)
+                let pNow = value.convert(
+                    value.location3D,
+                    from: .local,
+                    to: value.entity.parent!
+                )
                 let world = SIMD3<Float>(pNow.x, pNow.y, pNow.z)
                 inputSurface.pushDragSample(currentWorld: world, isEnded: false)
             }
@@ -196,7 +251,7 @@ struct FullImmersiveView: View {
                 inputSurface.pushDragSample(currentWorld: nil, isEnded: true)
             }
     }
-    
+
     // Ext+FullImmersiveView.swift (동일 파일 내부)
     @MainActor
     private func refreshMemoOverlay(anchorID: UUID, memoID: UUID) async {
@@ -211,8 +266,42 @@ struct FullImmersiveView: View {
         if let text = memoStore.memo(id: memoID)?.text, !text.isEmpty {
             let overlay = AREntityFactory.createMemoTextOverlay(text: text)
             container.addChild(overlay)
-            overlay.setPosition([0, 0, ARConstants.Position.memoTextZOffset],
-                                relativeTo: container)
+            overlay.setPosition(
+                [0, 0, ARConstants.Position.memoTextZOffset],
+                relativeTo: container
+            )
         }
+    }
+
+    private func applyHeightAdjustment(customHeight: Float) async {
+        do {
+            // WorldTrackingProvider는 타임스탬프(Double)를 받음 최신 시각으로 쿼리
+            let now = CACurrentMediaTime()
+            if let deviceAnchor = await Self.worldTracking.queryDeviceAnchor(
+                atTimestamp: now
+
+            ) {
+                let userHeight = deviceAnchor.originFromAnchorTransform.columns
+                    .3.y
+
+                print("현재 높이: \(userHeight)m")
+                let offset = customHeight - userHeight
+
+                // MainActor에서 UI(root 엔티티) 업데이트
+                await MainActor.run {
+                    root?.setPosition(
+                        SIMD3<Float>(0, -offset, 0),
+                        relativeTo: nil
+                    )
+                    print(
+                        "시점 높이 적용됨: 원하는=\(customHeight), 실제=\(userHeight), offset=\(offset)"
+                    )
+                }
+            } else {
+                print("쿼리 실패. DeviceAnchor 못찾음")
+            }
+
+        }
+
     }
 }

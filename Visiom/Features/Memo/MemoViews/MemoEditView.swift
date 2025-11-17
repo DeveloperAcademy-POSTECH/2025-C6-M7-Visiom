@@ -76,19 +76,6 @@ struct MemoEditView: View {
                             dismissWindow(id: appModel.memoEditWindowID)
                         }
                     }
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.green.opacity(0.3))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.green, lineWidth: 2)
-                    )
-                    .buttonStyle(.plain)
                 }
             }
             .padding(40)
