@@ -18,6 +18,7 @@ class AppModel {
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
     let timelineWindowID = "TimelineWindow"  // 소문자 리펙토링 필요
+    let cameraHeightWindowID = "CameraHeightWindowID"
 
     enum ImmersiveSpaceState {
         case closed
@@ -36,11 +37,11 @@ class AppModel {
     var showMemos: Bool = true
     var showTeleports: Bool = true
     var showTimelines: Bool = true
-    
+
     var customHeight: Float = 1.60
 
     var showTopView: Bool = false
-    
+
     func toggleMarkers() {
         markersVisible.toggle()
     }
@@ -98,46 +99,46 @@ class AppModel {
         openWindow(id: crimeSceneListWindowID)
     }
 
-//    //Full Immersive 진입 처리 함수
-//    @MainActor
-//    func enterFullImmersive(
-//        openImmersiveSpace: OpenImmersiveSpaceAction,
-//        dismissWindow: DismissWindowAction
-//    ) async {
-//        switch immersiveSpaceState {
-//        case .open:
-//            return
-//        case .inTransition:
-//            return
-//        case .closed:
-//            immersiveSpaceState = .inTransition
-//            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
-//            case .opened:
-//                dismissWindow(id: crimeSceneListWindowID)
-//                break
-//            case .userCancelled, .error:
-//                immersiveSpaceState = .closed
-//            @unknown default:
-//                immersiveSpaceState = .closed
-//            }
-//        }
-//    }
-//    
-//    //Full Immersive 나가기 처리 함수
-//    @MainActor
-//    func exitFullImmersive(
-//        dismissImmersiveSpace: DismissImmersiveSpaceAction,
-//        dismissWindow: DismissWindowAction,
-//        openWindow: OpenWindowAction
-//    ) async {
-//        guard immersiveSpaceState == .open else { return }
-//        immersiveSpaceState = .inTransition
-//        
-//        await dismissImmersiveSpace()
-//        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
-//        openWindow(id: crimeSceneListWindowID)
-//    }
-    
+    //    //Full Immersive 진입 처리 함수
+    //    @MainActor
+    //    func enterFullImmersive(
+    //        openImmersiveSpace: OpenImmersiveSpaceAction,
+    //        dismissWindow: DismissWindowAction
+    //    ) async {
+    //        switch immersiveSpaceState {
+    //        case .open:
+    //            return
+    //        case .inTransition:
+    //            return
+    //        case .closed:
+    //            immersiveSpaceState = .inTransition
+    //            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
+    //            case .opened:
+    //                dismissWindow(id: crimeSceneListWindowID)
+    //                break
+    //            case .userCancelled, .error:
+    //                immersiveSpaceState = .closed
+    //            @unknown default:
+    //                immersiveSpaceState = .closed
+    //            }
+    //        }
+    //    }
+    //
+    //    //Full Immersive 나가기 처리 함수
+    //    @MainActor
+    //    func exitFullImmersive(
+    //        dismissImmersiveSpace: DismissImmersiveSpaceAction,
+    //        dismissWindow: DismissWindowAction,
+    //        openWindow: OpenWindowAction
+    //    ) async {
+    //        guard immersiveSpaceState == .open else { return }
+    //        immersiveSpaceState = .inTransition
+    //
+    //        await dismissImmersiveSpace()
+    //        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
+    //        openWindow(id: crimeSceneListWindowID)
+    //    }
+
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
         dismissWindow(id: memoEditWindowID)
