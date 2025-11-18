@@ -82,6 +82,11 @@ struct VisiomApp: App {
                 .environment(miniMapManager)
         }
         
+        WindowGroup(id: appModel.miniMapWindowID) {
+            MiniMapView()
+                .environment(miniMapManager)
+        }
+        
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
             MixedImmersiveView()
                 .environment(appModel)

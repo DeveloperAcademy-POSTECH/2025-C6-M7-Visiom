@@ -39,7 +39,7 @@ extension MixedImmersiveView {
         
         // 씬 로드
         guard let immersiveContentEntity = try? await Entity(
-            named: "Immersive",
+            named: "ChrimeScene",
             in: realityKitContentBundle
         ) else {
             print("❌ Failed to load Immersive content")
