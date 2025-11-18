@@ -17,7 +17,8 @@ class AppModel {
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let timelineWindowID = "TimelineWindow"  // 소문자 리펙토링 필요
+    let timelineWindowID = "TimelineWindow"
+    let miniMapWindowID = "MiniMapWindow"
 
     enum ImmersiveSpaceState {
         case closed
@@ -39,7 +40,7 @@ class AppModel {
     
     var customHeight: Float = 1.60
 
-    var showTopView: Bool = false
+    var isMiniMap: Bool = false
     
     func toggleMarkers() {
         markersVisible.toggle()

@@ -15,6 +15,7 @@ struct MixedImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(MemoStore.self) var memoStore
     @Environment(TimelineStore.self) var timelineStore
+    @Environment(MiniMapManager.self) var miniMapManager
     
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
@@ -49,6 +50,27 @@ struct MixedImmersiveView: View {
     
     
     var body: some View {
+        
+        HStack(spacing: 20) {
+            Button(action: {
+                miniMapManager.isRotated = true
+            }) {
+                Label("90도 회전", systemImage: "rotate.right")
+                    .padding()
+                    .background(Color.blue.opacity(0.2))
+                    .cornerRadius(10)
+            }
+            
+            Button(action: {
+                miniMapManager.isRotated = false
+            }) {
+                Label("원래대로", systemImage: "arrow.counterclockwise")
+                    .padding()
+                    .background(Color.green.opacity(0.2))
+                    .cornerRadius(10)
+            }
+        }
+        
         RealityView { content in
             await buildRealityContent(content)
             
@@ -57,7 +79,7 @@ struct MixedImmersiveView: View {
             anchorSystem?.start()
             startInteractionPipelineIfReady()
         } update: { content in
-            updateRealityContent(content)
+            miniMapManager.orientationChange90Degrees(content: content)
         }
         .onChange(of: appModel.itemAdd, initial: false) {_, newValue in
             guard let newValue else { return }
@@ -68,7 +90,7 @@ struct MixedImmersiveView: View {
                 }
             }
         }
-
+        
         .onChange(of: memoStore.memoToAnchorID, initial: false) {_, memoID in
             guard let memoID else { return }
             Task {
@@ -92,7 +114,7 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
+                        && $0.dataRef == timelineID
                     })
                 {
                     print("Timeline anchor already exists: \(existing.id)")
@@ -123,7 +145,7 @@ struct MixedImmersiveView: View {
                     if let anchorID = anchorRegistry.records.values.first(
                         where: {
                             $0.kind == EntityKind.timeline.rawValue
-                                && $0.dataRef == timelineID
+                            && $0.dataRef == timelineID
                         })?.id
                     {
                         await removeWorldAnchor(by: anchorID)
