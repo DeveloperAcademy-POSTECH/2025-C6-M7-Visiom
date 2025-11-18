@@ -61,4 +61,8 @@ enum FileLocations {
     static func timelinesIndexFile() throws -> URL {
         try appSupportDir().appendingPathComponent("timelines.json", conformingTo: .json)
     }
+    
+    static func placedImagesIndexFile() throws -> URL {
+        try appSupportDir().appendingPathComponent("placedImages.json", conformingTo: .json)
+    }
 }
