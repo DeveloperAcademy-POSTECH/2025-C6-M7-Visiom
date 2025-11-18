@@ -19,6 +19,7 @@ class AppModel {
     let userControlWindowID = "UserControlWindow"
     let timelineWindowID = "TimelineWindow"  // 소문자 리펙토링 필요
     let cameraHeightWindowID = "CameraHeightWindowID"
+    let timelineShowWindowID = "TimelineShowWindowID"  // timeline안에 show 기능을 위한 윈도우
 
     enum ImmersiveSpaceState {
         case closed
@@ -58,6 +59,8 @@ class AppModel {
     func toggleTimelines() {
         showTimelines.toggle()
     }
+
+    var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
 
     //Mixed Immersive 진입 처리 함수
     @MainActor
@@ -144,6 +147,8 @@ class AppModel {
         dismissWindow(id: memoEditWindowID)
         dismissWindow(id: userControlWindowID)
         dismissWindow(id: timelineWindowID)
+        dismissWindow(id: cameraHeightWindowID)
+        dismissWindow(id: timelineShowWindowID)
     }
 
     enum Route {

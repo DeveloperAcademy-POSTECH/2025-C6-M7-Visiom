@@ -37,6 +37,7 @@ struct TimelineView: View {
                         .font(.system(size: 19))
                 }
                 Button {
+                    openWindow(id: appModel.timelineShowWindowID)
                 } label: {
                     Image(systemName: "play")
                         .font(.system(size: 19))

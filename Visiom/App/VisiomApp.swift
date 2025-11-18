@@ -68,6 +68,13 @@ struct VisiomApp: App {
         }
         .defaultSize(width: 207, height: 236)
 
+        WindowGroup(id: appModel.timelineShowWindowID) {
+            TimelineShowView()
+                .environment(appModel)
+                .environment(timelineStore)
+        }
+        .defaultSize(width: 207, height: 236)
+
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
             MixedImmersiveView()
                 .environment(appModel)
