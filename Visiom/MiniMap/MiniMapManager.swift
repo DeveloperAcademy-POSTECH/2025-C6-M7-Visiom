@@ -9,7 +9,6 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 
-
 @Observable
 class MiniMapManager {
     
@@ -28,6 +27,7 @@ class MiniMapManager {
         // ChrimeScene 로드 및 추가
         if let scene = cachedChrimeScene?.clone(recursive: true) {
             scene.position = .zero
+            
             scene.name = "Immersive"
             content.add(scene)
         } else {
@@ -47,13 +47,36 @@ class MiniMapManager {
             }
         }
     }
-
-    // mixedImmersive에서 사용하는 entityByAnchorID를 entityByAnchorIDs로 넣기
+    
     func updateAnchor(entityByAnchorID: [UUID : Entity]) {
         entityByAnchorIDs = entityByAnchorID
         print("entityByAnchorIDs \(entityByAnchorID)")
     }
+
     
+//    func updateMainScene(content: RealityViewContent) {
+//        
+//        // 새로 추가된 box들을 처리
+//        for boxData in boxes {
+//            // 이미 추가된 box인지 확인
+//            if content.entities.contains(where: { $0.name == boxData.id.uuidString }) {
+//                continue
+//            }
+//            
+//            // Main view에 box 추가
+//            let box = createBox(data: boxData)
+//            box.name = boxData.id.uuidString
+//            content.add(box)
+//        }
+//    }
+    
+//    func createBox(data: BoxData) -> ModelEntity { // 테스트용 삭제
+//        let mesh = MeshResource.generateBox(size: data.size)
+//        let material = SimpleMaterial(color: data.color, isMetallic: false)
+//        let box = ModelEntity(mesh: mesh, materials: [material])
+//        box.setPosition(data.worldPosition, relativeTo: nil)
+//        return box
+//    }
     
     // 미니맵 화면
     @MainActor
@@ -81,31 +104,45 @@ class MiniMapManager {
         }
     }
     
-    // 미니맵 Anchor 업데이트
+    
     func updateMiniScene(content: RealityViewContent) {
         
-        for entity in entityByAnchorIDs.values {
-            
-            if content.entities.contains(where: { $0.id == entity.id}) {
-                continue
-            }
-            
-            let marker = createMiniBox(data: entity)
-            marker.name = "\(entity.id)"
-            content.add(marker)
-            
-        }
+        // 새로 추가된 box들을 처리
+//        for boxData in boxes {
+//            // 이미 추가된 box인지 확인
+//            if content.entities.contains(where: { $0.name == boxData.id.uuidString }) {
+//                            continue
+//                        }
+//            
+//            // Mini view에 box 추가 (1/10 스케일)
+//            let box = createMiniBox(data: boxData)
+//            box.name = boxData.id.uuidString
+//            content.add(box)
+//        }
+        print("entityByAnchorIDs: \(entityByAnchorIDs)")
+        for boxData in entityByAnchorIDs.values {
+                    // 이미 추가된 box인지 확인
+                    if content.entities.contains(where: { $0.name == boxData.name }) {
+                                    continue
+                                }
+        
+                    // Mini view에 box 추가 (1/10 스케일)
+                    let box = createMiniBox(data: boxData)
+                    box.name = boxData.name
+                    content.add(box)
+                }
     }
     
-    // Anchor 위치 정보를 작은 상자로 표시
     func createMiniBox(data: Entity) -> ModelEntity { // 테스트용 삭제
         // 1/10 크기로 생성
+//        let scaledSize = data.size * 0.1
         let mesh = MeshResource.generateBox(size: 0.01)
         let material = SimpleMaterial(color: .systemMint, isMetallic: false)
         let box = ModelEntity(mesh: mesh, materials: [material])
         
         // 월드 좌표를 1/10로 스케일링
         let scaledPosition = data.position(relativeTo: nil) * 0.1
+
         
         let rotatedPosition = SIMD3<Float>(
                     scaledPosition.x,
