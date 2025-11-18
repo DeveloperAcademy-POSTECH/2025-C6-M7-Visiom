@@ -52,7 +52,7 @@ struct VisiomApp: App {
                 Text("메모가 선택되지 않았습니다.")
             }
         }
-        .defaultSize(CGSize(width: 200, height: 220))
+        .defaultSize(CGSize(width: 140, height: 140))
         .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.timelineWindowID) {
