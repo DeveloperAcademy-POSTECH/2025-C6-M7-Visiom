@@ -138,6 +138,8 @@ extension MixedImmersiveView {
             controller.entityByAnchorID[id] = entity
             entity.generateCollisionShapes(recursive: true)
             entity.components.set(InputTargetComponent())
+            
+            miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
         }
         
         bootstrap.memoTextProvider = { [weak memoStore] memoID in

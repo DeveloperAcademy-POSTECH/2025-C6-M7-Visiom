@@ -24,9 +24,26 @@ extension MixedImmersiveView {
             worldTracking: Self.worldTracking,
             anchorRegistry: anchorRegistry,
             persistence: persistence,
-            entityForAnchorID: { id in controller?.entityByAnchorID[id] },
-            setEntityForAnchorID: { id, e in controller?.entityByAnchorID[id] = e },
-            spawnEntity: { rec in await controller?.spawnEntity(rec) }
+            entityForAnchorID: { [weak controller] id in
+                controller?.entityByAnchorID[id]
+            },
+            
+            setEntityForAnchorID: {[weak controller, weak miniMapManager] id, e in
+                guard let controller, let miniMapManager else { return }
+                controller.entityByAnchorID[id] = e
+                
+                // 미니맵 최신 스탭샷 전달
+                miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
+            },
+            
+            spawnEntity: {[weak controller, weak miniMapManager] rec in
+                guard let controller, let miniMapManager else { return }
+                await controller.spawnEntity(rec)
+                
+                // 스폰이 끝나면 한 번 더 스냅샷 전달
+                miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
+                
+            }
         )
         
         // 레코드가 없는 앵커가 추가된 경우(메모/임시 대기열 처리)

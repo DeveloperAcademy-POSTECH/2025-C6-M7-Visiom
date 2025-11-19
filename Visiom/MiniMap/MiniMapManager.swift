@@ -9,19 +9,15 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 
-//struct BoxData: Identifiable {
-//    let id = UUID()
-//    let worldPosition: SIMD3<Float>
-//    let size: SIMD3<Float>
-//    let color: UIColor
-//}
 
 @Observable
 class MiniMapManager {
     
+    // 화면 90도 전환 상태 관리 변수
     var isRotated = false
     
-    var entityByAnchorIDs: [UUID: Entity] = [:]
+    // 앵커 위치 임시 저장 배열
+    var entityByAnchorIDs: [UUID:Entity] = [:]
     
     // 미리 로드된 Entity 캐싱
     var cachedChrimeScene: Entity?
@@ -51,37 +47,12 @@ class MiniMapManager {
             }
         }
     }
-    
+
+    // mixedImmersive에서 사용하는 entityByAnchorID를 entityByAnchorIDs로 넣기
     func updateAnchor(entityByAnchorID: [UUID : Entity]) {
         entityByAnchorIDs = entityByAnchorID
         print("entityByAnchorIDs \(entityByAnchorID)")
     }
-    
-    
-    
-//    func updateMainScene(content: RealityViewContent) {
-//        
-//        // 새로 추가된 box들을 처리
-//        for boxData in boxes {
-//            // 이미 추가된 box인지 확인
-//            if content.entities.contains(where: { $0.name == boxData.id.uuidString }) {
-//                continue
-//            }
-//            
-//            // Main view에 box 추가
-//            let box = createBox(data: boxData)
-//            box.name = boxData.id.uuidString
-//            content.add(box)
-//        }
-//    }
-    
-//    func createBox(data: BoxData) -> ModelEntity { // 테스트용 삭제
-//        let mesh = MeshResource.generateBox(size: data.size)
-//        let material = SimpleMaterial(color: data.color, isMetallic: false)
-//        let box = ModelEntity(mesh: mesh, materials: [material])
-//        box.setPosition(data.worldPosition, relativeTo: nil)
-//        return box
-//    }
     
     
     // 미니맵 화면
@@ -110,44 +81,32 @@ class MiniMapManager {
         }
     }
     
+    // 미니맵 Anchor 업데이트
     func updateMiniScene(content: RealityViewContent) {
         
-        // 새로 추가된 box들을 처리
-//        for boxData in boxes {
-//            // 이미 추가된 box인지 확인
-//            if content.entities.contains(where: { $0.name == boxData.id.uuidString }) {
-//                            continue
-//                        }
-//            
-//            // Mini view에 box 추가 (1/10 스케일)
-//            let box = createMiniBox(data: boxData)
-//            box.name = boxData.id.uuidString
-//            content.add(box)
-//        }
-        print("entityByAnchorIDs: \(entityByAnchorIDs)")
-        for boxData in entityByAnchorIDs.values {
-                    // 이미 추가된 box인지 확인
-                    if content.entities.contains(where: { $0.name == boxData.name }) {
-                                    continue
-                                }
-        
-                    // Mini view에 box 추가 (1/10 스케일)
-                    let box = createMiniBox(data: boxData)
-                    box.name = boxData.name
-                    content.add(box)
-                }
+        for entity in entityByAnchorIDs.values {
+            
+            if content.entities.contains(where: { $0.id == entity.id}) {
+                continue
+            }
+            
+            let marker = createMiniBox(data: entity)
+            marker.name = "\(entity.id)"
+            content.add(marker)
+            
+        }
     }
     
+    // Anchor 위치 정보를 작은 상자로 표시
     func createMiniBox(data: Entity) -> ModelEntity { // 테스트용 삭제
         // 1/10 크기로 생성
-//        let scaledSize = data.size * 0.1
+        print("data : \(data)")
         let mesh = MeshResource.generateBox(size: 0.01)
         let material = SimpleMaterial(color: .systemMint, isMetallic: false)
         let box = ModelEntity(mesh: mesh, materials: [material])
         
         // 월드 좌표를 1/10로 스케일링
-//        let scaledPosition = data.worldPosition * 0.1
-        let scaledPosition = data.position(relativeTo: nil)
+        let scaledPosition = data.position(relativeTo: nil) * 0.1
         
         let rotatedPosition = SIMD3<Float>(
                     scaledPosition.x,
@@ -160,6 +119,7 @@ class MiniMapManager {
         return box
     }
     
+    // 화면을 90도로 변환하는 함수 
     func orientationChange90Degrees(content: RealityViewContent) {
         // 엔티티 찾기
         guard let entity = content.entities.first(where: { $0.name == "MainChrimeScene" }) else {
