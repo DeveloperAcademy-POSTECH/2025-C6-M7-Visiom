@@ -11,7 +11,6 @@ import SwiftUI
 @MainActor
 @Observable
 class AppModel {
-    //let fullImmersiveSpaceID = "FullImmersiveSpace"
     let mixedImmersiveSpaceID = "mixedImmersiveSpace"
     let crimeSceneListWindowID = "CrimeSceneListWindow"
     let photoCollectionWindowID = "PhotoCollectionWindow"
@@ -87,7 +86,7 @@ class AppModel {
         }
     }
 
-    //Full Immersive 나가기 처리 함수
+    //Mixed Immersive 나가기 처리 함수
     @MainActor
     func exitMixedImmersive(
         dismissImmersiveSpace: DismissImmersiveSpaceAction,
@@ -101,47 +100,7 @@ class AppModel {
         closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
     }
-
-    //    //Full Immersive 진입 처리 함수
-    //    @MainActor
-    //    func enterFullImmersive(
-    //        openImmersiveSpace: OpenImmersiveSpaceAction,
-    //        dismissWindow: DismissWindowAction
-    //    ) async {
-    //        switch immersiveSpaceState {
-    //        case .open:
-    //            return
-    //        case .inTransition:
-    //            return
-    //        case .closed:
-    //            immersiveSpaceState = .inTransition
-    //            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
-    //            case .opened:
-    //                dismissWindow(id: crimeSceneListWindowID)
-    //                break
-    //            case .userCancelled, .error:
-    //                immersiveSpaceState = .closed
-    //            @unknown default:
-    //                immersiveSpaceState = .closed
-    //            }
-    //        }
-    //    }
-    //
-    //    //Full Immersive 나가기 처리 함수
-    //    @MainActor
-    //    func exitFullImmersive(
-    //        dismissImmersiveSpace: DismissImmersiveSpaceAction,
-    //        dismissWindow: DismissWindowAction,
-    //        openWindow: OpenWindowAction
-    //    ) async {
-    //        guard immersiveSpaceState == .open else { return }
-    //        immersiveSpaceState = .inTransition
-    //
-    //        await dismissImmersiveSpace()
-    //        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
-    //        openWindow(id: crimeSceneListWindowID)
-    //    }
-
+    
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
         dismissWindow(id: memoEditWindowID)

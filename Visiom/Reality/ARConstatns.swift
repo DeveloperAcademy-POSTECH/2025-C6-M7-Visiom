@@ -51,9 +51,10 @@ enum ARConstants {
     
     // MARK: - 텍스트
     enum TextFormatting {
-        static let memoTextSize: CGFloat = 10
-        static let memoFrameWidth: CGFloat = 90
-        static let memoFrameHeight: CGFloat = 90
-        static let backgroundOpacity: CGFloat = 0.5
+        static let memoTextSize: CGFloat = 24
+        static let memoTextWeight: Font.Weight = .semibold
+        static let memoFrameWidth: CGFloat = 150
+        static let memoFrameHeight: CGFloat = 150
+        static let backgroundOpacity: CGFloat = 0
     }
 }

@@ -129,6 +129,7 @@ extension MixedImmersiveView {
         controller.photoGroup = pGroup
         controller.memoGroup = mGroup
         controller.teleportGroup = tGroup
+        controller.timelineGroup = timeGroup
         self.controller = controller
         
         // MARK: - Bootstrap 콜백 → 컨트롤러와 연동

@@ -20,6 +20,9 @@ public final class PlacementManager {
     public var onMoved: ((AnchorRecord) -> Void)?
     public var onRemoved: ((UUID) -> Void)?
     
+    // 드래그 시작 시점의 앵커 위치 캐시
+    private var dragStartPosition: [UUID: SIMD3<Float>] = [:]
+    
     public init(anchorRegistry: AnchorRegistry, sceneRoot: Entity) {
         self.anchorRegistry = anchorRegistry
         self.sceneRoot = sceneRoot
@@ -64,23 +67,44 @@ public final class PlacementManager {
         return anchorID
     }
     
+    public func beginMove(anchorID: UUID) {
+        guard let anchorRecord = anchorRegistry.records[anchorID] else { return }
+        let position = SIMD3<Float>(
+            anchorRecord.worldMatrix.columns.3.x,
+            anchorRecord.worldMatrix.columns.3.y,
+            anchorRecord.worldMatrix.columns.3.z
+        )
+        dragStartPosition[anchorID] = position
+    }
+    
+    public func endMove(anchorID: UUID) {
+        dragStartPosition.removeValue(forKey: anchorID)
+    }
+    
     // 드래그에 따른 앵커 transform 갱신
     public func moveAnchor(anchorID: UUID, deltaWorld: SIMD3<Float>) {
-        guard var rec = anchorRegistry.records[anchorID] else { return }
+        guard var anchorRecord = anchorRegistry.records[anchorID] else { return }
         
-        // ⚙️ y 이동 방지: teleport만 y=0 고정
-        if let kind = EntityKind(rawValue: rec.kind), kind == .teleport {
-            rec.worldMatrix.columns.3.x += deltaWorld.x
-            rec.worldMatrix.columns.3.z += deltaWorld.z
-            // y값은 고정
+        if let dragStartPosition = dragStartPosition[anchorID] {
+            var newPosition = dragStartPosition + deltaWorld
+            if let kind = EntityKind(rawValue: anchorRecord.kind), kind == .teleport {
+                // 텔레포트는 y 고정
+                newPosition.y = anchorRecord.worldMatrix.columns.3.y
+            }
+            anchorRecord.worldMatrix.columns.3 = SIMD4<Float>(newPosition, 1.0)
         } else {
-            rec.worldMatrix.columns.3.x += deltaWorld.x
-            rec.worldMatrix.columns.3.y += deltaWorld.y
-            rec.worldMatrix.columns.3.z += deltaWorld.z
+            if let kind = EntityKind(rawValue: anchorRecord.kind), kind == .teleport {
+                anchorRecord.worldMatrix.columns.3.x += deltaWorld.x
+                anchorRecord.worldMatrix.columns.3.z += deltaWorld.z
+            } else {
+                anchorRecord.worldMatrix.columns.3.x += deltaWorld.x
+                anchorRecord.worldMatrix.columns.3.y += deltaWorld.y
+                anchorRecord.worldMatrix.columns.3.z += deltaWorld.z
+            }
         }
-        
-        anchorRegistry.upsert(rec)
-        onMoved?(rec)
+
+        anchorRegistry.upsert(anchorRecord)
+        onMoved?(anchorRecord)
     }
     
     public func removeAnchor(anchorID: UUID) {
