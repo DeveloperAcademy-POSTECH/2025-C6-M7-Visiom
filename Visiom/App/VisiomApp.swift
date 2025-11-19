@@ -73,7 +73,7 @@ struct VisiomApp: App {
                 .environment(appModel)
                 .environment(timelineStore)
         }
-        .defaultSize(width: 207, height: 236)
+        .defaultSize(width: 388, height: 190)
 
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
             MixedImmersiveView()

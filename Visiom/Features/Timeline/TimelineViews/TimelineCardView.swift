@@ -27,6 +27,7 @@ struct TimelineCardView: View {
         HStack {
             Text(String(timelineIndex))
                 .font(.system(size: 15, weight: .semibold))
+                .padding(.trailing, 24)
             VStack(alignment: .leading) {
                 if isEditTitle {
                     TextField("", text: $newTitle)
@@ -62,7 +63,7 @@ struct TimelineCardView: View {
                             .frame(width: 115, height: 24)
                             .background(
                                 !isSequenceCorrect
-                                    ? Color(red: 1.0, green: 0.26, blue: 0.27)
+                                    ? .red
                                     : .clear,
                                 in: RoundedRectangle(cornerRadius: 12)
                             )
@@ -83,7 +84,7 @@ struct TimelineCardView: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(
                         !isSequenceCorrect
-                            ? Color(red: 1.0, green: 0.26, blue: 0.27) : .clear,
+                            ? .red : .clear,
                     )
             )
         }
