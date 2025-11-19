@@ -26,7 +26,12 @@ enum AREntityFactory {
                 return ModelEntity()
             }
         case .memo:
-            return createMemoBox()
+            do {
+                return try await createMemoBox()
+            } catch {
+                print("Failed to create sticker entity: \(error)")
+                return ModelEntity()
+            }
         case .teleport:
             return createTeleport()
         case .timeline:
@@ -38,7 +43,7 @@ enum AREntityFactory {
     static func createPhotoCollectionButton() async throws -> ModelEntity {
 
         // 원본 entity 로드 (ModelEntity라고 가정하지 않음)
-        let root = try await Entity(named: "btn", in: realityKitContentBundle)
+        let root = try await Entity(named: "photo", in: realityKitContentBundle)
 
         // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
         guard let meshEntity = findFirstEntityWithModelComponent(in: root)
@@ -66,32 +71,31 @@ enum AREntityFactory {
     }
 
     /// 메모 박스 엔티티 생성
-    static func createMemoBox() -> ModelEntity {
-        let entity = ModelEntity(
-            mesh: .generateBox(
-                width: ARConstants.Dimensions.memoBoxSize,
-                height: ARConstants.Dimensions.memoBoxSize,
-                depth: ARConstants.Dimensions.memoBoxDepth
-            ),
-            materials: [
-                SimpleMaterial(
-                    color: ARConstants.Colors.memoBackground,
-                    isMetallic: false
-                )
-            ]
-        )
-
-        // 콜리전 및 인터랙션 설정
-        let collision = CollisionComponent(shapes: [
-            .generateBox(
-                width: ARConstants.Dimensions.memoBoxSize,
-                height: ARConstants.Dimensions.memoBoxSize,
-                depth: ARConstants.Dimensions.memoBoxDepth
-            )
-        ])
-        let input = InputTargetComponent()
-        entity.components.set([collision, input])
-
+    static func createMemoBox() async throws -> ModelEntity {
+        let root = try await Entity(named: "memo", in: realityKitContentBundle)
+        
+        // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
+        guard let meshEntity = findFirstEntityWithModelComponent(in: root)
+        else {
+            fatalError("arrow usdz 안에서 ModelComponent 가진 entity 못 찾음")
+        }
+        
+        // ModelEntity 확보 - 이미 ModelEntity면 캐스팅 아니면 ModelComponent로 새 ModelEntity 구성
+        let modelEntity: ModelEntity
+        if let casted = meshEntity as? ModelEntity {
+            modelEntity = casted
+        } else if let modelComp = meshEntity.components[ModelComponent.self] {
+            modelEntity = ModelEntity()
+            modelEntity.components.set(modelComp)
+        } else {
+            fatalError("ModelComponent를 가진 엔티티를 찾았지만 구성 추출에 실패")
+        }
+        
+        let entity = modelEntity.clone(recursive: true)
+        
+        entity.generateCollisionShapes(recursive: true)
+        entity.components.set(InputTargetComponent())
+        
         return entity
     }
 
@@ -155,7 +159,10 @@ enum AREntityFactory {
                     )
                 )
                 .foregroundColor(.black)
-                .font(.system(size: ARConstants.TextFormatting.memoTextSize))
+                .font(.system(
+                    size: ARConstants.TextFormatting.memoTextSize,
+                    weight: ARConstants.TextFormatting.memoTextWeight
+                ))
         )
         return entity
     }

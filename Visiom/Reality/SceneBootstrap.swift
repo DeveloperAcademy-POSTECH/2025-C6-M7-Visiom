@@ -118,8 +118,7 @@ public final class SceneBootstrap {
             container.addChild(visual)
             visual.generateCollisionShapes(recursive: true)
             visual.components.set(InputTargetComponent())
-            print("🍏SceneBootStrap에서 진행")
-
+            
         case .memo:
             container.addChild(visual)
             visual.generateCollisionShapes(recursive: true)
