@@ -20,7 +20,7 @@ struct CameraHeightView: View {
                 ForEach(heights, id: \.self) { height in
                     Text("\(height)")
                         .font(.system(size: 29, weight: .semibold))
-                        .tag(heighㅎt)
+                        .tag(height)
                 }
             }
             .frame(width: 64, height: 236)
