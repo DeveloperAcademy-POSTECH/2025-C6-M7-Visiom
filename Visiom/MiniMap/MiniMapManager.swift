@@ -100,7 +100,6 @@ class MiniMapManager {
     // Anchor 위치 정보를 작은 상자로 표시
     func createMiniBox(data: Entity) -> ModelEntity { // 테스트용 삭제
         // 1/10 크기로 생성
-        print("data : \(data)")
         let mesh = MeshResource.generateBox(size: 0.01)
         let material = SimpleMaterial(color: .systemMint, isMetallic: false)
         let box = ModelEntity(mesh: mesh, materials: [material])
