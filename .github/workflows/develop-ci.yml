@@ -1,0 +1,67 @@
+# workflow 이름 
+name: Develop Build
+
+on: 
+  # develop 브랜치에 push나 pull request 이번트가 일어났을 때 해당 workflow를 trigger
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+# workflow의 실행은 하나 이상의 job으로 구성 됨
+jobs:
+  # 이 workflow 는 "build" 라는 single job으로 작업 제목임
+  build-and-test:
+    # job이 실행될 환경 - 최신 mac os
+    runs-on: macos-latest
+    # Step은 job의 세부 task들
+    steps:
+    # GitHub 저장소의 코드를 runner(실행 환경)로 가져오는 역할
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '26.0.1'
+
+    # 3️⃣ VisionOS 앱 빌드
+    - name: Build VisionOS App
+      run: |
+        xcodebuild \
+          -project Visiom.xcodeproj \
+          -scheme Visiom \
+          -configuration Release \
+          -destination 'generic/platform=visionOS' \
+          clean build | xcpretty
+
+    # 4️⃣ VisionOS 아카이브 생성
+    - name: Archive VisionOS App
+      run: |
+        xcodebuild \
+          -project Visiom.xcodeproj \
+          -scheme Visiom \
+          -configuration Release \
+          -destination 'generic/platform=visionOS' \
+          -archivePath ${{ github.workspace }}/build/Visiom.xcarchive \
+          clean archive | xcpretty
+
+    # 5️⃣ IPA 내보내기
+    - name: Export IPA
+      run: |
+        xcodebuild \
+          -exportArchive \
+          -archivePath ${{ github.workspace }}/build/Visiom.xcarchive \
+          -exportPath ${{ github.workspace }}/build/export \
+          -exportOptionsPlist ExportOptions.plist
+
+      # 6️⃣ 빌드 결과 업로드
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: VisionOS-Build
+        path: build/export/
+    
+
+    
+    
