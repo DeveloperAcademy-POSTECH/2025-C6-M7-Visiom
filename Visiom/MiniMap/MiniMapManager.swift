@@ -28,14 +28,14 @@ class MiniMapManager {
         // ChrimeScene 로드 및 추가
         if let scene = cachedChrimeScene?.clone(recursive: true) {
             scene.position = .zero
-            scene.name = "MainChrimeScene"
+            scene.name = "Immersive"
             content.add(scene)
         } else {
             // 캐시에 없으면 로드
             do {
-                let scene = try await Entity(named: "ChrimeScene",
+                let scene = try await Entity(named: "Immersive",
                                              in: realityKitContentBundle)
-                scene.name = "MainChrimeScene"
+                scene.name = "Immersive"
                 content.add(scene)
             
                 // 캐싱 (다음번 사용을 위해)
@@ -64,16 +64,16 @@ class MiniMapManager {
             // 1/10 크기로 스케일링
             scene.scale = [0.1, 0.1, 0.1]
             scene.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
-            scene.name = "MiniChrimeScene" // 식별을 위한 이름 추가
+            scene.name = "miniImmersive" // 식별을 위한 이름 추가
             content.add(scene)
         } else {
             // 캐시에 없으면 로드
             do {
-                let scene = try await Entity(named: "ChrimeScene",
+                let scene = try await Entity(named: "Immersive",
                                              in: realityKitContentBundle)
                 scene.scale = [0.1, 0.1, 0.1]
                 scene.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
-                scene.name = "MiniChrimeScene" // 식별을 위한 이름 추가
+                scene.name = "miniImmersive" // 식별을 위한 이름 추가
                 content.add(scene)
             } catch {
                 print("Failed to load ChrimeScene: \(error)")
@@ -121,7 +121,7 @@ class MiniMapManager {
     // 화면을 90도로 변환하는 함수 
     func orientationChange90Degrees(content: RealityViewContent) {
         // 엔티티 찾기
-        guard let entity = content.entities.first(where: { $0.name == "MainChrimeScene" }) else {
+        guard let entity = content.entities.first(where: { $0.name == "Immersive" }) else {
             return
         }
         
@@ -160,7 +160,7 @@ class MiniMapManager {
         guard cachedChrimeScene == nil else { return }
         
         do {
-            cachedChrimeScene = try await Entity(named: "ChrimeScene",
+            cachedChrimeScene = try await Entity(named: "Immersive",
                                                   in: realityKitContentBundle)
         } catch {
             print("Failed to load ChrimeScene: \(error)")

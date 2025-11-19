@@ -39,13 +39,13 @@ extension MixedImmersiveView {
         
         // 씬 로드
         guard let immersiveContentEntity = try? await Entity(
-            named: "ChrimeScene",
+            named: "Immersive",
             in: realityKitContentBundle
         ) else {
             print("❌ Failed to load Immersive content")
             return
         }
-        immersiveContentEntity.name = "MainChrimeScene"
+        immersiveContentEntity.name = "Immersive"
         immersiveContentEntity.generateCollisionShapes(recursive: true)
         root = immersiveContentEntity
         content.add(immersiveContentEntity)
