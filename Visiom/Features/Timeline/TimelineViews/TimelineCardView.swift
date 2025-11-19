@@ -17,11 +17,16 @@ struct TimelineCardView: View {
     let occurredTime: Date?  // 사건 발생 시간
     let isSequenceCorrect: Bool  // 시간에 따른 동선 성립 여부
 
-    @State private var isSwipe = false
     @State private var isEditTitle = false
     @State private var newTitle = ""
 
-    @GestureState private var dragOffset: CGSize = .zero
+    var body: some View {
+        HStack {
+            cardView
+        }.swipeActions {
+            swipeView
+        }
+    }
 
     private var cardView: some View {
         HStack {
@@ -90,38 +95,11 @@ struct TimelineCardView: View {
         }
     }
 
-    var body: some View {
-        HStack {
-            cardView
-                .offset(x: isSwipe ? -50 : 0)
-                .gesture(
-                    DragGesture()
-                        .updating($dragOffset) { value, state, _ in
-                            state = value.translation
-                        }
-                        .onEnded { value in
-                            if value.translation.width < -30 {
-                                withAnimation { isSwipe = true }
-                            } else if value.translation.width > 30 {
-                                withAnimation { isSwipe = false }
-                            }
-                        }
-                )
-            if isSwipe {
-                swipeView
-                    .offset(x: isSwipe ? -30 : 0)
-                    .transition(.move(edge: .leading))
-            }
-        }
-        .animation(.easeInOut(duration: 0.2), value: isSwipe)
-    }
-
     private var swipeView: some View {
         HStack(spacing: 8) {
             Button {
                 newTitle = title
                 isEditTitle = true
-                isSwipe = false
             } label: {
                 HStack {
                     Image(systemName: "pencil")
