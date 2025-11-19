@@ -32,28 +32,8 @@ struct CameraHeightView: View {
                 appModel.customHeight = meter
                 print("시점 높이 변경: \(meter)m")
             }
-            //            Slider(value: $userHeight, in: 1.1...1.9, step: 0.01) {
-            //            } minimumValueLabel: {
-            //                Text("1.1m")
-            //            } maximumValueLabel: {
-            //                Text("1.9m")
-            //            } onEditingChanged: { editing in
-            //                if editing == false {
-            //                    appModel.customHeight = userHeight
-            //                    print(
-            //                        "시점 높이 변경: \(String(format: "%.2f", userHeight))m"
-            //                    )
-            //                }
-            //            }
 
             Text("CM").font(.system(size: 29, weight: .semibold))
         }
     }
-}
-
-#Preview {
-    CameraHeightView()
-        .environment(AppModel())
-        .frame(width: 207, height: 236)
-        .background(.red)
 }
