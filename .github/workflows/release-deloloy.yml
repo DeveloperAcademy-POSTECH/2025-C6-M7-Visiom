@@ -4,7 +4,7 @@ name: deploy
 on:
   #  workflow 를 trigger 조건 설정 - release/ 로 시작하는 branch 가 push 되었을 때 
   push:
-    branches: [ main ]
+    # branches: [ main ]
   workflow_dispatch: # 수동 실행도 가능
     
 # workflow의 실행은 하나 이상의 job으로 구성 됨
