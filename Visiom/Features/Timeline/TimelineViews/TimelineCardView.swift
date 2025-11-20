@@ -23,6 +23,7 @@ struct TimelineCardView: View {
     var body: some View {
         HStack {
             cardView
+
         }.swipeActions {
             swipeView
         }
@@ -30,15 +31,20 @@ struct TimelineCardView: View {
 
     private var cardView: some View {
         HStack {
-            Text(String(timelineIndex))
-                .font(.system(size: 15, weight: .semibold))
-                .padding(.trailing, 24)
+            ZStack(alignment: .center) {
+                Circle()
+                    .fill(Color.white.opacity(0.15))
+                    .frame(width: 35, height: 35)
+
+                Text(String(timelineIndex))
+                    .font(.system(size: 15, weight: .semibold))
+            }.padding(.trailing, 24)
+
             VStack(alignment: .leading) {
                 if isEditTitle {
                     TextField("", text: $newTitle)
+                        .textFieldStyle(.roundedBorder)
                         .frame(width: 294, height: 44)
-                        .cornerRadius(12)
-                        .background(.black).opacity(0.8)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                 } else {
@@ -76,10 +82,12 @@ struct TimelineCardView: View {
                             .padding(.trailing, 24)
                             .padding(.bottom, 14)
                     }
-
                 }
             }
-            .background(.black, in: RoundedRectangle(cornerRadius: 16)).opacity(
+            .background(
+                Color(.sRGB, red: 104 / 255, green: 96 / 255, blue: 87 / 255),
+                in: RoundedRectangle(cornerRadius: 16)
+            ).opacity(
                 0.8
             )
             .frame(width: 326, height: 120)
@@ -92,11 +100,38 @@ struct TimelineCardView: View {
                             ? .red : .clear,
                     )
             )
-        }
+        }.contentShape(Rectangle())
     }
 
     private var swipeView: some View {
         HStack(spacing: 8) {
+            Button {
+                timelineStore.deleteTimeline(id: id)
+            } label: {
+                HStack {
+                    Image(systemName: "trash")
+                        .font(.system(size: 12))
+                    Text("삭제")
+                        .font(.system(size: 12))
+                }
+                .frame(width: 50)
+                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
+            }
+            .frame(width: 62)
+            .background(
+                Color(
+                    UIColor(
+                        red: 32 / 255,
+                        green: 25 / 255,
+                        blue: 22 / 255,
+                        alpha: 1
+                    )
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 30))
+            .tint(.red)
+
             Button {
                 newTitle = title
                 isEditTitle = true
@@ -114,24 +149,6 @@ struct TimelineCardView: View {
             .frame(width: 62)
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 30))
-
-            Button {
-                timelineStore.deleteTimeline(id: id)
-            } label: {
-                HStack {
-                    Image(systemName: "trash")
-                        .font(.system(size: 12))
-                    Text("삭제")
-                        .font(.system(size: 12))
-                }
-                .frame(width: 50)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 8)
-            }
-            .frame(width: 62)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 30))
-            .tint(.red)
         }
     }
 
@@ -142,16 +159,27 @@ struct TimelineCardView: View {
             HStack {
                 Text("미정")
                     .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(.white)
                     .frame(width: 40)
                     .padding(.leading, 6)
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
                     .padding(.leading, 6)
                     .padding(.trailing, 10)
             }
         }
         .frame(width: 93, height: 36)
+        .background(
+            Color(
+                UIColor(
+                    red: 32 / 255,
+                    green: 25 / 255,
+                    blue: 22 / 255,
+                    alpha: 1
+                )
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .padding(.bottom, 14)
         .padding(.leading, 24)
@@ -182,4 +210,16 @@ struct TimelineCardView: View {
         .padding(.leading, 24)
     }
 
+}
+
+#Preview {
+    TimelineCardView(
+        id: UUID(),
+        title: "aaaaaaaa",
+        timelineIndex: 1,
+        occurredTime: nil,
+        isSequenceCorrect: false
+    )
+    .environment(AppModel())
+    .environment(TimelineStore())
 }

@@ -63,12 +63,13 @@ struct TimelineBoardView: View {
                         occurredTime: timeline.occurredTime,
                         isSequenceCorrect: timeline.isSequenceCorrect
                     )
+                    .listRowInsets(EdgeInsets())
+                    .padding(.top, 8)
                 }
                 .onMove(perform: move)
             }
             .listStyle(.plain)
-            .padding(.top, 24)
-            .padding(.horizontal, 24)
+            .padding(.top, 8)
             .sheet(isPresented: $isCreatePopupShow) {
                 createPopup
             }
@@ -167,8 +168,8 @@ struct TimelineBoardView: View {
 
 #Preview {
     TimelineBoardView()
-        .frame(width: 400, height: 600)
-        .background(.red)
+        .frame(width: 433, height: 685)
+        .glassBackgroundEffect()
         .environment(AppModel())
         .environment(TimelineStore())
 }
