@@ -17,6 +17,7 @@ struct VisiomApp: App {
     @State private var memoStore = MemoStore()
     @State private var timelineStore = TimelineStore()
     @State private var entityManager = EntityManager()
+    @State private var miniMapManager = MiniMapManager()
 
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
@@ -75,6 +76,12 @@ struct VisiomApp: App {
         }
         .defaultSize(width: 388, height: 190)
 
+        
+        WindowGroup(id: appModel.miniMapWindowID) {
+            MiniMapView()
+                .environment(miniMapManager)
+        }
+        
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
             MixedImmersiveView()
                 .environment(appModel)
@@ -82,6 +89,7 @@ struct VisiomApp: App {
                 .environment(entityManager)
                 .environment(memoStore)
                 .environment(timelineStore)
+                .environment(miniMapManager)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }

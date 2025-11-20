@@ -45,7 +45,7 @@ extension MixedImmersiveView {
             print("❌ Failed to load Immersive content")
             return
         }
-        
+        immersiveContentEntity.name = "Immersive"
         immersiveContentEntity.generateCollisionShapes(recursive: true)
         root = immersiveContentEntity
         content.add(immersiveContentEntity)
@@ -139,6 +139,8 @@ extension MixedImmersiveView {
             controller.entityByAnchorID[id] = entity
             entity.generateCollisionShapes(recursive: true)
             entity.components.set(InputTargetComponent())
+            
+            miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
         }
         
         bootstrap.memoTextProvider = { [weak memoStore] memoID in

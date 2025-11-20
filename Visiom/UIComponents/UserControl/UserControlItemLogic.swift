@@ -86,11 +86,11 @@ struct UserControlItemLogic {
         case .visibility:
             return state == .visibility ? .idle : .visibility
 
-        case .topView:
-            return state == .topView ? .idle : .topView
-
         case .cameraheight:
             return state == .cameraheight ? .idle : .cameraheight
+        
+        case .miniMap:
+            return state == .miniMap ? .idle : .miniMap
         }
     }
 }
