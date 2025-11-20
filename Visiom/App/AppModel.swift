@@ -16,7 +16,7 @@ class AppModel {
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let timelineWindowID = "TimelineWindow"  
+    let timelineWindowID = "TimelineWindow"
     let cameraHeightWindowID = "CameraHeightWindowID"
     let timelineShowWindowID = "TimelineShowWindowID"  // timeline안에 show 기능을 위한 윈도우
     let miniMapWindowID = "MiniMapWindow"
@@ -42,7 +42,7 @@ class AppModel {
     var customHeight: Float = 1.60
 
     var isMiniMap: Bool = false
-    
+
     func toggleMarkers() {
         markersVisible.toggle()
     }
@@ -61,6 +61,7 @@ class AppModel {
     }
 
     var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
+    var selectedSceneFileName: String = "Immersive"
 
     //Mixed Immersive 진입 처리 함수
     @MainActor
@@ -101,7 +102,7 @@ class AppModel {
         closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
     }
-    
+
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
         dismissWindow(id: memoEditWindowID)

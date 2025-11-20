@@ -54,7 +54,9 @@ struct CrimeSceneListView: View {
                                     }
                                 }
 
-//                                await appModel.enterFullImmersive(
+                                appModel.selectedSceneFileName =
+                                    crimeScene.fileName
+
                                 await appModel.enterMixedImmersive(
                                     openImmersiveSpace: openImmersiveSpace,
                                     dismissWindow: dismissWindow
@@ -96,9 +98,4 @@ struct CrimeSceneListView: View {
         }
     }
 
-}
-
-#Preview(windowStyle: .automatic) {
-    CrimeSceneListView()
-        .environment(AppModel())
 }

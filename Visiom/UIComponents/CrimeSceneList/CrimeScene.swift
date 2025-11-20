@@ -36,7 +36,7 @@ struct CrimeScene: Identifiable {
             occuredDate: "2025.10.8",
             location: "경상북도 포항시 청암로77",
             status: .investigating,
-            fileName: "Immersive"
+            fileName: "Inside"
         ),
         CrimeScene(
             imageName: "crimeSceneDummy2",
@@ -52,7 +52,7 @@ struct CrimeScene: Identifiable {
             occuredDate: "2025.10.8",
             location: "경상북도 포항시 청암로77",
             status: .solved,
-            fileName: "Immersive"
+            fileName: "Inside"
         ),
     ]
 }
