@@ -113,11 +113,13 @@ extension UserControlView {
                 print("⚡️ 텔레포트 배치 종료")
             }
             
-        case .topView:
-            if case .topView = state {
-                appModel.showTopView = true
+        case .miniMap:
+            if case .miniMap = state {
+                openWindow(id:appModel.miniMapWindowID)
+                print("🗺️ 미니맵 시작")
             } else {
-                appModel.showTopView = false
+                dismissWindow(id: appModel.miniMapWindowID)
+                print("🗺️ 미니맵 종료")
             }
         }
     }

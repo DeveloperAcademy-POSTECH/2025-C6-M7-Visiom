@@ -15,6 +15,7 @@ struct MixedImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(MemoStore.self) var memoStore
     @Environment(TimelineStore.self) var timelineStore
+    @Environment(MiniMapManager.self) var miniMapManager
     
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
@@ -57,7 +58,7 @@ struct MixedImmersiveView: View {
             anchorSystem?.start()
             startInteractionPipelineIfReady()
         } update: { content in
-            updateRealityContent(content)
+            miniMapManager.orientationChange90Degrees(content: content)
         }
         .onChange(of: appModel.itemAdd, initial: false) {_, newValue in
             guard let newValue else { return }
@@ -68,7 +69,7 @@ struct MixedImmersiveView: View {
                 }
             }
         }
-
+        
         .onChange(of: memoStore.memoToAnchorID, initial: false) {_, memoID in
             guard let memoID else { return }
             Task {
@@ -92,7 +93,7 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
+                        && $0.dataRef == timelineID
                     })
                 {
                     print("Timeline anchor already exists: \(existing.id)")
@@ -123,7 +124,7 @@ struct MixedImmersiveView: View {
                     if let anchorID = anchorRegistry.records.values.first(
                         where: {
                             $0.kind == EntityKind.timeline.rawValue
-                                && $0.dataRef == timelineID
+                            && $0.dataRef == timelineID
                         })?.id
                     {
                         await removeWorldAnchor(by: anchorID)
