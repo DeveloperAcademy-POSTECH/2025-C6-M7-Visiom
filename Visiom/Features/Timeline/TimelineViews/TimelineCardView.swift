@@ -209,17 +209,4 @@ struct TimelineCardView: View {
         .padding(.bottom, 14)
         .padding(.leading, 24)
     }
-
-}
-
-#Preview {
-    TimelineCardView(
-        id: UUID(),
-        title: "aaaaaaaa",
-        timelineIndex: 1,
-        occurredTime: nil,
-        isSequenceCorrect: false
-    )
-    .environment(AppModel())
-    .environment(TimelineStore())
 }
