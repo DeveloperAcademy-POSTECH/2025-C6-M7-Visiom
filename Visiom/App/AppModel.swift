@@ -16,7 +16,9 @@ class AppModel {
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let timelineWindowID = "TimelineWindow"
+    let timelineWindowID = "TimelineWindow"  
+    let cameraHeightWindowID = "CameraHeightWindowID"
+    let timelineShowWindowID = "TimelineShowWindowID"  // timeline안에 show 기능을 위한 윈도우
     let miniMapWindowID = "MiniMapWindow"
 
     enum ImmersiveSpaceState {
@@ -36,7 +38,7 @@ class AppModel {
     var showMemos: Bool = true
     var showTeleports: Bool = true
     var showTimelines: Bool = true
-    
+
     var customHeight: Float = 1.60
 
     var isMiniMap: Bool = false
@@ -57,6 +59,8 @@ class AppModel {
     func toggleTimelines() {
         showTimelines.toggle()
     }
+
+    var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
 
     //Mixed Immersive 진입 처리 함수
     @MainActor
@@ -103,6 +107,8 @@ class AppModel {
         dismissWindow(id: memoEditWindowID)
         dismissWindow(id: userControlWindowID)
         dismissWindow(id: timelineWindowID)
+        dismissWindow(id: cameraHeightWindowID)
+        dismissWindow(id: timelineShowWindowID)
     }
 
     enum Route {

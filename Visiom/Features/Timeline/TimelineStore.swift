@@ -14,6 +14,7 @@ final class TimelineStore {
     private let persistence = PersistenceActor()
     var timelines: [Timeline] = []
     var onTimelineDeleted: ((UUID) -> Void)?
+    var currentIndex: Int = 1
 
     func load() async {
         do {
@@ -24,6 +25,8 @@ final class TimelineStore {
             print("Load timelines error:", error)
             self.timelines = []
         }
+        currentIndex =
+            timelines.isEmpty ? 0 : timelines.first?.timelineIndex ?? 1
     }
 
     // MARK: - Save batching
@@ -151,6 +154,24 @@ final class TimelineStore {
         }
         checkSequenceCorrectness()
         scheduleSave()
+    }
+
+    // show를 위한 함수
+    func nextTimelineID() -> UUID? {
+        guard !timelines.isEmpty else { return nil }
+
+        let maxIndex = timelines.count
+        currentIndex = min(currentIndex + 1, maxIndex)
+
+        return timelines.first(where: { $0.timelineIndex == currentIndex })?.id
+    }
+
+    func previousTimelineID() -> UUID? {
+        guard !timelines.isEmpty else { return nil }
+
+        currentIndex = max(currentIndex - 1, 1)
+
+        return timelines.first(where: { $0.timelineIndex == currentIndex })?.id
     }
 
 }

@@ -62,6 +62,20 @@ struct VisiomApp: App {
                 .environment(timelineStore)
         }
         .defaultSize(width: 400, height: 600)
+
+        WindowGroup(id: appModel.cameraHeightWindowID) {
+            CameraHeightView()
+                .environment(appModel)
+        }
+        .defaultSize(width: 207, height: 236)
+
+        WindowGroup(id: appModel.timelineShowWindowID) {
+            TimelineShowView()
+                .environment(appModel)
+                .environment(timelineStore)
+        }
+        .defaultSize(width: 388, height: 190)
+
         
         WindowGroup(id: appModel.miniMapWindowID) {
             MiniMapView()
