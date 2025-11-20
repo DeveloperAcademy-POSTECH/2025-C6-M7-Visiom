@@ -57,7 +57,7 @@ struct VisiomApp: App {
         .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.timelineWindowID) {
-            TimelineView()
+            TimelineBoardView()
                 .environment(appModel)
                 .environment(timelineStore)
         }

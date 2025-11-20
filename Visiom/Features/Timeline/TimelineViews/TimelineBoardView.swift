@@ -1,5 +1,5 @@
 //
-//  TimelineView.swift
+//  TimelineBoardView.swift
 //  Visiom
 //
 //  Created by jiwon on 11/15/25.
@@ -8,7 +8,7 @@
 import RealityKit
 import SwiftUI
 
-struct TimelineView: View {
+struct TimelineBoardView: View {
     @Environment(AppModel.self) var appModel
     @Environment(TimelineStore.self) var timelineStore
 
@@ -75,6 +75,9 @@ struct TimelineView: View {
             .toolbar {
                 EditButton()
             }
+        }
+        .task {
+            await timelineStore.load()
         }
     }
 
@@ -163,7 +166,7 @@ struct TimelineView: View {
 }
 
 #Preview {
-    TimelineView()
+    TimelineBoardView()
         .frame(width: 400, height: 600)
         .background(.red)
         .environment(AppModel())
