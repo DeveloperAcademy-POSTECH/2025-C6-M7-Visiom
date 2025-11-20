@@ -17,7 +17,7 @@ enum UserControlItem: CaseIterable, Hashable {
     case teleport
     case cameraheight
     case miniMap
-    
+
     // 기본 icon
     var icon: String {
         switch self {
@@ -28,7 +28,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .timeline: return "text.line.first.and.arrowtriangle.forward"
         case .teleport: return "figure.walk"
         case .cameraheight: return "ruler"
-        case .miniMap:    return "photo.artframe.circle"
+        case .miniMap: return "photo.artframe.circle"
         }
     }
 
@@ -42,7 +42,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .timeline: return "text.line.first.and.arrowtriangle.forward"
         case .teleport: return "figure.walk.motion"
         case .cameraheight: return "ruler"
-        case .miniMap:    return "photo.artframe.circle"
+        case .miniMap: return "photo.artframe.circle"
         }
     }
 
@@ -61,7 +61,7 @@ enum InteractionState: Equatable {
     case teleport  // 이동
     case timeline  //  보드
     case visibility  // visible/invisible
-    case miniMap // 위에서 보기
+    case miniMap  // 위에서 보기
     case cameraheight  // 키(시점) 조절
 
     var activeItem: UserControlItem? {
@@ -71,8 +71,10 @@ enum InteractionState: Equatable {
         case .timeline: return .timeline
         case .visibility: return .visibility
         case .idle: return nil
-        case .miniMap:        return .miniMap
+        case .miniMap: return .miniMap
         case .cameraheight: return .cameraheight
+        }
+    }
 
     var isPlacing: Bool {
         if case .placing = self { return true }
