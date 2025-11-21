@@ -17,6 +17,7 @@ final class MixedImmersiveController {
     let worldTracking: WorldTrackingProvider
     let anchorRegistry: AnchorRegistry
     let persistence: PersistenceManager
+    let miniMapManager: MiniMapManager
     let bootstrap: SceneBootstrap
     let placementManager: PlacementManager
     let openWindow: (String, Any?) -> Void
@@ -41,6 +42,7 @@ final class MixedImmersiveController {
         persistence: PersistenceManager,
         bootstrap: SceneBootstrap,
         placementManager: PlacementManager,
+        miniMapManager : MiniMapManager,
         memoStore: MemoStore,
         collectionStore: CollectionStore,
         windowIDPhotoCollection: String,
@@ -51,6 +53,7 @@ final class MixedImmersiveController {
         self.persistence = persistence
         self.bootstrap = bootstrap
         self.placementManager = placementManager
+        self.miniMapManager = miniMapManager
         self.memoStore = memoStore
         self.collectionStore = collectionStore
         self.windowIDPhotoCollection = windowIDPhotoCollection
@@ -164,6 +167,9 @@ extension MixedImmersiveController {
             )
         } catch {
             print("⚠️ 월드 앵커 추가 failed")
+        }
+        if type == .teleport {
+            miniMapManager.updateAnchor(anchorRecord: anchorRecord)
         }
     }
 
