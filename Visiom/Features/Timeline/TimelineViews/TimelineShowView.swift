@@ -58,9 +58,3 @@ struct TimelineShowView: View {
         }
     }
 }
-
-#Preview {
-    TimelineShowView()
-        .environment(AppModel())
-        .environment(TimelineStore())
-}

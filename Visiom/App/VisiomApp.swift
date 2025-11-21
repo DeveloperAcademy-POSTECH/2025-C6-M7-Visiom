@@ -57,11 +57,11 @@ struct VisiomApp: App {
         .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.timelineWindowID) {
-            TimelineView()
+            TimelineBoardView()
                 .environment(appModel)
                 .environment(timelineStore)
         }
-        .defaultSize(width: 400, height: 600)
+        .defaultSize(width: 433, height: 685)
 
         WindowGroup(id: appModel.cameraHeightWindowID) {
             CameraHeightView()
@@ -73,15 +73,16 @@ struct VisiomApp: App {
             TimelineShowView()
                 .environment(appModel)
                 .environment(timelineStore)
+                .frame(width: 388, height: 190)
+                .fixedSize()
         }
-        .defaultSize(width: 388, height: 190)
+        .windowResizability(.contentSize)
 
-        
         WindowGroup(id: appModel.miniMapWindowID) {
             MiniMapView()
                 .environment(miniMapManager)
         }
-        
+
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
             MixedImmersiveView()
                 .environment(appModel)

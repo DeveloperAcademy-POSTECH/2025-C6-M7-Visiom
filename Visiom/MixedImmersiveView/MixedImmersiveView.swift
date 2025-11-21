@@ -16,7 +16,7 @@ struct MixedImmersiveView: View {
     @Environment(MemoStore.self) var memoStore
     @Environment(TimelineStore.self) var timelineStore
     @Environment(MiniMapManager.self) var miniMapManager
-    
+
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
 
@@ -100,7 +100,7 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.timeline.rawValue
-                        && $0.dataRef == timelineID
+                            && $0.dataRef == timelineID
                     })
                 {
                     print("Timeline anchor already exists: \(existing.id)")
@@ -113,12 +113,13 @@ struct MixedImmersiveView: View {
                 await MainActor.run { appModel.timelineToAnchorID = nil }
             }
         }
-        .onChange(of: appModel.customHeight, initial: false) { _, newValue in
-            Task {
-                await controller?.applyHeightAdjustment(customHeight: newValue)
-            }
-        }
+        .task(id: appModel.customHeight) {
+            try? await Task.sleep(for: .milliseconds(100))
 
+            await controller?.applyHeightAdjustment(
+                customHeight: appModel.customHeight
+            )
+        }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
@@ -128,13 +129,14 @@ struct MixedImmersiveView: View {
             await MixedImmersiveView.startARSession()
         }
         .onAppear {
+            // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
             timelineStore.onTimelineDeleted = { timelineID in
                 Task {
                     if let anchorID = anchorRegistry.records.values.first(
                         where: {
                             $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
+                                && $0.dataRef == timelineID
                         })?.id
                     {
                         await removeWorldAnchor(by: anchorID)
@@ -163,6 +165,12 @@ struct MixedImmersiveView: View {
                     }
                 } else {
                     print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
+                }
+            }
+
+            appModel.onTimelineHighlight = { timelineID in
+                Task {
+                    await controller?.highlightTimeline(timelineID: timelineID)
                 }
             }
         }
