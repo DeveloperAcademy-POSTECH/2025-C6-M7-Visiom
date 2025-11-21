@@ -31,18 +31,11 @@ extension MixedImmersiveView {
             setEntityForAnchorID: {[weak controller, weak miniMapManager] id, e in
                 guard let controller, let miniMapManager else { return }
                 controller.entityByAnchorID[id] = e
-                
-                // 미니맵 최신 스탭샷 전달
-                miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
             },
             
             spawnEntity: {[weak controller, weak miniMapManager] rec in
                 guard let controller, let miniMapManager else { return }
                 await controller.spawnEntity(rec)
-                
-                // 스폰이 끝나면 한 번 더 스냅샷 전달
-                miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
-                
             }
         )
         

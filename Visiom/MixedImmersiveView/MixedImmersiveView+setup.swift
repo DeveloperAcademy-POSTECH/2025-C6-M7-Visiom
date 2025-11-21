@@ -39,7 +39,7 @@ extension MixedImmersiveView {
         
         // 씬 로드
         guard let immersiveContentEntity = try? await Entity(
-            named: "Immersive",
+            named: "light_crime_scene",
             in: realityKitContentBundle
         ) else {
             print("❌ Failed to load Immersive content")
@@ -111,6 +111,7 @@ extension MixedImmersiveView {
             persistence: persistence,
             bootstrap: bootstrap,
             placementManager: placementManager,
+            miniMapManager: miniMapManager,
             memoStore: memoStore,
             collectionStore: collectionStore,
             windowIDPhotoCollection: appModel.photoCollectionWindowID,
@@ -140,7 +141,15 @@ extension MixedImmersiveView {
             entity.generateCollisionShapes(recursive: true)
             entity.components.set(InputTargetComponent())
             
-            miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
+            guard let anchorRecord = anchorRegistry.get(id) else {
+                print("❗️ Anchor not found for id: \(id)")
+                return
+            }
+            
+            if anchorRecord.kindEnum == .teleport {
+                miniMapManager.updateAnchor(anchorRecord: anchorRecord)
+                print("⏰ Timeline anchor found for id: \(id)")
+            }
         }
         
         bootstrap.memoTextProvider = { [weak memoStore] memoID in
