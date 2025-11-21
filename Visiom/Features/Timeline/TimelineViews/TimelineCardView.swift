@@ -30,7 +30,7 @@ struct TimelineCardView: View {
     }
 
     private var cardView: some View {
-        HStack {
+        HStack(spacing: 24) {
             ZStack(alignment: .center) {
                 Circle()
                     .fill(Color.white.opacity(0.15))
@@ -38,7 +38,7 @@ struct TimelineCardView: View {
 
                 Text(String(timelineIndex))
                     .font(.system(size: 15, weight: .semibold))
-            }.padding(.trailing, 24)
+            }
 
             VStack(alignment: .leading) {
                 if isEditTitle {
@@ -84,14 +84,14 @@ struct TimelineCardView: View {
                     }
                 }
             }
-            .background(
-                Color(.sRGB, red: 104 / 255, green: 96 / 255, blue: 87 / 255),
-                in: RoundedRectangle(cornerRadius: 16)
-            ).opacity(
-                0.8
-            )
             .frame(width: 326, height: 120)
-            .cornerRadius(16)
+            .background(.regularMaterial)
+            .glassBackgroundEffect(
+                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
+            .contentShape(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
             .hoverEffect()
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -100,11 +100,11 @@ struct TimelineCardView: View {
                             ? .red : .clear,
                     )
             )
-        }.contentShape(Rectangle())
+        }
     }
 
     private var swipeView: some View {
-        HStack(spacing: 8) {
+        HStack {
             Button {
                 timelineStore.deleteTimeline(id: id)
             } label: {
@@ -119,16 +119,6 @@ struct TimelineCardView: View {
                 .padding(.horizontal, 8)
             }
             .frame(width: 62)
-            .background(
-                Color(
-                    UIColor(
-                        red: 32 / 255,
-                        green: 25 / 255,
-                        blue: 22 / 255,
-                        alpha: 1
-                    )
-                )
-            )
             .clipShape(RoundedRectangle(cornerRadius: 30))
             .tint(.red)
 

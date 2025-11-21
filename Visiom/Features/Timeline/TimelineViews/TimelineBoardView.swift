@@ -64,8 +64,6 @@ struct TimelineBoardView: View {
                         isSequenceCorrect: timeline.isSequenceCorrect
                     )
                     .listRowInsets(EdgeInsets())
-                    .padding(.top, 8)
-                    .contentShape(Rectangle())
                     .onTapGesture {
                         appModel.onTimelineHighlight?(timeline.id)
                     }

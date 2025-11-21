@@ -73,8 +73,10 @@ struct VisiomApp: App {
             TimelineShowView()
                 .environment(appModel)
                 .environment(timelineStore)
+                .frame(width: 388, height: 190)
+                .fixedSize()
         }
-        .defaultSize(width: 388, height: 190)
+        .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.miniMapWindowID) {
             MiniMapView()
