@@ -65,6 +65,10 @@ struct TimelineBoardView: View {
                     )
                     .listRowInsets(EdgeInsets())
                     .padding(.top, 8)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        appModel.onTimelineHighlight?(timeline.id)
+                    }
                 }
                 .onMove(perform: move)
             }

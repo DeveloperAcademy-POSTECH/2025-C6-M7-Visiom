@@ -129,6 +129,7 @@ struct MixedImmersiveView: View {
             await MixedImmersiveView.startARSession()
         }
         .onAppear {
+            // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
             timelineStore.onTimelineDeleted = { timelineID in
                 Task {
@@ -164,6 +165,12 @@ struct MixedImmersiveView: View {
                     }
                 } else {
                     print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
+                }
+            }
+
+            appModel.onTimelineHighlight = { timelineID in
+                Task {
+                    await controller?.highlightTimeline(timelineID: timelineID)
                 }
             }
         }

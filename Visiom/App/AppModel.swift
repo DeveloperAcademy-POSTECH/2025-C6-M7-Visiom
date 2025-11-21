@@ -61,6 +61,7 @@ class AppModel {
     }
 
     var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
+    var onTimelineHighlight: ((UUID) -> Void)?
     var selectedSceneFileName: String = "Immersive"
 
     //Mixed Immersive 진입 처리 함수

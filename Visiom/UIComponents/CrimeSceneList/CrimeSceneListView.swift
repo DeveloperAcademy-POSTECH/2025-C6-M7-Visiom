@@ -22,10 +22,10 @@ struct CrimeSceneListView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Image("icon").frame(width: 48, height: 48).padding(
-                    .trailing,
-                    16
-                )
+                Image("icon")
+                    .resizable()
+                    .frame(width: 48, height: 48)
+                    .padding(.trailing, 16)
                 Text("Re:Chain")
                     .font(.system(size: 32, weight: .bold))
                     .tracking(0)
