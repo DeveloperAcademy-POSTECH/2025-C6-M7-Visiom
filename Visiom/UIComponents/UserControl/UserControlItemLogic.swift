@@ -9,19 +9,21 @@ import Foundation
 
 // 버튼 로직
 struct UserControlItemLogic {
-    
-    static func isEnabled(_ item: UserControlItem, when state: InteractionState) -> Bool {
+
+    static func isEnabled(_ item: UserControlItem, when state: InteractionState)
+        -> Bool
+    {
         // 뒤로가기 : 항상 가능
         if item == .back { return true }
-        
+
         // 배치 중 : 다른 기능 불가
-        if case let .placing(active) = state {
+        if case .placing(let active) = state {
             switch item {
             case active:
                 return true
             case .back:
                 return true
-            default :
+            default:
                 return false
             }
         }
@@ -33,7 +35,7 @@ struct UserControlItemLogic {
                 return true
             }
         }
-        
+
         // 보드 : 배치 불가
         if state == .timeline {
             switch item {
@@ -45,7 +47,7 @@ struct UserControlItemLogic {
                 return false
             }
         }
-        
+
         // visibility : 배치 불가
         if case .visibility = state {
             switch item {
@@ -57,13 +59,15 @@ struct UserControlItemLogic {
                 return false
             }
         }
-        
+
         // idle: 전부 가능
         return true
     }
-    
-    static func apply(_ item: UserControlItem, from state: InteractionState) -> InteractionState {
-        
+
+    static func apply(_ item: UserControlItem, from state: InteractionState)
+        -> InteractionState
+    {
+
         switch item {
         case .back:
             return .idle
@@ -75,15 +79,18 @@ struct UserControlItemLogic {
             } else {
                 return .placing(item)
             }
-            
+
         case .timeline:
             return state == .timeline ? .idle : .timeline
-            
+
         case .visibility:
             return state == .visibility ? .idle : .visibility
-            
-        case .topView:
-            return state == .topView ? .idle : .topView
+
+        case .cameraheight:
+            return state == .cameraheight ? .idle : .cameraheight
+        
+        case .miniMap:
+            return state == .miniMap ? .idle : .miniMap
         }
     }
 }

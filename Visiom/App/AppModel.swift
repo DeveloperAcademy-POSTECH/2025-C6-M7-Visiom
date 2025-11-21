@@ -11,13 +11,15 @@ import SwiftUI
 @MainActor
 @Observable
 class AppModel {
-    //let fullImmersiveSpaceID = "FullImmersiveSpace"
     let mixedImmersiveSpaceID = "mixedImmersiveSpace"
     let crimeSceneListWindowID = "CrimeSceneListWindow"
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let timelineWindowID = "TimelineWindow"
+    let timelineWindowID = "TimelineWindow"  
+    let cameraHeightWindowID = "CameraHeightWindowID"
+    let timelineShowWindowID = "TimelineShowWindowID"  // timeline안에 show 기능을 위한 윈도우
+    let miniMapWindowID = "MiniMapWindow"
 
     enum ImmersiveSpaceState {
         case closed
@@ -37,10 +39,10 @@ class AppModel {
     var showTeleports: Bool = true
     var showTimelines: Bool = true
     var showPlacedImages: Bool = true
-    
+
     var customHeight: Float = 1.60
 
-    var showTopView: Bool = false
+    var isMiniMap: Bool = false
     
     func toggleMarkers() {
         markersVisible.toggle()
@@ -60,6 +62,8 @@ class AppModel {
     func togglePlacedImages() {
         showPlacedImages.toggle()
     }
+
+    var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
 
     //Mixed Immersive 진입 처리 함수
     @MainActor
@@ -86,7 +90,7 @@ class AppModel {
         }
     }
 
-    //Full Immersive 나가기 처리 함수
+    //Mixed Immersive 나가기 처리 함수
     @MainActor
     func exitMixedImmersive(
         dismissImmersiveSpace: DismissImmersiveSpaceAction,
@@ -100,52 +104,14 @@ class AppModel {
         closeImmersiveAuxWindows(dismissWindow: dismissWindow)
         openWindow(id: crimeSceneListWindowID)
     }
-
-//    //Full Immersive 진입 처리 함수
-//    @MainActor
-//    func enterFullImmersive(
-//        openImmersiveSpace: OpenImmersiveSpaceAction,
-//        dismissWindow: DismissWindowAction
-//    ) async {
-//        switch immersiveSpaceState {
-//        case .open:
-//            return
-//        case .inTransition:
-//            return
-//        case .closed:
-//            immersiveSpaceState = .inTransition
-//            switch await openImmersiveSpace(id: fullImmersiveSpaceID) {
-//            case .opened:
-//                dismissWindow(id: crimeSceneListWindowID)
-//                break
-//            case .userCancelled, .error:
-//                immersiveSpaceState = .closed
-//            @unknown default:
-//                immersiveSpaceState = .closed
-//            }
-//        }
-//    }
-//    
-//    //Full Immersive 나가기 처리 함수
-//    @MainActor
-//    func exitFullImmersive(
-//        dismissImmersiveSpace: DismissImmersiveSpaceAction,
-//        dismissWindow: DismissWindowAction,
-//        openWindow: OpenWindowAction
-//    ) async {
-//        guard immersiveSpaceState == .open else { return }
-//        immersiveSpaceState = .inTransition
-//        
-//        await dismissImmersiveSpace()
-//        closeImmersiveAuxWindows(dismissWindow: dismissWindow)
-//        openWindow(id: crimeSceneListWindowID)
-//    }
     
     func closeImmersiveAuxWindows(dismissWindow: DismissWindowAction) {
         dismissWindow(id: photoCollectionWindowID)
         dismissWindow(id: memoEditWindowID)
         dismissWindow(id: userControlWindowID)
         dismissWindow(id: timelineWindowID)
+        dismissWindow(id: cameraHeightWindowID)
+        dismissWindow(id: timelineShowWindowID)
     }
 
     enum Route {

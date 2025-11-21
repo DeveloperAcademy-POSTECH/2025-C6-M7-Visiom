@@ -72,15 +72,15 @@ public final class InteractionRouter {
         guard let entity = hitEntity else { return }
         let container = policyContainer(from: entity)
         
-        let filter = entity.components[CollisionComponent.self]?.filter
+        let filter = container.components[CollisionComponent.self]?.filter
         
         // Content > Teleport 우선순위 (rules 순서로 보장)
         for rule in rules {
             if let f = filter {
-                if f.group.contains(rule.mask), rule.handler(entity, event, ctx) { return }
+                if f.group.contains(rule.mask), rule.handler(container, event, ctx) { return }
             } else {
                 // 필터가 없으면 정책 쪽에서 그룹 검증하도록 그냥 시도
-                if rule.handler(entity, event, ctx) { return }
+                if rule.handler(container, event, ctx) { return }
             }
         }
     }
@@ -116,28 +116,29 @@ public final class InteractionRouter {
                 return false  // placedImage는 탭 제스처 처리를 하지 않음
             }
             
-        case .drag(let e, let delta, let phase):
+        case .drag(_, let delta, let phase):
             // 정책 기준, Entity가 drag 처리 정책을 가지고 있는가?
             guard pol.caps.contains(.move) else { return false }
             guard let aID = container.anchorID else { return false }
             switch phase {
             case .began:
+                ctx.placement.beginMove(anchorID: aID)
                 return true
             case .changed:
                 ctx.placement.moveAnchor(anchorID: aID, deltaWorld: delta)
                 return true
             case .ended, .cancelled:
+                ctx.placement.endMove(anchorID: aID)
                 if pol.caps.contains(.persist) { ctx.persistence.save() }
                 return true
             }
             
-            
-        case .longPress(let e):
+        case .longPress(_):
             // 정책 기준, Entity가 longPress 처리 정책을 가지고 있는가?
             guard pol.caps.contains(.delete) else { return false }
             
             // 모든 경우에 대해서 삭제처리를 하므로, 분기처리 불필요
-            if let aID = e.anchorID {
+            if let aID = container.anchorID {
                 ctx.placement.removeAnchor(anchorID: aID)
                 if pol.caps.contains(.persist) { ctx.persistence.save() }
                 container.removeFromParent()

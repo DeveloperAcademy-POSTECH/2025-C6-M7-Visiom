@@ -25,7 +25,7 @@ struct MemoEditView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.35, green: 0.69, blue: 1)
+            Color(red: 1, green: 0.84, blue: 0)
                 .ignoresSafeArea()
             VStack {
                 MultilineTextFieldAttachmentView(
@@ -34,8 +34,9 @@ struct MemoEditView: View {
                     width: 525,
                     height: 440,
                     font: .system(size: 48),
-                    cornerRadius: 0,
+                    cornerRadius:32,
                 )
+                .foregroundColor(.black)
                 .background(Color.clear)
                 
                 // 실시간 인식 텍스트 표시 (선택사항)

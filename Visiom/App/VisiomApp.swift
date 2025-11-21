@@ -18,6 +18,7 @@ struct VisiomApp: App {
     @State private var timelineStore = TimelineStore()
     @State private var placedImageStore = PlacedImageStore()
     @State private var entityManager = EntityManager()
+    @State private var miniMapManager = MiniMapManager()
 
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
@@ -54,7 +55,7 @@ struct VisiomApp: App {
                 Text("메모가 선택되지 않았습니다.")
             }
         }
-        .defaultSize(CGSize(width: 200, height: 220))
+        .defaultSize(CGSize(width: 140, height: 140))
         .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.timelineWindowID) {
@@ -63,6 +64,25 @@ struct VisiomApp: App {
                 .environment(timelineStore)
         }
         .defaultSize(width: 400, height: 600)
+
+        WindowGroup(id: appModel.cameraHeightWindowID) {
+            CameraHeightView()
+                .environment(appModel)
+        }
+        .defaultSize(width: 207, height: 236)
+
+        WindowGroup(id: appModel.timelineShowWindowID) {
+            TimelineShowView()
+                .environment(appModel)
+                .environment(timelineStore)
+        }
+        .defaultSize(width: 388, height: 190)
+
+        
+        WindowGroup(id: appModel.miniMapWindowID) {
+            MiniMapView()
+                .environment(miniMapManager)
+        }
         
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
             MixedImmersiveView()
@@ -72,6 +92,7 @@ struct VisiomApp: App {
                 .environment(memoStore)
                 .environment(timelineStore)
                 .environment(placedImageStore)
+                .environment(miniMapManager)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }
@@ -94,34 +115,5 @@ struct VisiomApp: App {
                 }
         }
         .immersionStyle(selection: .constant(.mixed), in: .mixed)
-
-//        ImmersiveSpace(id: appModel.fullImmersiveSpaceID) {
-//            FullImmersiveView()
-//                .environment(appModel)
-//                .environment(collectionStore)
-//                .environment(entityManager)
-//                .environment(memoStore)
-//                .onAppear {
-//                    appModel.immersiveSpaceState = .open
-//                }
-//                .onDisappear {
-//                    appModel.closeImmersiveAuxWindows(
-//                        dismissWindow: dismissWindow
-//                    )
-//                    appModel.immersiveSpaceState = .closed
-//                }
-//                .onChange(of: scenePhase) { _, phase in
-//                    if phase == .background {
-//                        appModel.closeImmersiveAuxWindows(
-//                            dismissWindow: dismissWindow
-//                        )
-//                        PhotoPipeline.cleanupTempFiles()
-//                        Task {
-//                            await collectionStore.flushSaves()
-//                        }
-//                    }
-//                }
-//        }
-//        .immersionStyle(selection: .constant(.full), in: .full)
     }
 }

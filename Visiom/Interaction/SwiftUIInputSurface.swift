@@ -27,28 +27,6 @@ final class SwiftUIInputSurface: InputSurface {
     
     // 뷰에서 쓸 setter 제공
     func setLastHitEntity(_ e: Entity?) { self.lastHitEntity = e }
-    func setDragStartScreen(_ p: CGPoint?) { self.dragStartScreen = p }
-    
-    /// 드래그 단계별 헬퍼 — 현재 월드 좌표만 넘기면 내부에서 델타를 계산해 onDrag 호출
-    func beginDrag(currentWorld: SIMD3<Float>) {
-        lastDragWorld = currentWorld
-        onDrag?(.zero, .zero, .began)
-    }
-    func updateDrag(currentWorld: SIMD3<Float>) {
-        if let prev = lastDragWorld {
-            onDrag?(.zero, currentWorld - prev, .changed)
-        } else {
-            onDrag?(.zero, .zero, .changed)
-        }
-        lastDragWorld = currentWorld
-    }
-    func endDrag() {
-        onDrag?(.zero, .zero, .ended)
-        lastDragWorld = nil
-        lastHitEntity = nil
-        dragStartScreen = nil
-    }
-    
     
     /// 마스크 기반 레이캐스트 결과로 "최상위 Entity" 반환
     func raycast(from screenLocation: CGPoint, mask: CollisionGroup) -> Entity? {
