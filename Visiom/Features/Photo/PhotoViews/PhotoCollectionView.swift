@@ -11,6 +11,7 @@ import Observation
 
 struct PhotoCollectionView: View {
     @Environment(CollectionStore.self) var collectionStore
+    @Environment(PlacedImageStore.self) var placedImageStore
     @State private var photoViewModel: PhotoViewModel?
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var showFileImporter = false

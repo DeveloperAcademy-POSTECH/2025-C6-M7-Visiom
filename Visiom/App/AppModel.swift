@@ -17,7 +17,7 @@ class AppModel {
     let photoCollectionWindowID = "PhotoCollectionWindow"
     let memoEditWindowID = "MemoEditWindow"
     let userControlWindowID = "UserControlWindow"
-    let timelineWindowID = "TimelineWindow"  // 소문자 리펙토링 필요
+    let timelineWindowID = "TimelineWindow"
 
     enum ImmersiveSpaceState {
         case closed
@@ -27,7 +27,7 @@ class AppModel {
 
     var immersiveSpaceState = ImmersiveSpaceState.closed
     var itemAdd: UserControlItem? = nil
-    var memoToAnchorID: UUID? = nil
+    //var memoToAnchorID: UUID? = nil
     var timelineToAnchorID: UUID? = nil
 
     // visible/invisible 상태 관리
@@ -36,6 +36,7 @@ class AppModel {
     var showMemos: Bool = true
     var showTeleports: Bool = true
     var showTimelines: Bool = true
+    var showPlacedImages: Bool = true
     
     var customHeight: Float = 1.60
 
@@ -53,9 +54,11 @@ class AppModel {
     func toggleTeleports() {
         showTeleports.toggle()
     }
-
     func toggleTimelines() {
         showTimelines.toggle()
+    }
+    func togglePlacedImages() {
+        showPlacedImages.toggle()
     }
 
     //Mixed Immersive 진입 처리 함수

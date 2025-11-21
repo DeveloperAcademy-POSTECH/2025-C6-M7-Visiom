@@ -15,6 +15,7 @@ struct MixedImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(MemoStore.self) var memoStore
     @Environment(TimelineStore.self) var timelineStore
+    @Environment(PlacedImageStore.self) var placedImageStore
     
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
@@ -31,6 +32,7 @@ struct MixedImmersiveView: View {
     @State var memoGroup: Entity?
     @State var teleportGroup: Entity?
     @State var timelineGroup: Entity?
+    @State var placedImageGroup: Entity?
     
     @State var anchorRegistry = AnchorRegistry()
     @State var placementManager: PlacementManager? = nil
@@ -68,7 +70,7 @@ struct MixedImmersiveView: View {
                 }
             }
         }
-
+        
         .onChange(of: memoStore.memoToAnchorID, initial: false) {_, memoID in
             guard let memoID else { return }
             Task {
@@ -92,7 +94,7 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
+                        && $0.dataRef == timelineID
                     })
                 {
                     print("Timeline anchor already exists: \(existing.id)")
@@ -100,6 +102,20 @@ struct MixedImmersiveView: View {
                     await controller?.makePlacement(type: .timeline, dataRef: timelineID)
                 }
                 await MainActor.run { appModel.timelineToAnchorID = nil }
+            }
+        }
+        .onChange(of: placedImageStore.placedImageToAnchorID, initial: false) {_, placedImageID in
+            guard let placedImageID else { return }
+            Task {
+                if let existing = anchorRegistry
+                    .all()
+                    .first(where: { $0.kind == EntityKind.placedImage.rawValue && $0.dataRef == placedImageID })
+                {
+                    print("Placed Image anchor already exists: \(existing.id)")
+                } else {
+                        await controller?.makePlacement(type: .placedImage)
+                    }
+                await MainActor.run { placedImageStore.placedImageToAnchorID = nil }
             }
         }
         .onChange(of: appModel.customHeight, initial: false) {_, newValue in
@@ -123,7 +139,7 @@ struct MixedImmersiveView: View {
                     if let anchorID = anchorRegistry.records.values.first(
                         where: {
                             $0.kind == EntityKind.timeline.rawValue
-                                && $0.dataRef == timelineID
+                            && $0.dataRef == timelineID
                         })?.id
                     {
                         await removeWorldAnchor(by: anchorID)
@@ -145,7 +161,9 @@ struct MixedImmersiveView: View {
             showPhotos: appModel.showPhotos,
             showMemos: appModel.showMemos,
             showTeleports: appModel.showTeleports,
-            showTimelines: appModel.showTimelines
+            showTimelines: appModel.showTimelines,
+            showPlacedImage: appModel.showPlacedImages
+            
         )
     }
     

@@ -16,6 +16,7 @@ enum UserControlItem: CaseIterable, Hashable {
     case timeline
     case teleport
     case topView
+    case placedImage
     
     // 기본 icon
     var icon: String {
@@ -27,6 +28,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .timeline:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk"
         case .topView:    return "photo.artframe.circle"
+        case .placedImage: return ""
         }
     }
     
@@ -40,6 +42,7 @@ enum UserControlItem: CaseIterable, Hashable {
         case .timeline:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk.motion"
         case .topView:    return "photo.artframe.circle"
+        case .placedImage: return ""
         }
     }
     

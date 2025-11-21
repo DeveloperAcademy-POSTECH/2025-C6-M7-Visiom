@@ -61,7 +61,6 @@ extension UserControlView {
             // 뒤로가기
         case .back:
             Task {
-            //await appModel.exitFullImmersive(
                 await appModel.exitMixedImmersive(
                     dismissImmersiveSpace: dismissImmersiveSpace,
                     dismissWindow: dismissWindow,
@@ -119,6 +118,8 @@ extension UserControlView {
             } else {
                 appModel.showTopView = false
             }
+        case .placedImage:
+            print("nothing")
         }
     }
     

@@ -85,6 +85,12 @@ extension MixedImmersiveView {
         root?.addChild(timeGroup)
         self.timelineGroup = timeGroup
         
+        let pimageGroup = Entity()
+        pimageGroup.name = "PlacedImageGroup"
+        pimageGroup.isEnabled = appModel.showPlacedImages
+        root?.addChild(pimageGroup)
+        self.placedImageGroup = pimageGroup
+        
         // MARK: - Anchor / Persistence / Bootstrap 세팅
         
         let placementManager = PlacementManager(
@@ -113,6 +119,7 @@ extension MixedImmersiveView {
             placementManager: placementManager,
             memoStore: memoStore,
             collectionStore: collectionStore,
+            placedImageStore: placedImageStore,
             windowIDPhotoCollection: appModel.photoCollectionWindowID,
             openWindow: { id, anyValue in
                 // 컨트롤러에서는 Any? 로 받지만 실제로는 UUID를 넘길 예정
@@ -129,6 +136,8 @@ extension MixedImmersiveView {
         controller.photoGroup = pGroup
         controller.memoGroup = mGroup
         controller.teleportGroup = tGroup
+        controller.timelineGroup = timeGroup
+        controller.placedImageGroup = pimageGroup
         self.controller = controller
         
         // MARK: - Bootstrap 콜백 → 컨트롤러와 연동
@@ -142,6 +151,18 @@ extension MixedImmersiveView {
         
         bootstrap.memoTextProvider = { [weak memoStore] memoID in
             memoStore?.memo(id: memoID)?.text
+        }
+        
+        bootstrap.placedImageURLProvider = { [weak placedImageStore, weak collectionStore] placedImageID in
+            guard
+                let placed = placedImageStore?.placedImage(with: placedImageID),
+                let collectionStore = collectionStore
+            else { return nil }
+            
+            return collectionStore.photoURL(
+                collectionID: placed.sourcePhotoCollectionID,
+                fileName: placed.imageFileName
+            )
         }
         
         // 디스크에서 앵커 복원 & 엔티티 스폰

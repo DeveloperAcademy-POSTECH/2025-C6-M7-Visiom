@@ -13,6 +13,7 @@ import Observation
 final class PlacedImageStore {
     private let persistence = PersistenceActor()
     var placedImages: [PlacedImage] = []
+    var placedImageToAnchorID: UUID? = nil
     
     init() {
         Task { await load() }

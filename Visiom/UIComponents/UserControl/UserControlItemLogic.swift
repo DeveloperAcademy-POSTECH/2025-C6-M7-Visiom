@@ -68,7 +68,7 @@ struct UserControlItemLogic {
         case .back:
             return .idle
             
-        case .photoCollection, .memo, .teleport:
+        case .photoCollection, .memo, .teleport, .placedImage:
             // 배치 시작/해제
             if case .placing(let t) = state, t == item {
                 return .idle
@@ -81,7 +81,7 @@ struct UserControlItemLogic {
             
         case .visibility:
             return state == .visibility ? .idle : .visibility
-        
+            
         case .topView:
             return state == .topView ? .idle : .topView
         }
