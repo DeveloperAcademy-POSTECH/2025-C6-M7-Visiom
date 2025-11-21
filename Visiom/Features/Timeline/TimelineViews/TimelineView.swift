@@ -142,6 +142,7 @@ struct TimelineView: View {
                         ? "범인 동선" : newTimelineTitle,
                     occurredTime: newTimelineDate
                 )
+                appModel.itemAdd = .timeline
                 appModel.timelineToAnchorID = newTimeline.id
 
                 isCreatePopupShow = false

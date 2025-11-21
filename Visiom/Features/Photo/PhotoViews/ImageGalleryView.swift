@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ImageGalleryView: View {
+    @Environment(AppModel.self) var appModel
     @Environment(PlacedImageStore.self) var placedImageStore
 
     let urls: [URL]
@@ -42,6 +43,7 @@ struct ImageGalleryView: View {
                                 let fileName = url.lastPathComponent
                                 let placedImage = placedImageStore.createPlacedImage(imageFileName: fileName, from: collectionID)
                                 placedImageStore.placedImageToAnchorID = placedImage.id
+                                appModel.itemAdd = .placedImage
                             } label: {
                                 PlacedImageButtonLabel()
                             }
