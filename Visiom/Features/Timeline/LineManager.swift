@@ -16,6 +16,7 @@ class LineManager {
     
     // 앵커 위치 임시 저장 배열
     var entityByAnchorIDs: [UUID:Entity] = [:]
+    var anchorRecords : [AnchorRecord] = []
     
     var content: RealityViewContent?
     
@@ -48,10 +49,14 @@ class LineManager {
     //    }
     
     // mixedImmersive에서 사용하는 entityByAnchorID를 entityByAnchorIDs로 넣기
-    func updateAnchor(entityByAnchorID: [UUID : Entity]) {
-        entityByAnchorIDs = entityByAnchorID
-        print("LineManager entityByAnchorIDs \(entityByAnchorID)")
-    }
+//    func updateAnchor(entityByAnchorID: [UUID : Entity]) {
+//        entityByAnchorIDs = entityByAnchorID
+//        print("LineManager entityByAnchorIDs \(entityByAnchorID)")
+//    }
+    func updateAnchor(anchorRecord: AnchorRecord) {
+           anchorRecords.append(anchorRecord)
+           print("AnchorRecord \(anchorRecord)")
+       }
     
     func updateLines() async {
                 guard let content = content else { return }
@@ -69,15 +74,15 @@ class LineManager {
         //            content.add(line)
         //        }
         
-        entities = Array(entityByAnchorIDs.values)
+//        entities = Array(entityByAnchorIDs.values)
         print("updateLines entities : \(entities)")
         lines.forEach { $0.removeFromParent() }
         lines.removeAll()
         
-        for i in 1..<entities.count {
+        for i in 1..<anchorRecords.count {
             let line = await createLine(
-                from: entities[i-1].position(relativeTo: nil),
-                to: entities[i].position(relativeTo: nil)
+                from: anchorRecords[i-1].worldMatrix,
+                to: anchorRecords[i].worldMatrix
             )
             lines.append(line)
             content.add(line)
@@ -92,9 +97,15 @@ class LineManager {
     }
     
     
-    private func createLine(from start: SIMD3<Float>, to end: SIMD3<Float>) async -> Entity {
-        let distance = simd_distance(start, end)
-        let direction = normalize(end - start)
+//    private func createLine(from start: SIMD3<Float>, to end: SIMD3<Float>) async -> Entity {
+    private func createLine(from start: simd_float4x4, to end: simd_float4x4) async -> Entity {
+        let startTranslation = SIMD3<Float>(start.columns.3.x, start.columns.3.y, start.columns.3.z)
+        let endTranslation = SIMD3<Float>(end.columns.3.x, end.columns.3.y, end.columns.3.z)
+        
+        
+        
+        let distance = simd_distance(startTranslation, endTranslation)
+        let direction = normalize(endTranslation - startTranslation)
         
         do {
             // USDZ 모델 로드
@@ -111,7 +122,7 @@ class LineManager {
             lineModel.scale = scale
             
             // 중간 지점에 위치
-            let midPoint = (start + end) / 2
+            let midPoint = (startTranslation + endTranslation) / 2
             //            lineModel.position = midPoint
             
             // 🎯 위치 오프셋: 앞뒤로 밀려있으면 여기서 조절
@@ -151,7 +162,7 @@ class LineManager {
         } catch {
             print("❌ USDZ 로드 실패: \(error)")
             // 실패 시 기본 실린더 반환
-            return createDefaultCylinder(from: start, to: end)
+            return createDefaultCylinder(from: startTranslation, to: endTranslation)
         }
     }
     
