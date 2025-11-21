@@ -38,6 +38,7 @@ struct VisiomApp: App {
             $collectionID in
             if let id = collectionID {
                 PhotoCollectionView(collectionID: id)
+                    .environment(appModel)
                     .environment(collectionStore)
                     .environment(placedImageStore)
             } else {
