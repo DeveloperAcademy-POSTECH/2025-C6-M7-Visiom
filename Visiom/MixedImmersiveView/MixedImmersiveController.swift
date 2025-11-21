@@ -151,6 +151,8 @@ extension MixedImmersiveController {
         // 3) Camera rotation 유지 + translation만 교체
         var t = Transform(matrix: anchorRecord.worldMatrix)
         t.translation = spawnPosition
+        t.rotation = yawOnlyRotation(from: cameraTransform)
+        
         anchorRecord.worldMatrix = t.matrix
         anchorRegistry.upsert(anchorRecord)
 
@@ -364,6 +366,36 @@ extension MixedImmersiveController {
         }
     }
 }
+
+// MARK: - Orientation Helpers
+extension MixedImmersiveController {
+    /// Entity가 사용자를 향하도록 생성
+    /// 카메라의 좌우 회전(yaw)만 유지하고, 위아래 기울기(pitch)와 roll은 제거한 회전(quat)을 만든다.
+    private func yawOnlyRotation(from cameraTransform: simd_float4x4) -> simd_quatf {
+        // 카메라 forward 벡터 (z축의 반대방향)
+        let forward = -SIMD3<Float>(
+            cameraTransform.columns.2.x,
+            cameraTransform.columns.2.y,
+            cameraTransform.columns.2.z
+        )
+
+        // y 성분을 제거해서 수평면(XZ) 위의 방향만 사용
+        var flatForward = SIMD3<Float>(forward.x, 0, forward.z)
+        if length(flatForward) < 0.0001 {
+            // 거리가 너무 짧으면 정면으로
+            flatForward = SIMD3<Float>(0, 0, -1)
+        } else {
+            flatForward = normalize(flatForward)
+        }
+
+        // yaw 각도 계산 (z축 기준으로 x 방향을 보는 각도)
+        let yaw = atan2(flatForward.x, flatForward.z)
+
+        // y축 기준 회전만 갖는 값
+        return simd_quatf(angle: yaw, axis: SIMD3<Float>(0, 1, 0))
+    }
+}
+
 
 // MARK: - Hierarchy & Visibility
 extension MixedImmersiveController {
