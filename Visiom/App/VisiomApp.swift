@@ -19,6 +19,7 @@ struct VisiomApp: App {
     @State private var placedImageStore = PlacedImageStore()
     @State private var entityManager = EntityManager()
     @State private var miniMapManager = MiniMapManager()
+    @State private var lineManager = LineManager()
 
     var body: some Scene {
         WindowGroup(id: appModel.crimeSceneListWindowID) {
@@ -95,6 +96,7 @@ struct VisiomApp: App {
                 .environment(timelineStore)
                 .environment(placedImageStore)
                 .environment(miniMapManager)
+                .environment(lineManager)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }
