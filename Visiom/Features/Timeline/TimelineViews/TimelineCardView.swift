@@ -173,6 +173,7 @@ struct TimelineCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .padding(.bottom, 14)
         .padding(.leading, 24)
+        .buttonStyle(.plain)
     }
 
     // occurredTime 값이 있을 때 DatePicker를 보여주는 뷰
