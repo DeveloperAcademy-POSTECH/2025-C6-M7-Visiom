@@ -17,7 +17,7 @@ struct MixedImmersiveView: View {
     @Environment(TimelineStore.self) var timelineStore
     @Environment(PlacedImageStore.self) var placedImageStore
     @Environment(MiniMapManager.self) var miniMapManager
-    
+
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
     
@@ -70,7 +70,6 @@ struct MixedImmersiveView: View {
                 await controller?.applyHeightAdjustment(customHeight: newValue)
             }
         }
-        
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
@@ -80,13 +79,14 @@ struct MixedImmersiveView: View {
             await MixedImmersiveView.startARSession()
         }
         .onAppear {
+            // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
             timelineStore.onTimelineDeleted = { timelineID in
                 Task {
                     if let anchorID = anchorRegistry.records.values.first(
                         where: {
                             $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
+                                && $0.dataRef == timelineID
                         })?.id
                     {
                         await removeWorldAnchor(by: anchorID)
@@ -115,6 +115,12 @@ struct MixedImmersiveView: View {
                     }
                 } else {
                     print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
+                }
+            }
+
+            appModel.onTimelineHighlight = { timelineID in
+                Task {
+                    await controller?.highlightTimeline(timelineID: timelineID)
                 }
             }
         }

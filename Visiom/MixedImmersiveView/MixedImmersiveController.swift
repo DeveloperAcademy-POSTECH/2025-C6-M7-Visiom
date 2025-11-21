@@ -555,3 +555,46 @@ extension MixedImmersiveController {
         print("Smooth Teleport complete to anchorID: \(anchorID)")
     }
 }
+
+// MARK: - Highlight 둥둥이
+extension MixedImmersiveController {
+
+    func highlightTimeline(timelineID: UUID) async {
+        guard
+            let anchorRecord = anchorRegistry.all().first(where: {
+                $0.kind == EntityKind.timeline.rawValue
+                    && $0.dataRef == timelineID
+            })
+        else {
+            print("해당 타임라인의 앵커를 찾을 수 없음: \(timelineID)")
+            return
+        }
+
+        guard let entity = entityByAnchorID[anchorRecord.id] else { return }
+
+        await playBouncingAnimation(entity: entity)
+    }
+
+    private func playBouncingAnimation(entity: Entity) async {
+        let originalTransform = entity.transform
+
+        var upTransform = originalTransform
+        upTransform.translation.y += 0.5
+
+        let duration: TimeInterval = 0.5
+        for _ in 0..<2 {
+            await entity.move(
+                to: upTransform,
+                relativeTo: entity.parent,
+                duration: duration,
+                timingFunction: .easeOut
+            )
+            await entity.move(
+                to: originalTransform,
+                relativeTo: entity.parent,
+                duration: duration,
+                timingFunction: .easeIn
+            )
+        }
+    }
+}

@@ -12,105 +12,109 @@ import SwiftUI
 
 // MARK: - Setup Extension
 extension MixedImmersiveView {
-    
+
     /// AR 세션 시작
     static func startARSession() async {
         guard WorldTrackingProvider.isSupported else {
             print("error: 월드 트래킹이 안됨")
             return
         }
-        
+
         do {
-            try await arSession.run([/*handTracking, */worldTracking])
+            try await arSession.run([ /*handTracking, */worldTracking])
         } catch {
             print("AR session failed")
         }
     }
-    
+
     /// 씬 초기 설정 - root 엔티티 및 그룹 생성 + 컨트롤러 생성
     @MainActor
     func setupScene(content: RealityViewContent) async {
-        
+
         // 이미 로드된 경우 중복 추가 방지
         if let existingRoot = root {
             content.add(existingRoot)
             return
         }
-        
+
+        let fileName = appModel.selectedSceneFileName
+
         // 씬 로드
-        guard let immersiveContentEntity = try? await Entity(
-            named: "Immersive",
-            in: realityKitContentBundle
-        ) else {
-            print("❌ Failed to load Immersive content")
+        guard
+            let immersiveContentEntity = try? await Entity(
+                named: fileName,
+                in: realityKitContentBundle
+            )
+        else {
+            print("❌ Failed to load Immersive content: \(fileName)")
             return
         }
         immersiveContentEntity.name = "Immersive"
         immersiveContentEntity.generateCollisionShapes(recursive: true)
         root = immersiveContentEntity
         content.add(immersiveContentEntity)
-        
+
         // 어디에서도 사용하지 않음
         // 추후 삭제 예정
-//        if let sceneContent = root!.findEntity(named: "Root") {
-//            self.sceneContent = sceneContent
-//        }
-        
+        //        if let sceneContent = root!.findEntity(named: "Root") {
+        //            self.sceneContent = sceneContent
+        //        }
+
         // MARK: - 그룹 생성
-        
+
         // Photo 그룹
         let pGroup = Entity()
         pGroup.name = "PhotoGroup"
         pGroup.isEnabled = appModel.showPhotos
         immersiveContentEntity.addChild(pGroup)
         self.photoGroup = pGroup
-        
+
         // Memo 그룹
         let mGroup = Entity()
         mGroup.name = "MemoGroup"
         mGroup.isEnabled = appModel.showMemos
         immersiveContentEntity.addChild(mGroup)
         self.memoGroup = mGroup
-        
+
         // Teleport 그룹 (없었다면 추가)
         let tGroup = Entity()
         tGroup.name = "TeleportGroup"
         tGroup.isEnabled = appModel.showTeleports
         immersiveContentEntity.addChild(tGroup)
         self.teleportGroup = tGroup
-        
+
         let timeGroup = Entity()
         timeGroup.name = "TimelineGroup"
         timeGroup.isEnabled = appModel.showTimelines
         root?.addChild(timeGroup)
         self.timelineGroup = timeGroup
-        
+
         let pimageGroup = Entity()
         pimageGroup.name = "PlacedImageGroup"
         pimageGroup.isEnabled = appModel.showPlacedImages
         root?.addChild(pimageGroup)
         self.placedImageGroup = pimageGroup
-        
+
         // MARK: - Anchor / Persistence / Bootstrap 세팅
-        
+
         let placementManager = PlacementManager(
             anchorRegistry: anchorRegistry,
             sceneRoot: immersiveContentEntity
         )
         self.placementManager = placementManager
-        
+
         let persistence = PersistenceManager(anchorRegistry: anchorRegistry)
         self.persistence = persistence
-        
+
         let bootstrap = SceneBootstrap(
             sceneRoot: immersiveContentEntity,
             anchorRegistry: anchorRegistry,
             persistence: persistence
         )
         self.bootstrap = bootstrap
-        
+
         // MARK: - MixedImmersiveController 생성
-        
+
         let controller = MixedImmersiveController(
             worldTracking: Self.worldTracking,
             anchorRegistry: anchorRegistry,
@@ -130,7 +134,7 @@ extension MixedImmersiveView {
                 }
             }
         )
-        
+
         // 컨트롤러에 씬 루트/그룹 연결
         controller.root = immersiveContentEntity
         controller.photoGroup = pGroup
@@ -139,22 +143,24 @@ extension MixedImmersiveView {
         controller.timelineGroup = timeGroup
         controller.placedImageGroup = pimageGroup
         self.controller = controller
-        
+
         // MARK: - Bootstrap 콜백 → 컨트롤러와 연동
-        
+
         bootstrap.onSpawned = { [weak controller] id, entity in
             guard let controller else { return }
             controller.entityByAnchorID[id] = entity
             entity.generateCollisionShapes(recursive: true)
             entity.components.set(InputTargetComponent())
-            
-            miniMapManager.updateAnchor(entityByAnchorID: controller.entityByAnchorID)
+
+            miniMapManager.updateAnchor(
+                entityByAnchorID: controller.entityByAnchorID
+            )
         }
-        
+
         bootstrap.memoTextProvider = { [weak memoStore] memoID in
             memoStore?.memo(id: memoID)?.text
         }
-        
+
         bootstrap.placedImageURLProvider = { [weak placedImageStore, weak collectionStore] placedImageID in
             guard
                 let placed = placedImageStore?.placedImage(with: placedImageID),
@@ -166,7 +172,7 @@ extension MixedImmersiveView {
                 fileName: placed.imageFileName
             )
         }
-        
+
         // 디스크에서 앵커 복원 & 엔티티 스폰
         await bootstrap.restoreAndSpawn()
     }
