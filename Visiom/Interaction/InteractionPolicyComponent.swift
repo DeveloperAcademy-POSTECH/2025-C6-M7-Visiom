@@ -17,7 +17,7 @@ import RealityKit
 
 // Entity의 종류 열거
 public enum EntityKind: String, Codable, CaseIterable, Sendable {
-    case memo, photoCollection, teleport, timeline
+    case memo, photoCollection, teleport, timeline, placedImage
 }
 
 // Entity의 행동 권한

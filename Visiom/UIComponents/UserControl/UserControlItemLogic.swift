@@ -71,8 +71,8 @@ struct UserControlItemLogic {
         switch item {
         case .back:
             return .idle
-
-        case .photoCollection, .memo, .teleport:
+            
+        case .photoCollection, .memo, .teleport, .placedImage:
             // 배치 시작/해제
             if case .placing(let t) = state, t == item {
                 return .idle

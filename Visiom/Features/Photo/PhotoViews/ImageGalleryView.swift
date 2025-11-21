@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct ImageGalleryView: View {
+    @Environment(AppModel.self) var appModel
+    @Environment(PlacedImageStore.self) var placedImageStore
+
     let urls: [URL]
+    let collectionID: UUID
     @Binding var selectedIndex: Int
     
     var cornerRadius: CGFloat = 8
@@ -33,6 +37,16 @@ struct ImageGalleryView: View {
                         .overlay(alignment: .topLeading) {
                             FilenameBadge(url: url)
                                 .padding(10)
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            Button{
+                                let fileName = url.lastPathComponent
+                                let placedImage = placedImageStore.createPlacedImage(imageFileName: fileName, from: collectionID)
+                                placedImageStore.placedImageToAnchorID = placedImage.id
+                                appModel.itemAdd = .placedImage
+                            } label: {
+                                PlacedImageButtonLabel()
+                            }
                         }
                         .id(selectedIndex)
                 }
@@ -73,7 +87,7 @@ struct ImageGalleryView: View {
                         proxy.scrollTo(selectedIndex, anchor: .center)
                     }
                 }
-                .onChange(of: selectedIndex) { newValue in
+                .onChange(of: selectedIndex, initial: false) { _, newValue in
                     if urls.indices.contains(newValue) {
                         withAnimation(.easeInOut) {
                             proxy.scrollTo(newValue, anchor: .center)
@@ -89,6 +103,16 @@ private struct FilenameBadge: View {
     let url: URL
     var body: some View {
         Text(url.lastPathComponent)
+            .font(.callout.weight(.medium))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.ultraThinMaterial, in: Capsule())
+    }
+}
+
+private struct PlacedImageButtonLabel: View {
+    var body: some View {
+        Text("공간에 추가하기")
             .font(.callout.weight(.medium))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)

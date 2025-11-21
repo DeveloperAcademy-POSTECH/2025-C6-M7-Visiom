@@ -61,7 +61,6 @@ extension UserControlView {
         // 뒤로가기
         case .back:
             Task {
-                //await appModel.exitFullImmersive(
                 await appModel.exitMixedImmersive(
                     dismissImmersiveSpace: dismissImmersiveSpace,
                     dismissWindow: dismissWindow,
@@ -121,6 +120,9 @@ extension UserControlView {
                 dismissWindow(id: appModel.miniMapWindowID)
                 print("🗺️ 미니맵 종료")
             }
+            
+        case .placedImage:
+            print("nothing")
 
         case .cameraheight:
             if state == .cameraheight {
@@ -130,7 +132,6 @@ extension UserControlView {
                 dismissWindow(id: appModel.cameraHeightWindowID)
                 print("📏 시점 조정 종료")
             }
-
         }
     }
 
