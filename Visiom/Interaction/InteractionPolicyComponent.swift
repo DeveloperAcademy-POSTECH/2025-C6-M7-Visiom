@@ -75,4 +75,7 @@ public struct InteractionContext {
     
     // 창 닫기
     public let dismissWindow: (String) -> Void
+    
+    // 텔레포트
+    public let teleportToID: (UUID) -> Void
 }

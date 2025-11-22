@@ -507,53 +507,59 @@ extension MixedImmersiveController {
     }
 }
 
+// MARK: - Camera Position (Scene-local)
+extension MixedImmersiveController {
+
+    func currentCameraPositionInScene() -> SIMD3<Float>? {
+        guard let sceneRoot else { return nil }
+
+        let ts = CACurrentMediaTime()
+        guard let device = worldTracking.queryDeviceAnchor(atTimestamp: ts) else {
+            return nil
+        }
+
+        let temp = Entity()
+        temp.setTransformMatrix(device.originFromAnchorTransform, relativeTo: nil)
+
+        let p = temp.position(relativeTo: sceneRoot)
+        return SIMD3<Float>(p.x, p.y, p.z)
+    }
+}
+
+
 // MARK: - 슝~Teleport Logic
 extension MixedImmersiveController {
 
-    func smoothTeleport(anchorID: UUID) async {
-        guard let anchorRecord = anchorRegistry.records[anchorID] else {
-            return
-        }
-
-        // 목표 World Transform
-        let destinationMatrix = anchorRecord.worldMatrix
-
-        // 새로운 카메라 위치 (앵커 위치)와 높이 조정
-        let destinationPosition = SIMD3<Float>(
-            destinationMatrix.columns.3.x,
-            destinationMatrix.columns.3.y,
-            destinationMatrix.columns.3.z
-        )
-
-        let finalPosition = SIMD3<Float>(
-            destinationPosition.x,
-            0.0,
-            destinationPosition.z
-        )
-
-        // 현재 카메라의 World Transform을 기반으로 Entity를 움직여 시야 이동: 루트 엔티티를 반대 방향으로 움직여서 사용자 시야가 이동한 것처럼 보이게
+    /// ✅ 단일 텔레포트 엔트리
+    func teleportToID(to anchorID: UUID, animated: Bool = true) async {
+        guard let record = anchorRegistry.records[anchorID] else { return }
         guard let rootEntity = root else { return }
 
-        // finalPosition에 도달하기 위해 root 엔티티가 움직여야 할 최종 Transform
-        var targetTransform = rootEntity.transform
+        // 1) 목적지 D (scene-local)
+        let destinationPosition = record.position
+        let destination = SIMD3<Float>(destinationPosition.x, 0, destinationPosition.z)
 
-        // 목표 위치가 최종적으로 SIMD3(finalPosition.x, finalPosition.y, finalPosition.z)가 되도록
-        // root 엔티티의 최종 위치는 (-finalPosition.x, -finalPosition.y, -finalPosition.z)가 되어야,
-        // root 엔티티를 기준으로 하는 모든 Child Entity (앵커)가 상대적으로 (finalPosition.x, finalPosition.y, finalPosition.z)에 위치하게 됩니다.
-        targetTransform.translation = -finalPosition
+        // 2) 현재 사용자 위치 C (scene-local)
+        guard let currentPosition = currentCameraPositionInScene() else { return }
+        let current = SIMD3<Float>(currentPosition.x, 0, currentPosition.z)
 
-        // 애니메이션
-        let duration: TimeInterval = 1.0  // 1초 동안 이동
-        let timing: AnimationTimingFunction = .easeOut  // 부드러운 감속 효과
+        // 3) delta = D - C
+        let delta = destination - current
 
-        await rootEntity.move(
-            to: targetTransform,
-            relativeTo: nil,  // 월드 좌표계 기준
-            duration: duration,
-            timingFunction: timing
-        )
+        // 4) root 월드 위치를 delta만큼 반대로 이동 (누적 X)
+        var target = rootEntity.transform
+        target.translation -= delta
 
-        print("Smooth Teleport complete to anchorID: \(anchorID)")
+        if animated {
+            await rootEntity.move(
+                to: target,
+                relativeTo: nil,
+                duration: 1.0,
+                timingFunction: .easeOut
+            )
+        } else {
+            rootEntity.transform = target
+        }
     }
 }
 

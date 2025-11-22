@@ -156,7 +156,7 @@ public final class InteractionRouter {
         switch event {
         case .tap(let e, _):
             guard let aID = e.anchorID else { return false }
-            ctx.placement.tapToTeleport(anchorID: aID)
+            ctx.teleportToID(aID)
             return true
             
         case .drag(let e, var delta, let phase):

@@ -168,7 +168,7 @@ struct MixedImmersiveView: View {
                     let anchorID = anchorRecord.id  // 찾은 World Anchor의 UUID
                     
                     Task {
-                        await controller?.smoothTeleport(anchorID: anchorID)
+                        await controller?.teleportToID(to: anchorID, animated: true)
                     }
                 } else {
                     print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")

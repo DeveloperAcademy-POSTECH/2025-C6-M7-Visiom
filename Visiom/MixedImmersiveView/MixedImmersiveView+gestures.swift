@@ -25,7 +25,10 @@ extension MixedImmersiveView {
             placement: placement,
             persistence: persistence,
             openWindow: openRoute,
-            dismissWindow: dismissRoute
+            dismissWindow: dismissRoute,
+            teleportToID: { id in
+                Task { await controller?.teleportToID(to:id, animated:false) }
+            }
         )
         router = InteractionRouter(context: ctx)
         gestureBridge = GestureBridge(surface: inputSurface, router: router!)

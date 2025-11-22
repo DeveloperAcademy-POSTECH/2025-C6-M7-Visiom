@@ -27,29 +27,29 @@ public final class PlacementManager {
         self.anchorRegistry = anchorRegistry
         self.sceneRoot = sceneRoot
     }
-    
-    func tapToTeleport(anchorID: UUID) {
-        
-        guard let rec = anchorRegistry.records[anchorID] else { return }
-       
-        let sceneContent = self.sceneRoot
-        
-        // Calculate the vector from the origin to the tapped position
-        let vectorToTap = rec.worldMatrix.columns.3
-        // Normalize the vector to get a direction from the origin to the tapped position
-        let direction = normalize(vectorToTap)
-        
-        // Calculate the distance (or magnitude) between the origin and the tapped position
-        let distance = length(vectorToTap)
-        
-        // Calculate the new position by inverting the direction multiplied by the distance
-        let newPosition = -direction * distance
-        
-        // Update sceneOffset's X and Z components, leave Y as it is
-        sceneContent.position.x = newPosition.x
-        sceneContent.position.z = newPosition.z
-    }
-    
+//    
+//    func tapToTeleport(anchorID: UUID) {
+//        
+//        guard let rec = anchorRegistry.records[anchorID] else { return }
+//       
+//        let sceneContent = self.sceneRoot
+//        
+//        // Calculate the vector from the origin to the tapped position
+//        let vectorToTap = rec.worldMatrix.columns.3
+//        // Normalize the vector to get a direction from the origin to the tapped position
+//        let direction = normalize(vectorToTap)
+//        
+//        // Calculate the distance (or magnitude) between the origin and the tapped position
+//        let distance = length(vectorToTap)
+//        
+//        // Calculate the new position by inverting the direction multiplied by the distance
+//        let newPosition = -direction * distance
+//        
+//        // Update sceneOffset's X and Z components, leave Y as it is
+//        sceneContent.position.x = newPosition.x
+//        sceneContent.position.z = newPosition.z
+//    }
+//    
     // 사용자 전방 1m에 월드 앵커 생성 후 Registry 기록
     public func place(
         kind: EntityKind,
