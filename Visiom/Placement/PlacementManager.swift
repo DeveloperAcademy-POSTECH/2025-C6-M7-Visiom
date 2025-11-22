@@ -51,18 +51,37 @@ public final class PlacementManager {
     }
     
     // 사용자 전방 1m에 월드 앵커 생성 후 Registry 기록
-    public func place(kind: EntityKind, dataRef: UUID? = nil,
-                      forwardFrom cameraTransform: simd_float4x4) -> UUID {
-        let anchorID = UUID()
-        var t = matrix_identity_float4x4
-        // 카메라 forward -Z 로 1m 전방
-        t = cameraTransform
-        t.columns.3 += simd_float4(0, 0, -1, 0) // 1m 전방
+    public func place(
+        kind: EntityKind,
+        dataRef: UUID? = nil,
+        forwardFrom cameraTransform: simd_float4x4,     //추후 수정
+        sceneRoot: Entity
+    ) -> UUID {
+        // 1) 임시 entity에 월드 trasform 적용
+        let tempCamera = Entity()
+        tempCamera.setTransformMatrix(cameraTransform, relativeTo: nil)
         
-        let rec = AnchorRecord(id: anchorID,
-                               kind: kind.rawValue,
-                               dataRef: dataRef,
-                               transform: t)
+        // 2) sceneRoot 기준으로 변환
+        let cameraInScene = tempCamera.transformMatrix(relativeTo: sceneRoot)
+        var placementTransform = Transform(matrix: cameraInScene)
+        
+        // 3) 1m 전방
+        let forwardVector = -normalize(
+            SIMD3<Float>(
+                placementTransform.matrix.columns.2.x,
+                placementTransform.matrix.columns.2.y,
+                placementTransform.matrix.columns.2.z
+            )
+        )
+        placementTransform.translation = placementTransform.translation + forwardVector * 1.0
+        
+        let anchorID = UUID()
+        let rec = AnchorRecord(
+            id: anchorID,
+            kind: kind.rawValue,
+            dataRef: dataRef,
+            transform: placementTransform.matrix
+        )
         anchorRegistry.upsert(rec)
         return anchorID
     }

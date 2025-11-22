@@ -30,6 +30,10 @@ final class MixedImmersiveController {
     weak var memoGroup: Entity?
     weak var teleportGroup: Entity?
     weak var timelineGroup: Entity?
+    
+    //MARK: - 기준좌표계
+    /// crime scene 전체가 매달리는 루트이다.
+    var sceneRoot: Entity? { root }
 
     // MARK: - Mapping
     var entityByAnchorID: [UUID: Entity] = [:]
@@ -107,6 +111,7 @@ extension MixedImmersiveController {
         for type: UserControlItem,
         dataRef: UUID? = nil
     ) async {
+        guard let sceneRoot else { return }
 
         // 1) 카메라 앞 위치 계산
         let spawnPosition = computePlacementPosition(
@@ -121,25 +126,29 @@ extension MixedImmersiveController {
             anchorID = placementManager.place(
                 kind: .photoCollection,
                 dataRef: nil,
-                forwardFrom: cameraTransform
+                forwardFrom: cameraTransform,
+                sceneRoot: sceneRoot
             )
         case .memo:
             anchorID = placementManager.place(
                 kind: .memo,
                 dataRef: nil,
-                forwardFrom: cameraTransform
+                forwardFrom: cameraTransform,
+                sceneRoot: sceneRoot
             )
         case .teleport:
             anchorID = placementManager.place(
                 kind: .teleport,
                 dataRef: nil,
-                forwardFrom: cameraTransform
+                forwardFrom: cameraTransform,
+                sceneRoot: sceneRoot
             )
         case .timeline:
             anchorID = placementManager.place(
                 kind: .timeline,
                 dataRef: dataRef,
-                forwardFrom: cameraTransform
+                forwardFrom: cameraTransform,
+                sceneRoot: sceneRoot
             )
         default: fatalError("Unknown item type: \(type)")
         }
@@ -147,18 +156,30 @@ extension MixedImmersiveController {
         guard var anchorRecord = anchorRegistry.records[anchorID] else {
             return
         }
-
-        // 3) Camera rotation 유지 + translation만 교체
-        var t = Transform(matrix: anchorRecord.worldMatrix)
-        t.translation = spawnPosition
-        t.rotation = yawOnlyRotation(from: cameraTransform)
         
-        anchorRecord.worldMatrix = t.matrix
+        // 3) spawnPosition이 월드일 가능성이 높으니 scene 로컬로 변환
+        // 수정 : 추가
+        let spawnPositionInScene: SIMD3<Float> = {
+            let temp = Entity()
+            temp.setPosition(spawnPosition, relativeTo: nil)   // 월드 기준 세팅
+            return temp.position(relativeTo: sceneRoot)        // sceneRoot 로컬 변환
+        }()
+
+        // 4) Camera rotation 유지 + translation만 교체
+        var placementTransform = Transform(matrix: anchorRecord.worldMatrix)
+        placementTransform.translation = spawnPositionInScene
+        placementTransform.rotation = yawOnlyRotation(from: cameraTransform)
+        
+        anchorRecord.worldMatrix = placementTransform.matrix
         anchorRegistry.upsert(anchorRecord)
 
         // 4) WorldAnchor 추가
         do {
-            try await addWorldAnchor(for: anchorRecord)
+            // scene -> 월드 변환
+            let sceneRootWorld = sceneRoot.transformMatrix(relativeTo: nil)
+            let recordWorldMatrix = simd_mul(sceneRootWorld, anchorRecord.worldMatrix)
+            
+            try await addWorldAnchor(for: anchorRecord, worldMatrix: recordWorldMatrix)
             await handlePlacement(
                 for: type,
                 anchorRecord: anchorRecord,
@@ -170,9 +191,12 @@ extension MixedImmersiveController {
     }
 
     /// ARKit WorldAnchor 등록
-    private func addWorldAnchor(for anchorRecord: AnchorRecord) async throws {
+    private func addWorldAnchor(
+        for anchorRecord: AnchorRecord,
+        worldMatrix: simd_float4x4
+    ) async throws {
         let anchor = WorldAnchor(
-            originFromAnchorTransform: anchorRecord.worldMatrix
+            originFromAnchorTransform: worldMatrix
         )
         try await worldTracking.addAnchor(anchor)
     }
@@ -268,10 +292,11 @@ extension MixedImmersiveController {
 extension MixedImmersiveController {
 
     func spawnEntity(_ anchorRecord: AnchorRecord) async {
-
+        
         guard entityByAnchorID[anchorRecord.id] == nil else { return }
         guard let kind = EntityKind(rawValue: anchorRecord.kind) else { return }
         guard let root else { return }
+        guard let sceneRoot else { return }
 
         // 부모 그룹 선택
         let parent: Entity = {
@@ -315,8 +340,8 @@ extension MixedImmersiveController {
             record: anchorRecord
         )
 
-        // Transform 적용 + 부모 연결
-        entity.transform.matrix = anchorRecord.worldMatrix
+        // SceneRoot 로컬 Transform 적용 + 부모 연결
+        anchorRecord.applyTransform(to: entity, relativeTo: sceneRoot)
         parent.addChild(entity)
 
         entityByAnchorID[anchorRecord.id] = entity

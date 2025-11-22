@@ -61,47 +61,49 @@ public final class SceneBootstrap {
         let recs = persistence.load()
 
         // Entity 생성하기
-        for rec in recs {
+        for anchorRecord in recs {
             // anchorID = rec.id, kind = rec.kind
-            guard let kind = EntityKind(rawValue: rec.kind) else { continue }
+            guard let kind = EntityKind(rawValue: anchorRecord.kind) else { continue }
 
             let entity: Entity?
-            switch rec.kind {
+            switch anchorRecord.kind {
             case "photoCollection":
-                guard let ref = rec.dataRef else { continue }
+                guard let ref = anchorRecord.dataRef else { continue }
                 entity = EntityFactory.makePhotoCollection(
-                    anchorID: rec.id,
+                    anchorID: anchorRecord.id,
                     dataRef: ref
                 )
             case "memo":
-                guard let ref = rec.dataRef else { continue }
-                entity = EntityFactory.makeMemo(anchorID: rec.id, dataRef: ref)
+                guard let ref = anchorRecord.dataRef else { continue }
+                entity = EntityFactory.makeMemo(anchorID: anchorRecord.id, dataRef: ref)
             case "teleport":
-                entity = EntityFactory.makeTeleport(anchorID: rec.id)
+                entity = EntityFactory.makeTeleport(anchorID: anchorRecord.id)
             case "timeline":
-                guard let ref = rec.dataRef else { continue }
-                entity = EntityFactory.makeTimeline(anchorID: rec.id, dataRef: ref)
+                guard let ref = anchorRecord.dataRef else { continue }
+                entity = EntityFactory.makeTimeline(anchorID: anchorRecord.id, dataRef: ref)
             default:
                 continue
             }
 
             guard let e = entity else { continue }
 
-            // 월드 변환 적용 (앵커 개념을 Registry로 표준화했으므로 transform을 직접 기록/복원)
-            e.transform.matrix = rec.worldMatrix
-            e.anchorID = rec.id
+            // sceneRoot 기준
+            anchorRecord.applyTransform(to: e, relativeTo: sceneRoot)
+            
+            // anchorID 세팅
+            e.anchorID = anchorRecord.id
 
             // groupEntity에 child로 추가하기
             let parent = groupEntity(for: kind)
             parent.addChild(e)
 
-            await attachVisual(for: kind, to: e, record: rec)
+            await attachVisual(for: kind, to: e, record: anchorRecord)
 
             // 복원된 컨테이너를 맵에 등록
-            onSpawned?(rec.id, e)
+            onSpawned?(anchorRecord.id, e)
 
             // 메모리 최신화
-            anchorRegistry.upsert(rec)
+            anchorRegistry.upsert(anchorRecord)
         }
     }
 
