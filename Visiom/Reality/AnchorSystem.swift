@@ -18,21 +18,21 @@ import ARKit
 final class AnchorSystem {
     
     private let worldTracking: WorldTrackingProvider    // 앵커 이벤트를 확인용
-    //private let anchorRegistry: AnchorRegistry          // 앵커 기록 테이블
-    //private let persistence: PersistenceManager?        // 앵커의 디스크 저장/복원
+    private let anchorRegistry: AnchorRegistry          // 앵커 기록 테이블
+    private let persistence: PersistenceManager?        // 앵커의 디스크 저장/복원
     
     // 외부에서 관리하는 entity 사전에 AnchorID으로 접근
-    //private let entityForAnchorID: (UUID) -> Entity?
-    //private let setEntityForAnchorID: (UUID, Entity?) -> Void
+    private let entityForAnchorID: (UUID) -> Entity?
+    private let setEntityForAnchorID: (UUID, Entity?) -> Void
     
     // 런타임 엔티티를 만드는 함수를 주입받아 호출
-    //private let spawnEntity: (AnchorRecord) async -> Void
+    private let spawnEntity: (AnchorRecord) async -> Void
     
-    /// 레코드가 없는 앵커가 추가되었을 때 처리 (예: memo 대기열 매칭 등)
-    //var onAnchorAddedWithoutRecord: ((WorldAnchor) async -> Void)?
+    // 레코드가 없는 앵커가 추가되었을 때 처리 (예: memo 대기열 매칭 등)
+    var onAnchorAddedWithoutRecord: ((WorldAnchor) async -> Void)?
     
-    /// 앵커가 제거되었을 때 외부 정리
-    //var onAnchorRemoved: ((UUID) -> Void)?
+    // 앵커가 제거되었을 때 외부 정리
+    var onAnchorRemoved: ((UUID) -> Void)?
     
     // 앵커 이벤트 루프를 도는 비동기 태스크
     private var updatesTask: Task<Void, Never>?
@@ -45,23 +45,25 @@ final class AnchorSystem {
     // MARK: Init
     init(
         worldTracking: WorldTrackingProvider,
-//        anchorRegistry: AnchorRegistry,
-//        persistence: PersistenceManager?,
-//        entityForAnchorID: @escaping (UUID) -> Entity?,
-//        setEntityForAnchorID: @escaping (UUID, Entity?) -> Void,
-//        spawnEntity: @escaping (AnchorRecord) async -> Void
+        anchorRegistry: AnchorRegistry,
+        persistence: PersistenceManager?,
+        entityForAnchorID: @escaping (UUID) -> Entity?,
+        setEntityForAnchorID: @escaping (UUID, Entity?) -> Void,
+        spawnEntity: @escaping (AnchorRecord) async -> Void
     ) {
         self.worldTracking = worldTracking
-//        self.anchorRegistry = anchorRegistry
-//        self.persistence = persistence
-//        self.entityForAnchorID = entityForAnchorID
-//        self.setEntityForAnchorID = setEntityForAnchorID
-//        self.spawnEntity = spawnEntity
+        self.anchorRegistry = anchorRegistry
+        self.persistence = persistence
+        self.entityForAnchorID = entityForAnchorID
+        self.setEntityForAnchorID = setEntityForAnchorID
+        self.spawnEntity = spawnEntity
     }
     
     // sceneRoot 전용 WorldAnchor 붙이는 함수
     // sceneRoot만 WorldAnchor을 사용함
     func attachRootAnchor(to sceneRoot: Entity) async throws {
+        if rootAnchorID != nil { return }
+        
         self.sceneRoot = sceneRoot
         
         let worldTransform = sceneRoot.transformMatrix(relativeTo: nil)
@@ -107,7 +109,7 @@ final class AnchorSystem {
     // 앵커 추가 처리는 이제 rootAnchor만
     // 이 함수는 무시 처리
     private func handleAnchorAdded(_ anchor: WorldAnchor) async {
-        guard anchor.id == rootAnchorID else {
+        guard let rootID = rootAnchorID, anchor.id == rootID else {
             // per-anchor WorldAnchor는 이제 없고, 들어와도 무시
             return
         }
@@ -116,7 +118,7 @@ final class AnchorSystem {
     // 앵커 업데이트 처리
     // 이제는 rootAnchor의 위치 수정만 처리
     private func handleAnchorUpdated(_ anchor: WorldAnchor) {
-        guard anchor.id == rootAnchorID else {
+        guard let rootID = rootAnchorID, anchor.id == rootID else {
             // per-anchor 업데이트는 완전 무시
             return
         }
@@ -126,7 +128,7 @@ final class AnchorSystem {
     // 앵커 제거 처리
     // 이제는 rootAnchor 제거만 처리
     private func handleAnchorRemoved(_ id: UUID) {
-        guard id == rootAnchorID else {
+        guard let rootID = rootAnchorID, id == rootID else {
             // per-anchor removed는 무시
             return
         }
