@@ -54,6 +54,15 @@ struct MixedImmersiveView: View {
             
             setupPersistenceIfNeeded()
             setupAnchorSystem()
+            
+            
+            // sceneRoot를 World에 고정
+            if let root, let anchorSystem {
+                Task {
+                    try? await anchorSystem.attachRootAnchor(to: root)
+                }
+            }
+            
             anchorSystem?.start()
             startInteractionPipelineIfReady()
         } update: { content in
@@ -193,13 +202,6 @@ struct MixedImmersiveView: View {
     
     private func buildRealityContent(_ content: RealityViewContent) async {
         await setupScene(content: content)
-        
-        // sceneRoot를 World에 고정
-        if let root = root {
-            Task {
-                try? await anchorSystem?.attachRootAnchor(to: root)
-            }
-        }
         await MainActor.run { startInteractionPipelineIfReady() }
     }
 }
