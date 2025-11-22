@@ -48,12 +48,13 @@ extension MixedImmersiveView {
         
         // 레코드가 없는 앵커가 추가된 경우(메모/임시 대기열 처리)
         anchorSystem?.onAnchorAddedWithoutRecord = { anchor in
-            // 기존 handleAnchorAdded의 memo/pending 처리를 이곳으로 이동
-            if let memoId = anchorToMemo.removeValue(forKey: anchor.id) {
-                await handleMemoAnchorAdded(anchor, memoID: memoId)
-                return
-            }
-            _ = pendingItemType.removeValue(forKey: anchor.id)
+//            // 기존 handleAnchorAdded의 memo/pending 처리를 이곳으로 이동
+//            if let memoId = anchorToMemo.removeValue(forKey: anchor.id) {
+//                await handleMemoAnchorAdded(anchor, memoID: memoId)
+//                return
+//            }
+//            _ = pendingItemType.removeValue(forKey: anchor.id)
+            return
         }
         
         // 제거 시 보조 맵 정리
@@ -63,58 +64,58 @@ extension MixedImmersiveView {
         }
     }
     
-    private func handleMemoAnchorAdded(_ anchor: WorldAnchor, memoID: UUID) async {
-        let memoText = memoStore.memo(id: memoID)?.text ?? ""
-        
-        
-        let entity: ModelEntity
-        do {
-            entity = try await AREntityFactory.createMemoBox()
-        } catch {
-            print("❌ createMemoBox 실패:", error)
-            return
-        }
-        
-        (memoGroup ?? root)?.addChild(entity)
-        
-        // 텍스트 오버레이 추가 (내용이 있을 때만)
-        if !memoText.isEmpty {
-            let textOverlay = AREntityFactory.createMemoTextOverlay(text: memoText)
-            
-            entity.addChild(textOverlay)
-            
-            textOverlay.setPosition(
-                [0, 0, ARConstants.Position.memoTextZOffset],
-                relativeTo: entity
-            )
-        }
-        
-        entity.name = anchor.id.uuidString
-        entity.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
-        
-        // 레코드가 없던 상황이므로 최소 레코드 생성 후 upsert
-        let rec = AnchorRecord(
-            id: anchor.id,
-            kind: EntityKind.memo.rawValue,
-            dataRef: memoID,
-            transform: anchor.originFromAnchorTransform
-        )
-        anchorRegistry.upsert(rec)
-        
-        // 스폰 맵 업데이트
-        controller?.entityByAnchorID[anchor.id] = entity
-        
-        // 저장
-        persistence?.save()
-        print("persistence?.save() 호출 : AnchorSystem.handleMemoAnchorAdded")
-        
-    }
+//    private func handleMemoAnchorAdded(_ anchor: WorldAnchor, memoID: UUID) async {
+//        let memoText = memoStore.memo(id: memoID)?.text ?? ""
+//        
+//        
+//        let entity: ModelEntity
+//        do {
+//            entity = try await AREntityFactory.createMemoBox()
+//        } catch {
+//            print("❌ createMemoBox 실패:", error)
+//            return
+//        }
+//        
+//        (memoGroup ?? root)?.addChild(entity)
+//        
+//        // 텍스트 오버레이 추가 (내용이 있을 때만)
+//        if !memoText.isEmpty {
+//            let textOverlay = AREntityFactory.createMemoTextOverlay(text: memoText)
+//            
+//            entity.addChild(textOverlay)
+//            
+//            textOverlay.setPosition(
+//                [0, 0, ARConstants.Position.memoTextZOffset],
+//                relativeTo: entity
+//            )
+//        }
+//        
+//        entity.name = anchor.id.uuidString
+//        entity.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
+//        
+//        // 레코드가 없던 상황이므로 최소 레코드 생성 후 upsert
+//        let rec = AnchorRecord(
+//            id: anchor.id,
+//            kind: EntityKind.memo.rawValue,
+//            dataRef: memoID,
+//            transform: anchor.originFromAnchorTransform
+//        )
+//        anchorRegistry.upsert(rec)
+//        
+//        // 스폰 맵 업데이트
+//        controller?.entityByAnchorID[anchor.id] = entity
+//        
+//        // 저장
+//        persistence?.save()
+//        print("persistence?.save() 호출 : AnchorSystem.handleMemoAnchorAdded")
+//        
+//    }
     
     /// 월드 앵커 제거
-    func removeWorldAnchor(by id: UUID) async {
-        anchorRegistry.remove(id)
-        if let e = controller?.entityByAnchorID.removeValue(forKey: id) { e.removeFromParent() }
-        persistence?.save()
-        print("persistence?.save() 호출 : AnchorSystem.removeWorldAnchor")
-    }
+//    func removeWorldAnchor(by id: UUID) async {
+//        anchorRegistry.remove(id)
+//        if let e = controller?.entityByAnchorID.removeValue(forKey: id) { e.removeFromParent() }
+//        persistence?.save()
+//        print("persistence?.save() 호출 : AnchorSystem.removeWorldAnchor")
+//    }
 }

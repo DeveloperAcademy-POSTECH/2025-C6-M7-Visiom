@@ -139,7 +139,10 @@ struct MixedImmersiveView: View {
                                 && $0.dataRef == timelineID
                         })?.id
                     {
-                        await removeWorldAnchor(by: anchorID)
+                        // 월드 앵커 삭제 로직 제거
+                        // await removeWorldAnchor(by: anchorID)
+                        // scene-local 를 삭제하는 함수 추후 추가
+                        // ex) await controller?.removeSceneLocalAnchor(anchorID)
                     } else {
                         print(
                             "Timeline 삭제 알림 받았으나 연결된 앵커를 찾지 못함 for \(timelineID)"
