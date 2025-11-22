@@ -15,11 +15,10 @@ class LineManager {
     var lines: [Entity] = []
     
     // 앵커 위치 임시 저장 배열
-    var entityByAnchorIDs: [UUID:Entity] = [:]
     var anchorRecords : [AnchorRecord] = []
     
     var content: RealityViewContent?
-    
+    // 화살표 entity 이름
     private let lineModelName = "arrow3"
 
     private let lengthAxis: Axis = .x
@@ -27,54 +26,17 @@ class LineManager {
     enum Axis {
         case x, y, z
     }
-    
-    //
-    //    func addEntity(at position: SIMD3<Float>) {
-    //        guard let content = content else { return }
-    //
-    //        let sphere = ModelEntity(
-    //            mesh: .generateSphere(radius: 0.05),
-    //            materials: [SimpleMaterial(color: .red, isMetallic: false)]
-    //        )
-    //        sphere.position = position
-    //        sphere.components.set(InputTargetComponent())
-    //        sphere.components.set(CollisionComponent(shapes: [.generateSphere(radius: 0.05)]))
-    //
-    //        entities.append(sphere)
-    //        content.add(sphere)
-    //
-    //        Task {
-    //            await updateLines()
-    //        }
-    //    }
-    
-    // mixedImmersive에서 사용하는 entityByAnchorID를 entityByAnchorIDs로 넣기
-//    func updateAnchor(entityByAnchorID: [UUID : Entity]) {
-//        entityByAnchorIDs = entityByAnchorID
-//        print("LineManager entityByAnchorIDs \(entityByAnchorID)")
-//    }
+
+    // 화살표 생성
     func updateAnchor(anchorRecord: AnchorRecord) {
            anchorRecords.append(anchorRecord)
            print("AnchorRecord \(anchorRecord)")
        }
     
+    // 마커 위치 변경시 라인위치 업데이트할 함수
     func updateLines() async {
                 guard let content = content else { return }
-        
-        
-        //        lines.forEach { $0.removeFromParent() }
-        //        lines.removeAll()
-        //
-        //        for i in 1..<entities.count {
-        //            let line = await createLine(
-        //                from: entities[i-1].position,
-        //                to: entities[i].position
-        //            )
-        //            lines.append(line)
-        //            content.add(line)
-        //        }
-        
-//        entities = Array(entityByAnchorIDs.values)
+    
         print("updateLines entities : \(entities)")
         lines.forEach { $0.removeFromParent() }
         lines.removeAll()
@@ -96,8 +58,7 @@ class LineManager {
         lines.removeAll()
     }
     
-    
-//    private func createLine(from start: SIMD3<Float>, to end: SIMD3<Float>) async -> Entity {
+    // 라인 생성
     private func createLine(from start: simd_float4x4, to end: simd_float4x4) async -> Entity {
         let startTranslation = SIMD3<Float>(start.columns.3.x, start.columns.3.y, start.columns.3.z)
         let endTranslation = SIMD3<Float>(end.columns.3.x, end.columns.3.y, end.columns.3.z)
@@ -166,7 +127,7 @@ class LineManager {
         }
     }
     
-    // 백업용 기본 실린더
+    // 만약 화살표 entity가 없다면 백업용 실리더로 선 그리기
     private func createDefaultCylinder(from start: SIMD3<Float>, to end: SIMD3<Float>) -> ModelEntity {
         let distance = simd_distance(start, end)
         let direction = normalize(end - start)
