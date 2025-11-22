@@ -65,7 +65,6 @@ final class AnchorSystem {
         self.sceneRoot = sceneRoot
         
         let worldTransform = sceneRoot.transformMatrix(relativeTo: nil)
-        let id = UUID()
         let rootAnchor = WorldAnchor(originFromAnchorTransform: worldTransform)
         try await worldTracking.addAnchor(rootAnchor)
         
