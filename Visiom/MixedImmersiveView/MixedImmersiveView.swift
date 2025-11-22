@@ -47,15 +47,34 @@ struct MixedImmersiveView: View {
     @State var gestureBridge: GestureBridge? = nil
     
     @State var controller: MixedImmersiveController? = nil
+    @State var isARSessionRunning = false
     
     var body: some View {
         RealityView { content in
-            await buildRealityContent(content)
+            // 1) ARSession
+            await startARSessionIFNeeded()
             
-            setupPersistenceIfNeeded()
-            setupAnchorSystem()
+            // 2) 씬(root+groups) 준비
+            await setupScene(content: content)
+            
+            // 3) 의존성 준비
+            setupDependenciesIfNeeded()
+            
+            // 4) restore
+            if let bootstrap {
+                await bootstrap.restoreAndSpawn()
+            }
+            
+            // 5) AnchorSystem은 단 1회 생성/시작
+            setupAnchorSystemIfNeeded()
+            if let root, let anchorSystem {
+                try? await anchorSystem.attachRootAnchor(to: root)
+            }
             anchorSystem?.start()
+            
+            // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
+            
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
         }
@@ -123,15 +142,6 @@ struct MixedImmersiveView: View {
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
-        
-        /// AR 세션 관리
-        .task {
-            await MixedImmersiveView.startARSession()
-            
-            if let root, let anchorSystem {
-                    try? await anchorSystem.attachRootAnchor(to: root)
-                }
-        }
         .onAppear {
             // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
@@ -193,10 +203,5 @@ struct MixedImmersiveView: View {
             showTeleports: appModel.showTeleports,
             showTimelines: appModel.showTimelines
         )
-    }
-    
-    private func buildRealityContent(_ content: RealityViewContent) async {
-        await setupScene(content: content)
-        await MainActor.run { startInteractionPipelineIfReady() }
     }
 }
