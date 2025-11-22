@@ -18,21 +18,21 @@ import ARKit
 final class AnchorSystem {
     
     private let worldTracking: WorldTrackingProvider    // 앵커 이벤트를 확인용
-    private let anchorRegistry: AnchorRegistry          // 앵커 기록 테이블
-    private let persistence: PersistenceManager?        // 앵커의 디스크 저장/복원
+    //private let anchorRegistry: AnchorRegistry          // 앵커 기록 테이블
+    //private let persistence: PersistenceManager?        // 앵커의 디스크 저장/복원
     
     // 외부에서 관리하는 entity 사전에 AnchorID으로 접근
-    private let entityForAnchorID: (UUID) -> Entity?
-    private let setEntityForAnchorID: (UUID, Entity?) -> Void
+    //private let entityForAnchorID: (UUID) -> Entity?
+    //private let setEntityForAnchorID: (UUID, Entity?) -> Void
     
     // 런타임 엔티티를 만드는 함수를 주입받아 호출
-    private let spawnEntity: (AnchorRecord) async -> Void
+    //private let spawnEntity: (AnchorRecord) async -> Void
     
     /// 레코드가 없는 앵커가 추가되었을 때 처리 (예: memo 대기열 매칭 등)
-    var onAnchorAddedWithoutRecord: ((WorldAnchor) async -> Void)?
+    //var onAnchorAddedWithoutRecord: ((WorldAnchor) async -> Void)?
     
     /// 앵커가 제거되었을 때 외부 정리
-    var onAnchorRemoved: ((UUID) -> Void)?
+    //var onAnchorRemoved: ((UUID) -> Void)?
     
     // 앵커 이벤트 루프를 도는 비동기 태스크
     private var updatesTask: Task<Void, Never>?
@@ -45,18 +45,18 @@ final class AnchorSystem {
     // MARK: Init
     init(
         worldTracking: WorldTrackingProvider,
-        anchorRegistry: AnchorRegistry,
-        persistence: PersistenceManager?,
-        entityForAnchorID: @escaping (UUID) -> Entity?,
-        setEntityForAnchorID: @escaping (UUID, Entity?) -> Void,
-        spawnEntity: @escaping (AnchorRecord) async -> Void
+//        anchorRegistry: AnchorRegistry,
+//        persistence: PersistenceManager?,
+//        entityForAnchorID: @escaping (UUID) -> Entity?,
+//        setEntityForAnchorID: @escaping (UUID, Entity?) -> Void,
+//        spawnEntity: @escaping (AnchorRecord) async -> Void
     ) {
         self.worldTracking = worldTracking
-        self.anchorRegistry = anchorRegistry
-        self.persistence = persistence
-        self.entityForAnchorID = entityForAnchorID
-        self.setEntityForAnchorID = setEntityForAnchorID
-        self.spawnEntity = spawnEntity
+//        self.anchorRegistry = anchorRegistry
+//        self.persistence = persistence
+//        self.entityForAnchorID = entityForAnchorID
+//        self.setEntityForAnchorID = setEntityForAnchorID
+//        self.spawnEntity = spawnEntity
     }
     
     // sceneRoot 전용 WorldAnchor 붙이는 함수
