@@ -145,7 +145,7 @@ extension MixedImmersiveView {
                 print("❗️ Anchor not found for id: \(id)")
                 return
             }
-            
+            // 타임라인 마커만 미니맵 anchorRecord 업데이트
             if anchorRecord.kindEnum == .timeline {
                 miniMapManager.updateAnchor(anchorRecord: anchorRecord)
                 print("⏰ Timeline anchor found for id: \(id)")
