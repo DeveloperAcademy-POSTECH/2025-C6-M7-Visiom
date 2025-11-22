@@ -50,6 +50,7 @@ class MiniMapManager {
         }
     }
     
+    // AnchorRecord 데이터 업데이트
     func updateAnchor(anchorRecord: AnchorRecord) {
         anchorRecords.append(anchorRecord)
         print("AnchorRecord \(anchorRecord)")
@@ -69,10 +70,11 @@ class MiniMapManager {
         } else {
             // 캐시에 없으면 로드
             do {
-                let scene = try await Entity(named: "minimap_crime_scene",
+                let scene = try await Entity(named: "minimap_55",
                                              in: realityKitContentBundle)
                 scene.scale = [0.1, 0.1, 0.1]
                 scene.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+                scene.position.z = -0.1
                 scene.name = "miniImmersive" // 식별을 위한 이름 추가
                 content.add(scene)
             } catch {
@@ -89,21 +91,9 @@ class MiniMapManager {
         }
     }
     
-    
+    // 미니맵 update 클로저에 사용
     func updateMiniScene(content: RealityViewContent) {
         
-        // 새로 추가된 box들을 처리
-//        for boxData in boxes {
-//            // 이미 추가된 box인지 확인
-//            if content.entities.contains(where: { $0.name == boxData.id.uuidString }) {
-//                            continue
-//                        }
-//            
-//            // Mini view에 box 추가 (1/10 스케일)
-//            let box = createMiniBox(data: boxData)
-//            box.name = boxData.id.uuidString
-//            content.add(box)
-//        }
         for anchor in anchorRecords {
             if content.entities.contains(where: { $0.name == "marker_\(anchor.id)" }) {
                 continue
@@ -116,8 +106,8 @@ class MiniMapManager {
         }
     }
     
-//    func createMiniBox(data: Entity) -> Entity { // 테스트용 삭제
-    func createMiniBox(anchor: AnchorRecord) -> Entity { // 테스트용 삭제
+    // 미니맵에 entity 생성하는 함수
+    func createMiniBox(anchor: AnchorRecord) -> Entity {
         // 1/10 크기로 생성
 //        let scaledSize = data.size * 0.1
         let position = anchor.worldMatrix
@@ -127,11 +117,11 @@ class MiniMapManager {
         
         let marker = cachedMiniMapMarker?.clone(recursive: true) ?? box
         
-        marker.orientation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0])
+        marker.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
         
-        // Extract translation (position) from the 4x4 world matrix
+        // 월드 앵커를 SIMD3 변환
         let translation = SIMD3<Float>(position.columns.3.x, position.columns.3.y, position.columns.3.z)
-        // Scale down to match the mini map scale
+        // 스케일에 맞춰 좌표 수정
         let scaledPosition = translation * 0.1
 
         
@@ -142,7 +132,7 @@ class MiniMapManager {
 //                    scaledPosition.y
 //                )
         
-//        maker.position = rotatedPosition
+//        marker.position = rotatedPosition
         marker.position = scaledPosition
         
         return marker
