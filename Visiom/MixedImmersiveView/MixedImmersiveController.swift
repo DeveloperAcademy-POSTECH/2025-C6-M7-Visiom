@@ -105,7 +105,7 @@ extension MixedImmersiveController {
 // MARK: - Placement Flow
 extension MixedImmersiveController {
 
-    // 카메라 기준으로 앵커를 하나 만들고 WorldAnchor과 Entity를 스폰하는 오케스트레이터
+    // 카메라 기준으로 앵커를 하나 만들고 Anchor과 Entity를 스폰하는 오케스트레이터
     private func createAnchor(
         usingCamera cameraTransform: simd_float4x4,
         for type: UserControlItem,
