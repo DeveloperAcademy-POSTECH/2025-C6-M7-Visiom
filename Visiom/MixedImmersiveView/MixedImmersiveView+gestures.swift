@@ -32,8 +32,9 @@ extension MixedImmersiveView {
         
         if placement.onMoved == nil {
             placementManager?.onMoved = { [self] rec in
-                if let e = controller?.entityByAnchorID[rec.id] {
-                    e.setTransformMatrix(rec.worldMatrix, relativeTo: nil)
+                if let e = controller?.entityByAnchorID[rec.id] ,
+                   let sceneRoot = controller?.sceneRoot{
+                    e.setTransformMatrix(rec.worldMatrix, relativeTo: sceneRoot)
                 }
             }
         }
