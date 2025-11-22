@@ -393,7 +393,7 @@ extension MixedImmersiveController {
         }
 
         // yaw 각도 계산 (z축 기준으로 x 방향을 보는 각도)
-        let yaw = atan2(flatForward.x, flatForward.z)
+        let yaw = atan2(flatForward.x, flatForward.z) + .pi
 
         // y축 기준 회전만 갖는 값
         return simd_quatf(angle: yaw, axis: SIMD3<Float>(0, 1, 0))

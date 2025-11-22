@@ -88,12 +88,15 @@ public final class PlacementManager {
     
     public func beginMove(anchorID: UUID) {
         guard let anchorRecord = anchorRegistry.records[anchorID] else { return }
-        let position = SIMD3<Float>(
-            anchorRecord.worldMatrix.columns.3.x,
-            anchorRecord.worldMatrix.columns.3.y,
-            anchorRecord.worldMatrix.columns.3.z
-        )
-        dragStartPosition[anchorID] = position
+        let worldPosition = SIMD3<Float>(anchorRecord.worldMatrix.columns.3.x,
+                                    anchorRecord.worldMatrix.columns.3.y,
+                                    anchorRecord.worldMatrix.columns.3.z)
+
+        let temp = Entity()
+        temp.setPosition(worldPosition, relativeTo: nil)
+        let scenePosition = temp.position(relativeTo: sceneRoot)
+
+        dragStartPosition[anchorID] = SIMD3<Float>(scenePosition.x, scenePosition.y, scenePosition.z)
     }
     
     public func endMove(anchorID: UUID) {
@@ -102,32 +105,58 @@ public final class PlacementManager {
     
     // 드래그에 따른 앵커 transform 갱신
     public func moveAnchor(anchorID: UUID, deltaWorld: SIMD3<Float>) {
-        guard var anchorRecord = anchorRegistry.records[anchorID] else { return }
-        
-        if let dragStartPosition = dragStartPosition[anchorID] {
-            var newPosition = dragStartPosition + deltaWorld
-            if let kind = EntityKind(rawValue: anchorRecord.kind), kind == .teleport {
-                // 텔레포트는 y 고정
-                newPosition.y = anchorRecord.worldMatrix.columns.3.y
-            }
-            anchorRecord.worldMatrix.columns.3 = SIMD4<Float>(newPosition, 1.0)
-        } else {
-            if let kind = EntityKind(rawValue: anchorRecord.kind), kind == .teleport {
-                anchorRecord.worldMatrix.columns.3.x += deltaWorld.x
-                anchorRecord.worldMatrix.columns.3.z += deltaWorld.z
-            } else {
-                anchorRecord.worldMatrix.columns.3.x += deltaWorld.x
-                anchorRecord.worldMatrix.columns.3.y += deltaWorld.y
-                anchorRecord.worldMatrix.columns.3.z += deltaWorld.z
-            }
+        guard var record = anchorRegistry.records[anchorID] else { return }
+
+        // ✅ deltaWorld(증분) -> deltaScene(증분) 변환
+        let a = Entity(); a.setPosition(.zero, relativeTo: nil)
+        let b = Entity(); b.setPosition(deltaWorld, relativeTo: nil)
+
+        let aScene = a.position(relativeTo: sceneRoot)
+        let bScene = b.position(relativeTo: sceneRoot)
+
+        var deltaScene = SIMD3<Float>(
+            bScene.x - aScene.x,
+            bScene.y - aScene.y,
+            bScene.z - aScene.z
+        )
+
+        // ✅ NaN 방어 (이게 없으면 사라짐/튐 계속 남음)
+        if deltaScene.x.isNaN || deltaScene.y.isNaN || deltaScene.z.isNaN {
+            return
         }
 
-        anchorRegistry.upsert(anchorRecord)
-        onMoved?(anchorRecord)
+        // ✅ 현재 위치(scene-local) 가져오기
+        let curScenePos = SIMD3<Float>(
+            record.worldMatrix.columns.3.x,
+            record.worldMatrix.columns.3.y,
+            record.worldMatrix.columns.3.z
+        )
+
+        var newScene = curScenePos + deltaScene
+
+        // teleport는 y 고정
+        if let kind = EntityKind(rawValue: record.kind), kind == .teleport {
+            newScene.y = curScenePos.y
+        }
+
+        // ✅ 회전 유지하면서 translation만 변경
+        var t = Transform(matrix: record.worldMatrix)
+        t.translation = newScene
+        record.worldMatrix = t.matrix
+
+        anchorRegistry.upsert(record)
+        onMoved?(record)
     }
     
     public func removeAnchor(anchorID: UUID) {
         anchorRegistry.remove(anchorID)
         onRemoved?(anchorID)
+    }
+    
+    private func transformFromSceneLocalPosition(_ pos: SIMD3<Float>) -> Transform {
+        var t = Transform()
+        t.translation = pos
+        t.rotation = simd_quatf()    // 회전 유지하고 싶으면 anchorRecord로부터 복원
+        return t
     }
 }

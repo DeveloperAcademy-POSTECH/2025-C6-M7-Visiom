@@ -54,15 +54,6 @@ struct MixedImmersiveView: View {
             
             setupPersistenceIfNeeded()
             setupAnchorSystem()
-            
-            
-            // sceneRoot를 World에 고정
-            if let root, let anchorSystem {
-                Task {
-                    try? await anchorSystem.attachRootAnchor(to: root)
-                }
-            }
-            
             anchorSystem?.start()
             startInteractionPipelineIfReady()
         } update: { content in
@@ -136,6 +127,10 @@ struct MixedImmersiveView: View {
         /// AR 세션 관리
         .task {
             await MixedImmersiveView.startARSession()
+            
+            if let root, let anchorSystem {
+                    try? await anchorSystem.attachRootAnchor(to: root)
+                }
         }
         .onAppear {
             // TODO: (지지) 리팩토링 필요!!!

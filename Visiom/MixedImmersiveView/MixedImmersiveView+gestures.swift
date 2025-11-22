@@ -75,7 +75,8 @@ extension MixedImmersiveView {
             .targetedToAnyEntity()
             .onChanged { value in
                 inputSurface.setLastHitEntity(value.entity)
-                let pNow = value.convert(value.location3D, from: .local, to: value.entity.parent!)
+                let pNow = value.convert(value.location3D, from: .local, to: .scene)
+                
                 let world = SIMD3<Float>(pNow.x, pNow.y, pNow.z)
                 inputSurface.pushDragSample(currentWorld: world, isEnded: false)
             }
