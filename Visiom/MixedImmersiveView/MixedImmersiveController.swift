@@ -158,7 +158,6 @@ extension MixedImmersiveController {
         }
         
         // 3) spawnPosition이 월드일 가능성이 높으니 scene 로컬로 변환
-        // 수정 : 추가
         let spawnPositionInScene: SIMD3<Float> = {
             let temp = Entity()
             temp.setPosition(spawnPosition, relativeTo: nil)   // 월드 기준 세팅
@@ -173,32 +172,12 @@ extension MixedImmersiveController {
         anchorRecord.worldMatrix = placementTransform.matrix
         anchorRegistry.upsert(anchorRecord)
 
-        // 4) WorldAnchor 추가
-        do {
-            // scene -> 월드 변환
-            let sceneRootWorld = sceneRoot.transformMatrix(relativeTo: nil)
-            let recordWorldMatrix = simd_mul(sceneRootWorld, anchorRecord.worldMatrix)
-            
-            try await addWorldAnchor(for: anchorRecord, worldMatrix: recordWorldMatrix)
-            await handlePlacement(
-                for: type,
-                anchorRecord: anchorRecord,
-                dataRef: dataRef
-            )
-        } catch {
-            print("⚠️ 월드 앵커 추가 failed")
-        }
-    }
-
-    /// ARKit WorldAnchor 등록
-    private func addWorldAnchor(
-        for anchorRecord: AnchorRecord,
-        worldMatrix: simd_float4x4
-    ) async throws {
-        let anchor = WorldAnchor(
-            originFromAnchorTransform: worldMatrix
+        // 4) record 기준으로 추가
+        await handlePlacement(
+            for: type,
+            anchorRecord: anchorRecord,
+            dataRef: dataRef
         )
-        try await worldTracking.addAnchor(anchor)
     }
 
     /// 종류별 후처리 + 스폰
