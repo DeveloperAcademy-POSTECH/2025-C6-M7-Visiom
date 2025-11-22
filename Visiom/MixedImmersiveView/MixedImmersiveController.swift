@@ -168,7 +168,7 @@ extension MixedImmersiveController {
         } catch {
             print("⚠️ 월드 앵커 추가 failed")
         }
-        if type == .teleport {
+        if type == .timeline {
             miniMapManager.updateAnchor(anchorRecord: anchorRecord)
         }
     }

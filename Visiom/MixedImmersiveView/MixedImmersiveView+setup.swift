@@ -146,7 +146,7 @@ extension MixedImmersiveView {
                 return
             }
             
-            if anchorRecord.kindEnum == .teleport {
+            if anchorRecord.kindEnum == .timeline {
                 miniMapManager.updateAnchor(anchorRecord: anchorRecord)
                 print("⏰ Timeline anchor found for id: \(id)")
             }
