@@ -169,4 +169,9 @@ final class CollectionStore {
     func flushSaves() async {
         await persistence.flush()
     }
+    
+    func photoURL(collectionID: UUID, fileName: String) -> URL? {
+        guard let folder = try? FileLocations.collectionFolder(id: collectionID) else { return nil }
+        return folder.appendingPathComponent(fileName)
+    }
 }

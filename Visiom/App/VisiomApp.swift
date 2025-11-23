@@ -16,6 +16,7 @@ struct VisiomApp: App {
     @State private var collectionStore = CollectionStore()
     @State private var memoStore = MemoStore()
     @State private var timelineStore = TimelineStore()
+    @State private var placedImageStore = PlacedImageStore()
     @State private var entityManager = EntityManager()
     @State private var miniMapManager = MiniMapManager()
 
@@ -37,7 +38,9 @@ struct VisiomApp: App {
             $collectionID in
             if let id = collectionID {
                 PhotoCollectionView(collectionID: id)
+                    .environment(appModel)
                     .environment(collectionStore)
+                    .environment(placedImageStore)
             } else {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
@@ -90,6 +93,7 @@ struct VisiomApp: App {
                 .environment(entityManager)
                 .environment(memoStore)
                 .environment(timelineStore)
+                .environment(placedImageStore)
                 .environment(miniMapManager)
                 .onAppear {
                     appModel.immersiveSpaceState = .open

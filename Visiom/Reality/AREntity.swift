@@ -9,6 +9,7 @@ import ARKit
 import RealityKit
 import RealityKitContent
 import SwiftUI
+import UIKit
 
 struct ScaleRotationComponent: Component, Codable {}
 struct OnlyScaleComponent: Component, Codable {}
@@ -22,7 +23,7 @@ enum AREntityFactory {
             do {
                 return try await createPhotoCollectionButton()
             } catch {
-                print("Failed to create photo entity: \(error)")
+                print("Failed to create photoCollection entity: \(error)")
                 return ModelEntity()
             }
         case .memo:
@@ -46,6 +47,8 @@ enum AREntityFactory {
                 print("Failed to create timeline entity: \(error)")
                 return ModelEntity()
             }
+        case .placedImage:
+            return ModelEntity()
         }
     }
     
@@ -222,5 +225,52 @@ enum AREntityFactory {
                 )
         )
         return entity
+    }
+    
+    static func createPlacedImage(from url: URL) -> ModelEntity {
+        // 1) 이미지 크기 읽기
+        guard
+            let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil),
+            let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
+            let pixelWidth = properties[kCGImagePropertyPixelWidth] as? CGFloat,
+            let pixelHeight = properties[kCGImagePropertyPixelHeight] as? CGFloat
+        else {
+            print("⚠️ 이미지 메타데이터를 읽을 수 없음, 기본 비율 사용")
+            return defaultPlane(url: url)
+        }
+        
+        let aspect = pixelWidth / pixelHeight
+        
+        // 2) 세로 길이를 기준으로 반영 (예: 0.3m)
+        let heightMeters: Float = 0.3
+        let widthMeters = Float(aspect) * heightMeters
+        
+        // 3) plane 메쉬 생성
+        let mesh = MeshResource.generatePlane(width: widthMeters, height: heightMeters)
+        
+        // 4) 텍스쳐 적용
+        var material = UnlitMaterial()
+        if let textureResource = try? TextureResource.load(contentsOf: url) {
+            material.color.texture = MaterialParameters.Texture(textureResource)
+            material.color.tint = .white
+        } else {
+            material.color.texture = nil
+            material.color.tint = .gray
+        }
+        
+        let entity = ModelEntity(mesh: mesh, materials: [material])
+        return entity
+    }
+    
+    // 이미지 크기를 읽어오지 못한 경우
+    private static func defaultPlane(url: URL) -> ModelEntity {
+        let mesh = MeshResource.generatePlane(width: 0.4, height: 0.3)
+        var material = UnlitMaterial()
+        
+        if let tex = try? TextureResource.load(contentsOf: url) {
+            material.color.texture = .init(tex)
+        }
+        
+        return ModelEntity(mesh: mesh, materials: [material])
     }
 }

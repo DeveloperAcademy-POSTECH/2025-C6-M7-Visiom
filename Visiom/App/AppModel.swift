@@ -29,7 +29,7 @@ class AppModel {
 
     var immersiveSpaceState = ImmersiveSpaceState.closed
     var itemAdd: UserControlItem? = nil
-    var memoToAnchorID: UUID? = nil
+    //var memoToAnchorID: UUID? = nil
     var timelineToAnchorID: UUID? = nil
 
     // visible/invisible 상태 관리
@@ -38,6 +38,7 @@ class AppModel {
     var showMemos: Bool = true
     var showTeleports: Bool = true
     var showTimelines: Bool = true
+    var showPlacedImages: Bool = true
 
     var customHeight: Float = 1.60
 
@@ -55,9 +56,11 @@ class AppModel {
     func toggleTeleports() {
         showTeleports.toggle()
     }
-
     func toggleTimelines() {
         showTimelines.toggle()
+    }
+    func togglePlacedImages() {
+        showPlacedImages.toggle()
     }
 
     var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
