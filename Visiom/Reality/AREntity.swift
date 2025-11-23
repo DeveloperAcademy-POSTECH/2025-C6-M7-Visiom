@@ -149,11 +149,8 @@ enum AREntityFactory {
         )))
         
         entity.components.set([collisionComponent, inputTargetComponent, hoverEffectComponent])
-        entity.transform.rotation = simd_quatf(angle: .pi / 2, axis: SIMD3<Float>(1, 0, 0))
         
         return entity
-        
-        
     }
     
     static func createTimeline() async throws -> ModelEntity {
