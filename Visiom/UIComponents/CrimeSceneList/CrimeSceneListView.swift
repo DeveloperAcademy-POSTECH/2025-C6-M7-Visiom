@@ -63,8 +63,6 @@ struct CrimeSceneListView: View {
                                 )
                                 progress = 1.0
                                 isLoading = false
-
-                                openWindow(id: appModel.userControlWindowID)
                             }
                         }) {
                             CrimeSceneCard(

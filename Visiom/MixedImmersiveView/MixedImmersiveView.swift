@@ -60,6 +60,8 @@ struct MixedImmersiveView: View {
             // 2) 씬(root+groups) 준비
             await setupScene(content: content)
             
+            openWindow(id: appModel.userControlWindowID)
+            
             // 3) 의존성 준비
             setupDependenciesIfNeeded()
             
