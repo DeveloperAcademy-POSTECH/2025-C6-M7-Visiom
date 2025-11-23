@@ -91,7 +91,9 @@ extension UserControlView {
         case .visibility:
             appModel.togglePhotos()
             appModel.toggleMemos()
-
+            appModel.toggleTeleports()
+            appModel.toggleTimelines()
+            appModel.togglePlacedImages()
         // 보드(타임라인)
         case .timeline:
             if state == .timeline {

@@ -60,6 +60,8 @@ struct MixedImmersiveView: View {
             // 2) 씬(root+groups) 준비
             await setupScene(content: content)
             
+            openWindow(id: appModel.userControlWindowID)
+            
             // 3) 의존성 준비
             setupDependenciesIfNeeded()
             
@@ -80,6 +82,7 @@ struct MixedImmersiveView: View {
             
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
+            updateRealityContent(content)
         }
         .onChange(of: appModel.itemAdd, initial: false) { (oldValue: UserControlItem?, newValue: UserControlItem?) in
             guard let newValue else { return }
