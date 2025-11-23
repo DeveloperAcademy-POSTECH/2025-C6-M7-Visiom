@@ -20,6 +20,10 @@ final class PhotoViewModel {
     private let store: CollectionStore
     private let collectionID: UUID
     
+    var id: UUID {
+        collectionID
+    }
+    
     init(store: CollectionStore, collectionID: UUID) {
         self.store = store
         self.collectionID = collectionID

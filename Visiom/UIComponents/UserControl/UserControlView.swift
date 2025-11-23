@@ -13,11 +13,11 @@ struct UserControlView: View {
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.dismissWindow) private var dismissWindow
     @Environment(\.openWindow) private var openWindow
-    
+
     @State var state: InteractionState = .idle
-    
+
     @State private var entityCounter: [EntityType: Int] = [.sphere: 0, .box: 0]
-    
+
     var body: some View {
         HStack(spacing: 12) {
             ForEach(UserControlItem.allCases, id: \.self) { item in
@@ -33,7 +33,7 @@ struct UserControlView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(!isEnabled(item))
-                
+
                 if item == .back || item == .visibility {
                     VDivider(height: 60)
                 }
@@ -50,26 +50,25 @@ struct UserControlView: View {
 }
 
 extension UserControlView {
-    
+
     // 버튼 동작 분기
     private func handleTap(_ item: UserControlItem) {
         guard UserControlItemLogic.isEnabled(item, when: state) else { return }
         let oldState = state
         state = UserControlItemLogic.apply(item, from: oldState)
-        
+
         switch item {
-            // 뒤로가기
+        // 뒤로가기
         case .back:
             Task {
-            //await appModel.exitFullImmersive(
                 await appModel.exitMixedImmersive(
                     dismissImmersiveSpace: dismissImmersiveSpace,
                     dismissWindow: dismissWindow,
                     openWindow: openWindow
                 )
             }
-            
-            // 사진 배치
+
+        // 사진 배치
         case .photoCollection:
             if case .placing(.photoCollection) = state {
                 appModel.itemAdd = .photoCollection
@@ -78,8 +77,8 @@ extension UserControlView {
                 appModel.itemAdd = nil
                 print("📸 사진 배치 종료")
             }
-            
-            // 메모 작성
+
+        // 메모 작성
         case .memo:
             if case .placing(.memo) = state {
                 let memo = memoStore.createMemo(initialText: "")
@@ -88,24 +87,26 @@ extension UserControlView {
             } else {
                 print("📝 메모 모드 종료")
             }
-            // 가시성 토글
+        // 가시성 토글
         case .visibility:
             appModel.togglePhotos()
             appModel.toggleMemos()
-            
-            // 보드(타임라인)
+            appModel.toggleTeleports()
+            appModel.toggleTimelines()
+            appModel.togglePlacedImages()
+        // 보드(타임라인)
         case .timeline:
             if state == .timeline {
-                openWindow(id:appModel.timelineWindowID)
+                openWindow(id: appModel.timelineWindowID)
                 print("🗂️ 보드 열기")
             } else {
                 dismissWindow(id: appModel.timelineWindowID)
                 print("🗂️ 보드 닫기")
             }
-            
-            // 이동
+
+        // 이동
         case .teleport:
-            if case .placing(.teleport) = state{
+            if case .placing(.teleport) = state {
                 appModel.itemAdd = .teleport
                 print("⚡️ 텔레포트 배치 시작")
             } else {
@@ -113,19 +114,33 @@ extension UserControlView {
                 print("⚡️ 텔레포트 배치 종료")
             }
             
-        case .topView:
-            if case .topView = state {
-                appModel.showTopView = true
+        case .miniMap:
+            if case .miniMap = state {
+                openWindow(id:appModel.miniMapWindowID)
+                print("🗺️ 미니맵 시작")
             } else {
-                appModel.showTopView = false
+                dismissWindow(id: appModel.miniMapWindowID)
+                print("🗺️ 미니맵 종료")
+            }
+            
+        case .placedImage:
+            print("nothing")
+
+        case .cameraheight:
+            if state == .cameraheight {
+                openWindow(id: appModel.cameraHeightWindowID)
+                print("📏 시점 조정 시작")
+            } else {
+                dismissWindow(id: appModel.cameraHeightWindowID)
+                print("📏 시점 조정 종료")
             }
         }
     }
-    
+
     private func iconName(for item: UserControlItem) -> String {
         state.activeItem == item ? item.selectedIcon : item.icon
     }
-    
+
     private func isEnabled(_ item: UserControlItem) -> Bool {
         UserControlItemLogic.isEnabled(item, when: state)
     }
@@ -134,7 +149,7 @@ extension UserControlView {
 struct VDivider: View {
     var height: CGFloat = 60
     var opacity: Double = 0.28
-    
+
     var body: some View {
         Rectangle()
             .fill(.white.opacity(opacity))

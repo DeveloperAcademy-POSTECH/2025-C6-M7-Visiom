@@ -28,16 +28,19 @@ final class AnchorSystem {
     // 런타임 엔티티를 만드는 함수를 주입받아 호출
     private let spawnEntity: (AnchorRecord) async -> Void
     
-    /// 레코드가 없는 앵커가 추가되었을 때 처리 (예: memo 대기열 매칭 등)
+    // 레코드가 없는 앵커가 추가되었을 때 처리 (예: memo 대기열 매칭 등)
     var onAnchorAddedWithoutRecord: ((WorldAnchor) async -> Void)?
     
-    /// 앵커가 제거되었을 때 외부 정리
+    // 앵커가 제거되었을 때 외부 정리
     var onAnchorRemoved: ((UUID) -> Void)?
     
     // 앵커 이벤트 루프를 도는 비동기 태스크
     private var updatesTask: Task<Void, Never>?
     // 디바운스 저장을 지연 실행하는 태스크(너무 잦은 저장 방지)
     private var pendingSaveTask: Task<Void, Never>?
+    
+    private(set) var rootAnchorID: UUID? = nil
+    weak var sceneRoot: Entity? = nil
     
     // MARK: Init
     init(
@@ -54,6 +57,20 @@ final class AnchorSystem {
         self.entityForAnchorID = entityForAnchorID
         self.setEntityForAnchorID = setEntityForAnchorID
         self.spawnEntity = spawnEntity
+    }
+    
+    // sceneRoot 전용 WorldAnchor 붙이는 함수
+    // sceneRoot만 WorldAnchor을 사용함
+    func attachRootAnchor(to sceneRoot: Entity) async throws {
+        if rootAnchorID != nil { return }
+        
+        self.sceneRoot = sceneRoot
+        
+        let worldTransform = sceneRoot.transformMatrix(relativeTo: nil)
+        let rootAnchor = WorldAnchor(originFromAnchorTransform: worldTransform)
+        try await worldTracking.addAnchor(rootAnchor)
+        
+        rootAnchorID = rootAnchor.id
     }
     
     // MARK: Lifecycle
@@ -88,50 +105,35 @@ final class AnchorSystem {
     }
     
     // 앵커 추가 처리
+    // 이제는 사용X
+    // 앵커 추가 처리는 이제 rootAnchor만
+    // 이 함수는 무시 처리
     private func handleAnchorAdded(_ anchor: WorldAnchor) async {
-        if let rec = anchorRegistry.get(anchor.id) {
-            // 이미 복원된 레코드가 있고 아직 스폰되지 않았다면 스폰
-            if entityForAnchorID(anchor.id) == nil {
-                await spawnEntity(rec)
-            }
+        guard let rootID = rootAnchorID, anchor.id == rootID else {
+            // per-anchor WorldAnchor는 이제 없고, 들어와도 무시
             return
         }
-        
-        // 레코드가 없는 앵커: 외부 훅에 위임(예: 메모 대기열 매칭)
-        await onAnchorAddedWithoutRecord?(anchor)
     }
     
     // 앵커 업데이트 처리
+    // 이제는 rootAnchor의 위치 수정만 처리
     private func handleAnchorUpdated(_ anchor: WorldAnchor) {
-        var rec = anchorRegistry.get(anchor.id) ??
-        AnchorRecord(
-            id: anchor.id,
-            kind: "unknown",
-            dataRef: nil,
-            transform: anchor.originFromAnchorTransform
-        )
-        
-        rec.worldMatrix = anchor.originFromAnchorTransform
-        anchorRegistry.upsert(rec)
-        
-        // 이미 스폰된 엔티티의 트랜스폼 동기화
-        if let e = entityForAnchorID(anchor.id) {
-            e.setTransformMatrix(rec.worldMatrix, relativeTo: nil)
+        guard let rootID = rootAnchorID, anchor.id == rootID else {
+            // per-anchor 업데이트는 완전 무시
+            return
         }
-        
-        persistence?.save()
+        sceneRoot?.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
     }
     
     // 앵커 제거 처리
+    // 이제는 rootAnchor 제거만 처리
     private func handleAnchorRemoved(_ id: UUID) {
-        anchorRegistry.remove(id)
-        
-        if let e = entityForAnchorID(id) {
-            e.removeFromParent()
-            setEntityForAnchorID(id, nil)
+        guard let rootID = rootAnchorID, id == rootID else {
+            // per-anchor removed는 무시
+            return
         }
-        
-        onAnchorRemoved?(id)
-        persistence?.save()
+        // rootAnchor가 제거되면 참조만 정리 (씬 로컬 데이터는 건드리지 않음)
+        // 수정 : 추가
+        rootAnchorID = nil
     }
 }
