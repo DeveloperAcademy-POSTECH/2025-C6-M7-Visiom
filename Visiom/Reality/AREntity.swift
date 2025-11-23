@@ -34,7 +34,12 @@ enum AREntityFactory {
                 return ModelEntity()
             }
         case .teleport:
-            return createTeleport()
+            do{
+                return try await createTeleport()
+            } catch {
+                print("Failed to create teleport entity: \(error)")
+                return ModelEntity()
+            }
         case .timeline:
             do {
                 return try await createTimeline()
@@ -107,19 +112,48 @@ enum AREntityFactory {
         return entity
     }
     
-    static func createTeleport() -> ModelEntity {
-        let mesh = MeshResource.generateSphere(radius: 0.1)
-        let material = SimpleMaterial(color: .blue, isMetallic: true)
-        let entity = ModelEntity(mesh: mesh, materials: [material])
+    static func createTeleport() async throws -> ModelEntity {
+        let root = try await Entity(
+            named: "teleport",
+            in: realityKitContentBundle
+        )
         
-        // 콜리전 및 인터랙션 설정
-        let collision = CollisionComponent(shapes: [
-            .generateBox(size: [0.28, 0.05, 0.28])
-        ])
-        let input = InputTargetComponent()
-        entity.components.set([collision, input])
+        // mesh 가진 Entity 찾기 (ModelComponent 보유한 첫 엔티티 탐색)
+        guard let meshEntity = findFirstEntityWithModelComponent(in: root)
+        else {
+            fatalError("timeline usdz 안에서 ModelComponent 가진 entity 못 찾음")
+        }
+        
+        // ModelEntity 확보 - 이미 ModelEntity면 캐스팅 아니면 ModelComponent로 새 ModelEntity 구성
+        let modelEntity: ModelEntity
+        if let casted = meshEntity as? ModelEntity {
+            modelEntity = casted
+        } else if let modelComp = meshEntity.components[ModelComponent.self] {
+            modelEntity = ModelEntity()
+            modelEntity.components.set(modelComp)
+        } else {
+            fatalError("ModelComponent를 가진 엔티티를 찾았지만 구성 추출에 실패")
+        }
+        
+        let entity = modelEntity.clone(recursive: true)
+        
+        
+        
+        let collisionComponent = CollisionComponent(
+            shapes: [ShapeResource.generateBox(size:  SIMD3<Float>(0.1, 0.1, 0.1))]
+        )
+        let inputTargetComponent = InputTargetComponent()
+        
+        let hoverEffectComponent = HoverEffectComponent(.highlight(HoverEffectComponent.HighlightHoverEffectStyle(
+            color: .white, strength: 2.0
+        )))
+        
+        entity.components.set([collisionComponent, inputTargetComponent, hoverEffectComponent])
+        entity.transform.rotation = simd_quatf(angle: .pi / 2, axis: SIMD3<Float>(1, 0, 0))
         
         return entity
+        
+        
     }
     
     static func createTimeline() async throws -> ModelEntity {
