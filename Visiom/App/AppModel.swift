@@ -36,9 +36,10 @@ class AppModel {
     var markersVisible: Bool = true
     var showPhotos: Bool = true
     var showMemos: Bool = true
-    var showTeleports: Bool = true
     var showTimelines: Bool = true
     var showPlacedImages: Bool = true
+    
+    var isTeleportVisible: Bool = false
 
     var customHeight: Float = 1.60
 
@@ -52,9 +53,6 @@ class AppModel {
     }
     func toggleMemos() {
         showMemos.toggle()
-    }
-    func toggleTeleports() {
-        showTeleports.toggle()
     }
     func toggleTimelines() {
         showTimelines.toggle()

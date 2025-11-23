@@ -91,9 +91,9 @@ extension MixedImmersiveController {
     func refreshScene(
         showPhotos: Bool,
         showMemos: Bool,
-        showTeleports: Bool,
         showTimelines: Bool,
-        showPlacedImage: Bool
+        showPlacedImage: Bool,
+        isTeleportVisible: Bool
     ) {
         /// 역할: entity 계층 구조 점검하기
         updateEntityHierarchy()
@@ -101,9 +101,9 @@ extension MixedImmersiveController {
         updateGroupVisibility(
             showPhotos: showPhotos,
             showMemos: showMemos,
-            showTeleports: showTeleports,
             showTimelines: showTimelines,
-            showPlacedImage: showPlacedImage
+            showPlacedImage: showPlacedImage,
+            isTeleportVisible: isTeleportVisible
         )
     }
 }
@@ -470,15 +470,15 @@ extension MixedImmersiveController {
     func updateGroupVisibility(
         showPhotos: Bool,
         showMemos: Bool,
-        showTeleports: Bool,
         showTimelines: Bool,
-        showPlacedImage: Bool
+        showPlacedImage: Bool,
+        isTeleportVisible: Bool
     ) {
         photoGroup?.isEnabled = showPhotos
         memoGroup?.isEnabled = showMemos
-        teleportGroup?.isEnabled = showTeleports
         timelineGroup?.isEnabled = showTimelines
         placedImageGroup?.isEnabled = showPlacedImage
+        teleportGroup?.isEnabled = isTeleportVisible
     }
 }
 
@@ -566,7 +566,6 @@ extension MixedImmersiveController {
 // MARK: - 슝~Teleport Logic
 extension MixedImmersiveController {
 
-    /// ✅ 단일 텔레포트 엔트리
     func teleportToID(to anchorID: UUID, animated: Bool = true) async {
         guard let record = anchorRegistry.records[anchorID] else { return }
         guard let rootEntity = root else { return }

@@ -155,10 +155,9 @@ struct MixedImmersiveView: View {
         controller?.refreshScene(
             showPhotos: appModel.showPhotos,
             showMemos: appModel.showMemos,
-            showTeleports: appModel.showTeleports,
             showTimelines: appModel.showTimelines,
-            showPlacedImage: appModel.showPlacedImages
-            
+            showPlacedImage: appModel.showPlacedImages,
+            isTeleportVisible: appModel.isTeleportVisible
         )
     }
 
