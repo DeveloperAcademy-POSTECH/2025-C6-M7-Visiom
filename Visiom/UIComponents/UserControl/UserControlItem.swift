@@ -15,6 +15,7 @@ enum UserControlItem: CaseIterable, Hashable {
     case visibility
     case timeline
     case teleport
+    case placedImage
     case cameraheight
     case miniMap
 
@@ -25,8 +26,9 @@ enum UserControlItem: CaseIterable, Hashable {
         case .photoCollection: return "photo"
         case .memo: return "rectangle.badge.plus"
         case .visibility: return "eye"
-        case .timeline: return "text.line.first.and.arrowtriangle.forward"
-        case .teleport: return "figure.walk"
+        case .timeline:      return "text.line.first.and.arrowtriangle.forward"
+        case .teleport:     return "figure.walk"
+        case .placedImage: return ""
         case .cameraheight: return "ruler"
         case .miniMap: return "photo.artframe.circle"
         }
@@ -39,8 +41,9 @@ enum UserControlItem: CaseIterable, Hashable {
         case .photoCollection: return "photo.fill"
         case .memo: return "rectangle.fill.badge.plus"
         case .visibility: return "eye.slash"
-        case .timeline: return "text.line.first.and.arrowtriangle.forward"
-        case .teleport: return "figure.walk.motion"
+        case .timeline:      return "text.line.first.and.arrowtriangle.forward"
+        case .teleport:     return "figure.walk.motion"
+        case .placedImage: return ""
         case .cameraheight: return "ruler"
         case .miniMap: return "photo.artframe.circle"
         }

@@ -15,6 +15,7 @@ struct MixedImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(MemoStore.self) var memoStore
     @Environment(TimelineStore.self) var timelineStore
+    @Environment(PlacedImageStore.self) var placedImageStore
     @Environment(MiniMapManager.self) var miniMapManager
     
     @Environment(\.openWindow) var openWindow
@@ -32,6 +33,7 @@ struct MixedImmersiveView: View {
     @State var memoGroup: Entity?
     @State var teleportGroup: Entity?
     @State var timelineGroup: Entity?
+    @State var placedImageGroup: Entity?
     
     @State var anchorRegistry = AnchorRegistry()
     @State var placementManager: PlacementManager? = nil
@@ -47,6 +49,7 @@ struct MixedImmersiveView: View {
     @State var gestureBridge: GestureBridge? = nil
     
     @State var controller: MixedImmersiveController? = nil
+
     @State var isARSessionRunning = false
     
     var body: some View {
@@ -78,70 +81,19 @@ struct MixedImmersiveView: View {
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
         }
-        .onChange(of: appModel.itemAdd, initial: false) { _, newValue in
+        .onChange(of: appModel.itemAdd, initial: false) { (oldValue: UserControlItem?, newValue: UserControlItem?) in
             guard let newValue else { return }
-            Task {
-                await controller?.makePlacement(type: newValue)
-                await MainActor.run {
-                    appModel.itemAdd = nil
-                }
-            }
+            commitItem(itemAdd: newValue)
         }
-        .onChange(of: memoStore.memoToAnchorID, initial: false) { _, memoID in
-            guard let memoID else { return }
+        .onChange(of: appModel.customHeight, initial: false) {(oldValue: Float, newValue: Float) in
             Task {
-                if let existing =
-                    anchorRegistry
-                    .all()
-                    .first(where: {
-                        $0.kind == EntityKind.memo.rawValue
-                        && $0.dataRef == memoID
-                    })
-                {
-                    await controller?.refreshMemoOverlay(
-                        anchorID: existing.id,
-                        memoID: memoID
-                    )
-                } else {
-                    await controller?.makePlacement(type: .memo)
-                }
-                await MainActor.run { memoStore.memoToAnchorID = nil }
+                await controller?.applyHeightAdjustment(customHeight: newValue)
             }
-        }
-        
-        .onChange(of: appModel.timelineToAnchorID, initial: false) {
-            _,
-            timelineID in
-            guard let timelineID else { return }
-            Task {
-                if let existing =
-                    anchorRegistry
-                    .all()
-                    .first(where: {
-                        $0.kind == EntityKind.timeline.rawValue
-                        && $0.dataRef == timelineID
-                    })
-                {
-                    print("Timeline anchor already exists: \(existing.id)")
-                } else {
-                    await controller?.makePlacement(
-                        type: .timeline,
-                        dataRef: timelineID
-                    )
-                }
-                await MainActor.run { appModel.timelineToAnchorID = nil }
-            }
-        }
-        .task(id: appModel.customHeight) {
-            try? await Task.sleep(for: .milliseconds(100))
-            
-            await controller?.applyHeightAdjustment(
-                customHeight: appModel.customHeight
-            )
         }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
+
         .onAppear {
             // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
@@ -201,7 +153,92 @@ struct MixedImmersiveView: View {
             showPhotos: appModel.showPhotos,
             showMemos: appModel.showMemos,
             showTeleports: appModel.showTeleports,
-            showTimelines: appModel.showTimelines
+            showTimelines: appModel.showTimelines,
+            showPlacedImage: appModel.showPlacedImages
+            
         )
+    }
+
+    private func commitItem(itemAdd: UserControlItem) {
+        switch itemAdd {
+        case .photoCollection, .teleport:
+            Task {
+                await controller?.makePlacement(type: itemAdd)
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                }
+            }
+            
+        case .memo:
+            guard let memoID = memoStore.memoToAnchorID else { return }
+            Task {
+                if let existing =
+                    anchorRegistry
+                    .all()
+                    .first(where: {
+                        $0.kind == EntityKind.memo.rawValue
+                        && $0.dataRef == memoID
+                    })
+                {
+                    await controller?.refreshMemoOverlay(
+                        anchorID: existing.id,
+                        memoID: memoID
+                    )
+                } else {
+                    await controller?.makePlacement(type: .memo)
+                }
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                    memoStore.memoToAnchorID = nil
+                }
+            }
+            
+        case .timeline:
+            guard let timelineID = appModel.timelineToAnchorID else { return }
+            Task {
+                if let existing =
+                    anchorRegistry
+                    .all()
+                    .first(where: {
+                        $0.kind == EntityKind.timeline.rawValue
+                        && $0.dataRef == timelineID
+                    })
+                {
+                    print("Timeline anchor already exists: \(existing.id)")
+                } else {
+                    await controller?.makePlacement(
+                        type: .timeline,
+                        dataRef: timelineID
+                    )
+                }
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                    appModel.timelineToAnchorID = nil
+                }
+            }
+            
+        case .placedImage:
+            guard let placedImageID = placedImageStore.placedImageToAnchorID else { return }
+            Task {
+                if let existing = anchorRegistry
+                    .all()
+                    .first(where: { $0.kind == EntityKind.placedImage.rawValue && $0.dataRef == placedImageID })
+                {
+                    print("Placed Image anchor already exists: \(existing.id)")
+                } else {
+                    await controller?.makePlacement(type: .placedImage)
+                }
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                    placedImageStore.placedImageToAnchorID = nil
+                }
+            }
+        default :
+            Task {
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                }
+            }
+        }
     }
 }
