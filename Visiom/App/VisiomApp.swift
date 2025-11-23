@@ -30,9 +30,12 @@ struct VisiomApp: App {
             UserControlView()
                 .environment(appModel)
                 .environment(memoStore)
-        }.defaultSize(CGSize(width: 700, height: 100))
-            .windowResizability(.contentSize)
-            .windowStyle(.plain)
+        }
+        .defaultSize(CGSize(width: 700, height: 100))
+        .windowResizability(.contentSize)
+        .defaultWindowPlacement { content, context in
+            return WindowPlacement(.utilityPanel)
+        }
 
         WindowGroup(id: appModel.photoCollectionWindowID, for: UUID.self) {
             $collectionID in
@@ -44,7 +47,14 @@ struct VisiomApp: App {
             } else {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
-        }.defaultSize(CGSize(width: 1200, height: 686))
+        }
+        .defaultSize(CGSize(width: 1200, height: 686))
+        .defaultWindowPlacement { content, context in
+            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+                return WindowPlacement(.above(userControl))
+            }
+            return WindowPlacement(.utilityPanel)
+        }
 
         WindowGroup(id: appModel.memoEditWindowID, for: UUID.self) {
             $memoID in
@@ -58,6 +68,12 @@ struct VisiomApp: App {
         }
         .defaultSize(CGSize(width: 140, height: 140))
         .windowResizability(.contentSize)
+        .defaultWindowPlacement { content, context in
+            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+                return WindowPlacement(.above(userControl))
+            }
+            return WindowPlacement(.utilityPanel)
+        }
 
         WindowGroup(id: appModel.timelineWindowID) {
             TimelineBoardView()
@@ -67,6 +83,12 @@ struct VisiomApp: App {
                 .fixedSize()
         }
         .windowResizability(.contentSize)
+        .defaultWindowPlacement { content, context in
+            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+                return WindowPlacement(.above(userControl))
+            }
+            return WindowPlacement(.utilityPanel)
+        }
 
         WindowGroup(id: appModel.cameraHeightWindowID) {
             CameraHeightView()
@@ -88,6 +110,12 @@ struct VisiomApp: App {
         WindowGroup(id: appModel.miniMapWindowID) {
             MiniMapView()
                 .environment(miniMapManager)
+        }
+        .defaultWindowPlacement { content, context in
+            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+                return WindowPlacement(.above(userControl))
+            }
+            return WindowPlacement(.utilityPanel)
         }
 
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
