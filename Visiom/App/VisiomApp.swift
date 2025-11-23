@@ -44,7 +44,7 @@ struct VisiomApp: App {
             } else {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
-        }
+        }.defaultSize(CGSize(width: 1200, height: 686))
 
         WindowGroup(id: appModel.memoEditWindowID, for: UUID.self) {
             $memoID in
