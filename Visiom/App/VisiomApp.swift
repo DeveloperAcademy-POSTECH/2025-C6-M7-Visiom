@@ -63,14 +63,18 @@ struct VisiomApp: App {
             TimelineBoardView()
                 .environment(appModel)
                 .environment(timelineStore)
+                .frame(width: 433, height: 685)
+                .fixedSize()
         }
-        .defaultSize(width: 433, height: 685)
+        .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.cameraHeightWindowID) {
             CameraHeightView()
                 .environment(appModel)
+                .frame(width: 207, height: 236)
+                .fixedSize()
         }
-        .defaultSize(width: 207, height: 236)
+        .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.timelineShowWindowID) {
             TimelineShowView()

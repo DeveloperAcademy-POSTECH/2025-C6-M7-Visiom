@@ -42,10 +42,6 @@ struct ImageThumbnail: View {
         .clipShape(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         )
-        .overlay {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .strokeBorder(isSelected ? Color.gray : .clear, lineWidth: 2)
-        }
         .contentShape(
             .hoverEffect,
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
