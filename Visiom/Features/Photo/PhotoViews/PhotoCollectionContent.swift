@@ -19,6 +19,7 @@ struct PhotoCollectionContent: View {
         } else {
             ImageGalleryView(
                 urls: photoViewModel.photoURLs,
+                collectionID: photoViewModel.id,
                 selectedIndex: $photoViewModel.lookIndex,
                 previewSize: .init(width: 1143, height: 419),
                 thumbnailSize: .init(width: 156, height: 110),

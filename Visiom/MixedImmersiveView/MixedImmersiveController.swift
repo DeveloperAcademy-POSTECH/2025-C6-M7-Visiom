@@ -22,6 +22,7 @@ final class MixedImmersiveController {
     let openWindow: (String, Any?) -> Void
     let memoStore: MemoStore
     let collectionStore: CollectionStore
+    let placedImageStore: PlacedImageStore
     let windowIDPhotoCollection: String
 
     // MARK: - Entities
@@ -30,7 +31,8 @@ final class MixedImmersiveController {
     weak var memoGroup: Entity?
     weak var teleportGroup: Entity?
     weak var timelineGroup: Entity?
-
+    weak var placedImageGroup: Entity?
+    
     // MARK: - Mapping
     var entityByAnchorID: [UUID: Entity] = [:]
 
@@ -43,6 +45,7 @@ final class MixedImmersiveController {
         placementManager: PlacementManager,
         memoStore: MemoStore,
         collectionStore: CollectionStore,
+        placedImageStore: PlacedImageStore,
         windowIDPhotoCollection: String,
         openWindow: @escaping (String, Any?) -> Void
     ) {
@@ -53,6 +56,7 @@ final class MixedImmersiveController {
         self.placementManager = placementManager
         self.memoStore = memoStore
         self.collectionStore = collectionStore
+        self.placedImageStore = placedImageStore
         self.windowIDPhotoCollection = windowIDPhotoCollection
         self.openWindow = openWindow
     }
@@ -84,7 +88,8 @@ extension MixedImmersiveController {
         showPhotos: Bool,
         showMemos: Bool,
         showTeleports: Bool,
-        showTimelines: Bool
+        showTimelines: Bool,
+        showPlacedImage: Bool
     ) {
         /// 역할: entity 계층 구조 점검하기
         updateEntityHierarchy()
@@ -93,7 +98,8 @@ extension MixedImmersiveController {
             showPhotos: showPhotos,
             showMemos: showMemos,
             showTeleports: showTeleports,
-            showTimelines: showTimelines
+            showTimelines: showTimelines,
+            showPlacedImage: showPlacedImage
         )
     }
 }
@@ -141,7 +147,13 @@ extension MixedImmersiveController {
                 dataRef: dataRef,
                 forwardFrom: cameraTransform
             )
-        default: fatalError("Unknown item type: \(type)")
+        case .placedImage :
+            anchorID = placementManager.place(
+                kind: .placedImage,
+                dataRef: nil,
+                forwardFrom: cameraTransform
+            )
+        default : fatalError("Unknown item type: \(type)")
         }
 
         guard var anchorRecord = anchorRegistry.records[anchorID] else {
@@ -191,6 +203,8 @@ extension MixedImmersiveController {
             await handleTeleportPlacement(anchorRecord)
         case .timeline:
             await handleTimelinePlacement(anchorRecord, dataRef: dataRef)
+        case .placedImage:
+            await handlePlacedImagePlacement(anchorRecord, dataRef: dataRef)
         default:
             break
         }
@@ -251,12 +265,26 @@ extension MixedImmersiveController {
             print("⚠️ timelineID missing")
             return
         }
-
+        
         var modifiedRecord = anchorRecord
         modifiedRecord.dataRef = timelineID
         anchorRegistry.upsert(modifiedRecord)
-
+        
         // 3) 즉시 스폰(런타임 표현) — 부트스트랩과 동일한 규약 사용
+        await spawnEntity(modifiedRecord)
+        persistence.save()
+    }
+    
+    private func handlePlacedImagePlacement(_ anchorRecord: AnchorRecord, dataRef: UUID?) async {
+        guard let placedImageID = placedImageStore.placedImageToAnchorID else {
+            print("⚠️ placedImageID missing")
+            return
+        }
+        
+        var modifiedRecord = anchorRecord
+        modifiedRecord.dataRef = placedImageID
+        anchorRegistry.upsert(modifiedRecord)
+        
         await spawnEntity(modifiedRecord)
         persistence.save()
     }
@@ -275,9 +303,10 @@ extension MixedImmersiveController {
         let parent: Entity = {
             switch kind {
             case .photoCollection: return photoGroup ?? root
-            case .memo: return memoGroup ?? root
-            case .teleport: return teleportGroup ?? root
-            case .timeline: return timelineGroup ?? root
+            case .memo:            return memoGroup ?? root
+            case .teleport:        return teleportGroup ?? root
+            case .timeline:        return timelineGroup ?? root
+            case .placedImage:     return placedImageGroup ?? root
             }
         }()
 
@@ -300,10 +329,12 @@ extension MixedImmersiveController {
             entity = EntityFactory.makeTeleport(anchorID: anchorRecord.id)
         case .timeline:
             guard let ref = anchorRecord.dataRef else { return }
-            entity = EntityFactory.makeTimeline(
-                anchorID: anchorRecord.id,
-                dataRef: ref
-            )
+            entity = EntityFactory.makeTimeline(anchorID: anchorRecord.id, dataRef: ref)
+        case .placedImage:
+            guard let ref = anchorRecord.dataRef else { return }
+            entity = EntityFactory.makePlacedImage(anchorID: anchorRecord.id, dataRef: ref)
+        @unknown default:
+            fatalError("Unknown entity kind: \(kind)")
         }
 
         // Visual attach
@@ -357,7 +388,7 @@ extension MixedImmersiveController {
                 0,  // y=0 고정
                 devicePosition.z + flatForwardVector.z * distance
             )
-        case .memo, .photoCollection:
+        case .memo, .photoCollection, .placedImage:
             return devicePosition + flatForwardVector * distance
         default:
             return devicePosition + flatForwardVector * distance
@@ -392,6 +423,8 @@ extension MixedImmersiveController {
                     teleportGroup?.addChild(entity)
                 case .timeline:
                     timelineGroup?.addChild(entity)
+                case .placedImage:
+                    placedImageGroup?.addChild(entity)
                 }
             }
         }
@@ -401,12 +434,14 @@ extension MixedImmersiveController {
         showPhotos: Bool,
         showMemos: Bool,
         showTeleports: Bool,
-        showTimelines: Bool
+        showTimelines: Bool,
+        showPlacedImage: Bool
     ) {
         photoGroup?.isEnabled = showPhotos
         memoGroup?.isEnabled = showMemos
         teleportGroup?.isEnabled = showTeleports
         timelineGroup?.isEnabled = showTimelines
+        placedImageGroup?.isEnabled = showPlacedImage
     }
 }
 
