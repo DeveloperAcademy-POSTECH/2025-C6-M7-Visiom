@@ -17,27 +17,22 @@ struct SeletedImageView: View {
     var body: some View {
         VStack {
             Divider()
-            ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .frame(width: 990, height: 557)
-
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 990, height: 557)
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: 16,
-                                style: .continuous
-                            )
+            AsyncImage(url: url) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 557)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 16,
+                            style: .continuous
                         )
-                } placeholder: {
-                    ProgressView()
-                }
+                    )
+            } placeholder: {
+                ProgressView()
             }
-            .padding(.bottom, 7)
+
+            .padding(.top, 7)
             .padding(.bottom, 20)
         }
         .navigationTitle(url.lastPathComponent)
@@ -67,7 +62,7 @@ struct SeletedImageView: View {
                 }
                 .glassBackgroundEffect()
                 .padding(.trailing, 30)
-                .padding(.leading, 10)
+                .padding(.leading, 4)
             }
         }
     }
