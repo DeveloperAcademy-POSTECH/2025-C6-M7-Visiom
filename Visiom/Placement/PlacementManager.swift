@@ -7,7 +7,7 @@
 //  앵커의 위치를 관리해줌
 //  앵커의 이동, 삭제, 생성을 데이터로 관리
 //
-
+import SwiftUI
 import Foundation
 import RealityKit
 import simd
@@ -138,3 +138,4 @@ public final class PlacementManager {
         return t
     }
 }
+
