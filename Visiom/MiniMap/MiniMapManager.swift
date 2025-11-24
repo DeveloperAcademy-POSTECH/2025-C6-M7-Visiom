@@ -9,58 +9,56 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 
-
 @Observable
 class MiniMapManager {
     
     // 화면 90도 전환 상태 관리 변수
     var isRotated = false
     
-    // 앵커 위치 임시 저장 배열
-    var entityByAnchorIDs: [UUID:Entity] = [:]
+    var anchorRecords : [AnchorRecord] = []
     
     // 미리 로드된 Entity 캐싱
-    var cachedChrimeScene: Entity?
+    var cachedCrimeScene: Entity?
     
     // immersive 화면
     @MainActor
     func setupMainScene(content: RealityViewContent) async {
         // ChrimeScene 로드 및 추가
-        if let scene = cachedChrimeScene?.clone(recursive: true) {
+        if let scene = cachedCrimeScene?.clone(recursive: true) {
             scene.position = .zero
+            
             scene.name = "Immersive"
             content.add(scene)
         } else {
             // 캐시에 없으면 로드
             do {
-                let scene = try await Entity(named: "Immersive",
+                let scene = try await Entity(named: "light_crime_scene",
                                              in: realityKitContentBundle)
                 scene.name = "Immersive"
                 content.add(scene)
             
                 // 캐싱 (다음번 사용을 위해)
-                if cachedChrimeScene == nil {
-                    cachedChrimeScene = scene.clone(recursive: true)
+                if cachedCrimeScene == nil {
+                    cachedCrimeScene = scene.clone(recursive: true)
                 }
             } catch {
                 print("Failed to load ChrimeScene: \(error)")
             }
         }
     }
-
-    // mixedImmersive에서 사용하는 entityByAnchorID를 entityByAnchorIDs로 넣기
-    func updateAnchor(entityByAnchorID: [UUID : Entity]) {
-        entityByAnchorIDs = entityByAnchorID
-        print("entityByAnchorIDs \(entityByAnchorID)")
-    }
     
+    // AnchorRecord 데이터 업데이트
+    func updateAnchor(anchorRecord: AnchorRecord) {
+        anchorRecords.append(anchorRecord)
+        print("AnchorRecord \(anchorRecord)")
+    }
     
     // 미니맵 화면
     @MainActor
     func setupMiniScene(content: RealityViewContent) async {
         
         // ChrimeScene 로드 및 추가 (clone 사용)
-        if let scene = cachedChrimeScene?.clone(recursive: true) {
+        if let scene = cachedCrimeScene?.clone(recursive: true) {
             // 1/10 크기로 스케일링
             scene.scale = [0.1, 0.1, 0.1]
             scene.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
@@ -69,10 +67,11 @@ class MiniMapManager {
         } else {
             // 캐시에 없으면 로드
             do {
-                let scene = try await Entity(named: "Immersive",
+                let scene = try await Entity(named: "minimap_55",
                                              in: realityKitContentBundle)
                 scene.scale = [0.1, 0.1, 0.1]
                 scene.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+                scene.position.z = -0.1
                 scene.name = "miniImmersive" // 식별을 위한 이름 추가
                 content.add(scene)
             } catch {
@@ -81,41 +80,49 @@ class MiniMapManager {
         }
     }
     
-    // 미니맵 Anchor 업데이트
+    // 미니맵 update 클로저에 사용
     func updateMiniScene(content: RealityViewContent) {
         
-        for entity in entityByAnchorIDs.values {
-            
-            if content.entities.contains(where: { $0.id == entity.id}) {
+        for anchor in anchorRecords {
+            if content.entities.contains(where: { $0.name == "marker_\(anchor.id)" }) {
                 continue
             }
             
-            let marker = createMiniBox(data: entity)
-            marker.name = "\(entity.id)"
-            content.add(marker)
+            let marker = createMiniBox(anchor: anchor)
+            marker.name = "marker_\(anchor.id)"
             
+            content.add(marker)
         }
     }
     
-    // Anchor 위치 정보를 작은 상자로 표시
-    func createMiniBox(data: Entity) -> ModelEntity { // 테스트용 삭제
+    // 미니맵에 entity 생성하는 함수
+    func createMiniBox(anchor: AnchorRecord) -> Entity {
         // 1/10 크기로 생성
-        let mesh = MeshResource.generateBox(size: 0.01)
-        let material = SimpleMaterial(color: .systemMint, isMetallic: false)
-        let box = ModelEntity(mesh: mesh, materials: [material])
+//        let scaledSize = data.size * 0.1
+        let position = anchor.worldMatrix
+        let mesh = MeshResource.generateSphere(radius: 0.01)
+        let material = SimpleMaterial(color: .systemGreen, isMetallic: false)
+        let circle = ModelEntity(mesh: mesh, materials: [material])
         
-        // 월드 좌표를 1/10로 스케일링
-        let scaledPosition = data.position(relativeTo: nil) * 0.1
+        circle.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
         
-        let rotatedPosition = SIMD3<Float>(
-                    scaledPosition.x,
-                    -scaledPosition.z,
-                    scaledPosition.y
-                )
+        // 월드 앵커를 SIMD3 변환
+        let translation = SIMD3<Float>(position.columns.3.x, position.columns.3.y, position.columns.3.z)
+        // 스케일에 맞춰 좌표 수정
+        let scaledPosition = translation * 0.1
+
         
-        box.position = rotatedPosition
+//        let rotatedPosition = SIMD3<Float>(
+//                    scaledPosition.x,
+////                    -scaledPosition.z,
+//                    0,
+//                    scaledPosition.y
+//                )
         
-        return box
+//        marker.position = rotatedPosition
+        circle.position = scaledPosition
+        
+        return circle
     }
     
     // 화면을 90도로 변환하는 함수 
@@ -161,14 +168,15 @@ class MiniMapManager {
     // Entity 미리 로드 entity 관련 파일로 이동
     @MainActor
     func preloadChrimeScene() async {
-        guard cachedChrimeScene == nil else { return }
+        guard cachedCrimeScene == nil else { return }
         
         do {
-            cachedChrimeScene = try await Entity(named: "Immersive",
+            cachedCrimeScene = try await Entity(named: "Immersive",
                                                   in: realityKitContentBundle)
         } catch {
-            print("Failed to load ChrimeScene: \(error)")
+            print("Failed to load CrimeScene: \(error)")
         }
+
     }
     
 }
