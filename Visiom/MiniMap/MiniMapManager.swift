@@ -20,9 +20,6 @@ class MiniMapManager {
     // 미리 로드된 Entity 캐싱
     var cachedCrimeScene: Entity?
     
-    // 미리 로드된 마커 Entity 캐싱
-    var cachedMiniMapMarker: Entity?
-    
     // immersive 화면
     @MainActor
     func setupMainScene(content: RealityViewContent) async {
@@ -80,14 +77,6 @@ class MiniMapManager {
             } catch {
                 print("Failed to load ChrimeScene: \(error)")
             }
-            
-            do {
-                cachedMiniMapMarker = try await Entity(named: "WMark",
-                                                      in: realityKitContentBundle)
-                cachedMiniMapMarker?.scale = [0.1, 0.1, 0.1]
-            } catch {
-                print("Failed to load MiniMapMarker: \(error)")
-            }
         }
     }
     
@@ -111,13 +100,11 @@ class MiniMapManager {
         // 1/10 크기로 생성
 //        let scaledSize = data.size * 0.1
         let position = anchor.worldMatrix
-        let mesh = MeshResource.generateBox(size: 0.01)
-        let material = SimpleMaterial(color: .systemMint, isMetallic: false)
-        let box = ModelEntity(mesh: mesh, materials: [material])
+        let mesh = MeshResource.generateSphere(radius: 0.01)
+        let material = SimpleMaterial(color: .systemGreen, isMetallic: false)
+        let circle = ModelEntity(mesh: mesh, materials: [material])
         
-        let marker = cachedMiniMapMarker?.clone(recursive: true) ?? box
-        
-        marker.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
+        circle.orientation = simd_quatf(angle: .pi / 2, axis: [1, 0, 0])
         
         // 월드 앵커를 SIMD3 변환
         let translation = SIMD3<Float>(position.columns.3.x, position.columns.3.y, position.columns.3.z)
@@ -133,9 +120,9 @@ class MiniMapManager {
 //                )
         
 //        marker.position = rotatedPosition
-        marker.position = scaledPosition
+        circle.position = scaledPosition
         
-        return marker
+        return circle
     }
     
     // 화면을 90도로 변환하는 함수 
