@@ -351,9 +351,9 @@ extension MixedImmersiveController {
         )
 
         // SceneRoot 로컬 Transform 적용 + 부모 연결
-        anchorRecord.applyTransform(to: entity, relativeTo: sceneRoot)
         parent.addChild(entity)
-
+        anchorRecord.applyTransform(to: entity, relativeTo: sceneRoot)
+        
         entityByAnchorID[anchorRecord.id] = entity
     }
 }
