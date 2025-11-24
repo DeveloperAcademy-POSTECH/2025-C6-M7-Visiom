@@ -21,50 +21,49 @@ struct MixedImmersiveView: View {
     
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
-    
+
     static let arSession = ARKitSession()
     static let worldTracking = WorldTrackingProvider()
-    
+
     @State var root: Entity? = nil
-    
+
     @State var anchorToMemo: [UUID: UUID] = [:]
     @State var pendingItemType: [UUID: UserControlItem] = [:]
-    
+
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
     @State var teleportGroup: Entity?
     @State var timelineGroup: Entity?
     @State var placedImageGroup: Entity?
-    
+
     @State var anchorRegistry = AnchorRegistry()
     @State var placementManager: PlacementManager? = nil
-    
+
     // JSON 저장/복원 담당
     @State var persistence: PersistenceManager? = nil
     @State var bootstrap: SceneBootstrap? = nil
-    
+
     @State var anchorSystem: AnchorSystem? = nil
-    
+
     @State var inputSurface = SwiftUIInputSurface()
     @State var router: InteractionRouter? = nil
     @State var gestureBridge: GestureBridge? = nil
-    
+
     @State var controller: MixedImmersiveController? = nil
     @State var isARSessionRunning = false
-    
+
     var body: some View {
         RealityView { content in
             // 1) ARSession
             await startARSessionIFNeeded()
-            
+
             // 2) 씬(root+groups) 준비
-            await setupScene(content: content)
-            
+            await setupScene(content: content)            
             openWindow(id: appModel.userControlWindowID)
             
             // 3) 의존성 준비
             setupDependenciesIfNeeded()
-            
+
             // 4) restore
             if let bootstrap {
                 await bootstrap.restoreAndSpawn()
@@ -88,11 +87,13 @@ struct MixedImmersiveView: View {
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
         }
-        .onChange(of: appModel.itemAdd, initial: false) { (oldValue: UserControlItem?, newValue: UserControlItem?) in
+        .onChange(of: appModel.itemAdd, initial: false) {
+            (oldValue: UserControlItem?, newValue: UserControlItem?) in
             guard let newValue else { return }
             commitItem(itemAdd: newValue)
         }
-        .onChange(of: appModel.customHeight, initial: false) {(oldValue: Float, newValue: Float) in
+        .onChange(of: appModel.customHeight, initial: false) {
+            (oldValue: Float, newValue: Float) in
             Task {
                 await controller?.applyHeightAdjustment(customHeight: newValue)
             }
@@ -116,13 +117,13 @@ struct MixedImmersiveView: View {
                     if let anchorID = anchorRegistry.records.values.first(
                         where: {
                             $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
+                                && $0.dataRef == timelineID
                         })?.id
                     {
-                        // 월드 앵커 삭제 로직 제거
-                        // await removeWorldAnchor(by: anchorID)
-                        // scene-local 를 삭제하는 함수 추후 추가
-                        // ex) await controller?.removeSceneLocalAnchor(anchorID)
+                        await placementManager?.removeAnchor(anchorID: anchorID)
+                        root?.findEntity(named: anchorID.uuidString)?
+                            .removeFromParent()
+                        persistence?.save()
                     } else {
                         print(
                             "Timeline 삭제 알림 받았으나 연결된 앵커를 찾지 못함 for \(timelineID)"
@@ -130,7 +131,7 @@ struct MixedImmersiveView: View {
                     }
                 }
             }
-            
+
             appModel.onTimelineShow = { timelineID in  // TimelineID
                 // AnchorRegistry에서 해당 timelineDataID와 연결된 AnchorRecord를 찾기
                 if let anchorRecord =
@@ -138,18 +139,22 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.timeline.rawValue
-                        && $0.dataRef == timelineID
+                            && $0.dataRef == timelineID
                     })
                 {
                     let anchorID = anchorRecord.id  // 찾은 World Anchor의 UUID
-                    
+
                     Task {
-                        await controller?.teleportToID(to: anchorID, animated: true)
+                        await controller?.teleportToID(
+                            to: anchorID,
+                            animated: true
+                        )
                     }
                 } else {
                     print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
                 }
             }
+
             appModel.onTimelineHighlight = { timelineID in
                 Task {
                     await controller?.highlightTimeline(timelineID: timelineID)
@@ -170,7 +175,7 @@ struct MixedImmersiveView: View {
                     appModel.itemAdd = nil
                 }
             }
-            
+
         case .memo:
             guard let memoID = memoStore.memoToAnchorID else { return }
             Task {
@@ -179,7 +184,7 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.memo.rawValue
-                        && $0.dataRef == memoID
+                            && $0.dataRef == memoID
                     })
                 {
                     await controller?.refreshMemoOverlay(
@@ -194,7 +199,7 @@ struct MixedImmersiveView: View {
                     memoStore.memoToAnchorID = nil
                 }
             }
-            
+
         case .timeline:
             guard let timelineID = appModel.timelineToAnchorID else { return }
             Task {
@@ -203,7 +208,7 @@ struct MixedImmersiveView: View {
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.timeline.rawValue
-                        && $0.dataRef == timelineID
+                            && $0.dataRef == timelineID
                     })
                 {
                     print("Timeline anchor already exists: \(existing.id)")
@@ -218,13 +223,18 @@ struct MixedImmersiveView: View {
                     appModel.timelineToAnchorID = nil
                 }
             }
-            
+
         case .placedImage:
-            guard let placedImageID = placedImageStore.placedImageToAnchorID else { return }
+            guard let placedImageID = placedImageStore.placedImageToAnchorID
+            else { return }
             Task {
-                if let existing = anchorRegistry
+                if let existing =
+                    anchorRegistry
                     .all()
-                    .first(where: { $0.kind == EntityKind.placedImage.rawValue && $0.dataRef == placedImageID })
+                    .first(where: {
+                        $0.kind == EntityKind.placedImage.rawValue
+                            && $0.dataRef == placedImageID
+                    })
                 {
                     print("Placed Image anchor already exists: \(existing.id)")
                 } else {
@@ -235,7 +245,7 @@ struct MixedImmersiveView: View {
                     placedImageStore.placedImageToAnchorID = nil
                 }
             }
-        default :
+        default:
             Task {
                 await MainActor.run {
                     appModel.itemAdd = nil

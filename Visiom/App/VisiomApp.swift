@@ -120,35 +120,41 @@ struct VisiomApp: App {
         }
 
         ImmersiveSpace(id: appModel.mixedImmersiveSpaceID) {
-            MixedImmersiveView()
-                .environment(appModel)
-                .environment(collectionStore)
-                .environment(entityManager)
-                .environment(memoStore)
-                .environment(timelineStore)
-                .environment(placedImageStore)
-                .environment(miniMapManager)
-                .environment(lineManager)
-                .onAppear {
-                    appModel.immersiveSpaceState = .open
-                }
-                .onDisappear {
+            ZStack {
+                MixedImmersiveView()
+                    .environment(appModel)
+                    .environment(collectionStore)
+                    .environment(entityManager)
+                    .environment(memoStore)
+                    .environment(timelineStore)
+                    .environment(placedImageStore)
+                    .environment(miniMapManager)
+                    .environment(lineManager)
+                if appModel.isShowHeadAnchorOpen {
+                    HeadAnchorShowView()
+                        .environment(appModel)
+                        .environment(timelineStore)
+            }
+            .onAppear {
+                appModel.immersiveSpaceState = .open
+            }
+            .onDisappear {
+                appModel.closeImmersiveAuxWindows(
+                    dismissWindow: dismissWindow
+                )
+                appModel.immersiveSpaceState = .closed
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .background {
                     appModel.closeImmersiveAuxWindows(
                         dismissWindow: dismissWindow
                     )
-                    appModel.immersiveSpaceState = .closed
-                }
-                .onChange(of: scenePhase) { _, phase in
-                    if phase == .background {
-                        appModel.closeImmersiveAuxWindows(
-                            dismissWindow: dismissWindow
-                        )
-                        PhotoPipeline.cleanupTempFiles()
-                        Task {
-                            await collectionStore.flushSaves()
-                        }
+                    PhotoPipeline.cleanupTempFiles()
+                    Task {
+                        await collectionStore.flushSaves()
                     }
                 }
+            }
         }
         .immersionStyle(selection: .constant(.mixed), in: .mixed)
     }

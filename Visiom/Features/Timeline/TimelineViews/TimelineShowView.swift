@@ -18,7 +18,7 @@ struct TimelineShowView: View {
             HStack {
                 Button {
                     openWindow(id: appModel.timelineWindowID)
-                    dismissWindow(id: appModel.timelineShowWindowID)
+                    appModel.isShowHeadAnchorOpen = false
                 } label: {
                     Image(systemName: "chevron.left")
                 }
@@ -39,7 +39,9 @@ struct TimelineShowView: View {
                     Image(systemName: "arrow.left")
                         .font(.system(size: 29, weight: .regular))
                         .frame(width: 90, height: 64)
-                }.glassBackgroundEffect()
+                }
+                .glassBackgroundEffect()
+                .disabled(!timelineStore.canGoToPreviousTimeline)
 
                 Spacer()
 
@@ -51,10 +53,25 @@ struct TimelineShowView: View {
                     Image(systemName: "arrow.right")
                         .font(.system(size: 29, weight: .regular))
                         .frame(width: 90, height: 64)
-                }.glassBackgroundEffect()
+                }
+                .glassBackgroundEffect()
+                .disabled(!timelineStore.canGoToNextTimeline)
             }
             .padding(.horizontal, 36)
             .padding(.top, 16)
+        }
+        .frame(width: 388, height: 190)
+        .glassBackgroundEffect()
+        .task {
+            try? await Task.sleep(for: .milliseconds(200))
+
+            // 첫 번째 타임라인 ID를 가져와서 이동
+            if let id = timelineStore.firstTimelineID() {
+                print("첫 번째 마커로 이동: \(id)")
+                appModel.onTimelineShow?(id)
+            } else {
+                print("첫 번째 마커를 찾을 수 없음")
+            }
         }
     }
 }

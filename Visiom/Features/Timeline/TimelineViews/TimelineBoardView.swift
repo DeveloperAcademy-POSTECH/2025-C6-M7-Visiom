@@ -40,7 +40,7 @@ struct TimelineBoardView: View {
                 .glassBackgroundEffect()
 
                 Button {
-                    openWindow(id: appModel.timelineShowWindowID)
+                    appModel.isShowHeadAnchorOpen = true
                     dismissWindow(id: appModel.timelineWindowID)
                 } label: {
                     Image(systemName: "play")
