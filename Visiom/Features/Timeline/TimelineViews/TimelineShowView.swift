@@ -62,5 +62,16 @@ struct TimelineShowView: View {
         }
         .frame(width: 388, height: 190)
         .glassBackgroundEffect()
+        .task {
+            try? await Task.sleep(for: .milliseconds(200))
+
+            // 첫 번째 타임라인 ID를 가져와서 이동
+            if let id = timelineStore.firstTimelineID() {
+                print("첫 번째 마커로 이동: \(id)")
+                appModel.onTimelineShow?(id)
+            } else {
+                print("첫 번째 마커를 찾을 수 없음")
+            }
+        }
     }
 }

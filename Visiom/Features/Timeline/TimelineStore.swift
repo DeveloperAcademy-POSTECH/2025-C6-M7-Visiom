@@ -183,4 +183,21 @@ final class TimelineStore {
     var canGoToNextTimeline: Bool {
         return !timelines.isEmpty && currentIndex < timelines.count
     }
+
+    func firstTimelineID() -> UUID? {
+        guard !timelines.isEmpty else { return nil }
+
+        // 인덱스 순서대로 정렬
+        let sortedTimelines = timelines.sorted {
+            $0.timelineIndex < $1.timelineIndex
+        }
+
+        // 꼭 index가 1이 아니더라도 가장 첫번째거 가져오기
+        guard let firstItem = sortedTimelines.first else { return nil }
+
+        // 현재 인덱스를 찾은 아이템의 인덱스로 동기화
+        currentIndex = firstItem.timelineIndex
+
+        return firstItem.id
+    }
 }
