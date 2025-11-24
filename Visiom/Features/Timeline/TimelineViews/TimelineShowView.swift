@@ -18,7 +18,7 @@ struct TimelineShowView: View {
             HStack {
                 Button {
                     openWindow(id: appModel.timelineWindowID)
-                    dismissWindow(id: appModel.timelineShowWindowID)
+                    appModel.isShowHeadAnchorOpen = false
                 } label: {
                     Image(systemName: "chevron.left")
                 }
@@ -56,5 +56,6 @@ struct TimelineShowView: View {
             .padding(.horizontal, 36)
             .padding(.top, 16)
         }
+        .frame(width: 388, height: 190)
     }
 }
