@@ -17,7 +17,8 @@ struct MixedImmersiveView: View {
     @Environment(TimelineStore.self) var timelineStore
     @Environment(PlacedImageStore.self) var placedImageStore
     @Environment(MiniMapManager.self) var miniMapManager
-
+    @Environment(LineManager.self) var lineManager
+    
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
 
@@ -49,7 +50,6 @@ struct MixedImmersiveView: View {
     @State var gestureBridge: GestureBridge? = nil
 
     @State var controller: MixedImmersiveController? = nil
-
     @State var isARSessionRunning = false
 
     var body: some View {
@@ -58,8 +58,9 @@ struct MixedImmersiveView: View {
             await startARSessionIFNeeded()
 
             // 2) 씬(root+groups) 준비
-            await setupScene(content: content)
-
+            await setupScene(content: content)            
+            openWindow(id: appModel.userControlWindowID)
+            
             // 3) 의존성 준비
             setupDependenciesIfNeeded()
 
@@ -67,19 +68,25 @@ struct MixedImmersiveView: View {
             if let bootstrap {
                 await bootstrap.restoreAndSpawn()
             }
-
+            
+            if let controller {
+                await controller.spawnTeleportGridIfNeeded(spacing: 1.5)
+            }
+            
             // 5) AnchorSystem은 단 1회 생성/시작
             setupAnchorSystemIfNeeded()
             if let root, let anchorSystem {
                 try? await anchorSystem.attachRootAnchor(to: root)
             }
             anchorSystem?.start()
-
+            
+            lineManager.content = content
+            
             // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
-
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
+            updateRealityContent(content)
         }
         .onChange(of: appModel.itemAdd, initial: false) {
             (oldValue: UserControlItem?, newValue: UserControlItem?) in
@@ -92,12 +99,19 @@ struct MixedImmersiveView: View {
                 await controller?.applyHeightAdjustment(customHeight: newValue)
             }
         }
+        .onChange(of: appModel.visibleKinds, initial: true) { _, newValue in
+            controller?.refreshScene(
+                showPhotos: newValue.contains(.photo),
+                showMemos: newValue.contains(.memo),
+                showTimelines: newValue.contains(.timeline),
+                showPlacedImage: newValue.contains(.placedImage),
+                isTeleportVisible: newValue.contains(.teleport)
+            )
+        }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
-
         .onAppear {
-            // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
             timelineStore.onTimelineDeleted = { timelineID in
                 Task {
@@ -152,18 +166,7 @@ struct MixedImmersiveView: View {
             anchorSystem?.stop()
         }
     }
-
-    private func updateRealityContent(_ content: RealityViewContent) {
-        controller?.refreshScene(
-            showPhotos: appModel.showPhotos,
-            showMemos: appModel.showMemos,
-            showTeleports: appModel.showTeleports,
-            showTimelines: appModel.showTimelines,
-            showPlacedImage: appModel.showPlacedImages
-
-        )
-    }
-
+    
     private func commitItem(itemAdd: UserControlItem) {
         switch itemAdd {
         case .photoCollection, .teleport:

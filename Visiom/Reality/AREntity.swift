@@ -143,26 +143,14 @@ enum AREntityFactory {
             ]
         )
         let inputTargetComponent = InputTargetComponent()
-
-        let hoverEffectComponent = HoverEffectComponent(
-            .highlight(
-                HoverEffectComponent.HighlightHoverEffectStyle(
-                    color: .white,
-                    strength: 2.0
-                )
-            )
-        )
-
-        entity.components.set([
-            collisionComponent, inputTargetComponent, hoverEffectComponent,
-        ])
-        entity.transform.rotation = simd_quatf(
-            angle: .pi / 2,
-            axis: SIMD3<Float>(1, 0, 0)
-        )
-
+        
+        let hoverEffectComponent = HoverEffectComponent(.highlight(HoverEffectComponent.HighlightHoverEffectStyle(
+            color: .white, strength: 2.0
+        )))
+        
+        entity.components.set([collisionComponent, inputTargetComponent, hoverEffectComponent])
+        
         return entity
-
     }
 
     static func createTimeline() async throws -> ModelEntity {

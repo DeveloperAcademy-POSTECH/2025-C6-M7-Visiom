@@ -81,7 +81,7 @@ extension MixedImmersiveView {
         // Teleport 그룹 (없었다면 추가)
         let tGroup = Entity()
         tGroup.name = "TeleportGroup"
-        tGroup.isEnabled = appModel.showTeleports
+        tGroup.isEnabled = appModel.isTeleportVisible
         immersiveContentEntity.addChild(tGroup)
         self.teleportGroup = tGroup
         

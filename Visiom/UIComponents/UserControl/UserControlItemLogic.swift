@@ -13,50 +13,15 @@ struct UserControlItemLogic {
     static func isEnabled(_ item: UserControlItem, when state: InteractionState)
         -> Bool
     {
-        // 뒤로가기 : 항상 가능
-        if item == .back { return true }
-
-        // 배치 중 : 다른 기능 불가
-        if case .placing(let active) = state {
-            switch item {
-            case active:
-                return true
-            case .back:
-                return true
-            default:
-                return false
-            }
-        }
-
-        // 이동 모드 : 모든 기능 사용 가능
-        if state == .teleport {
-            switch item {
-            default:
-                return true
-            }
-        }
-
-        // 보드 : 배치 불가
-        if state == .timeline {
-            switch item {
-            case .timeline:
-                return true
-            case .visibility, .teleport, .back:
-                return true
-            default:
-                return false
-            }
-        }
-
         // visibility : 배치 불가
         if case .visibility = state {
             switch item {
             case .visibility:
                 return true
-            case .teleport, .timeline, .back:
-                return true
-            default:
+            case .photoCollection, .memo, .timeline:
                 return false
+            default:
+                return true
             }
         }
 

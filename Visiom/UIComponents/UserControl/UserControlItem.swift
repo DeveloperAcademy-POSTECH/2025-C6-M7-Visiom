@@ -9,31 +9,31 @@ import SwiftUI
 
 // 버튼 Item 종류
 enum UserControlItem: CaseIterable, Hashable {
-    case back
     case photoCollection
     case memo
-    case visibility
-    case timeline
-    case teleport
-    case placedImage
     case cameraheight
+    case timeline
+    case placedImage
     case miniMap
-
+    case back
+    case visibility
+    case teleport
+    
     // 기본 icon
     var icon: String {
         switch self {
-        case .back: return "arrow.uturn.left"
         case .photoCollection: return "photo"
-        case .memo: return "rectangle.badge.plus"
-        case .visibility: return "eye"
-        case .timeline:      return "text.line.first.and.arrowtriangle.forward"
-        case .teleport:     return "figure.walk"
-        case .placedImage: return ""
+        case .memo: return "menucard"
         case .cameraheight: return "ruler"
-        case .miniMap: return "photo.artframe.circle"
+        case .timeline:      return "text.line.first.and.arrowtriangle.forward"
+        case .placedImage: return ""
+        case .miniMap: return "map"
+        case .back: return "rectangle.portrait.and.arrow.right"
+        case .visibility: return "eye"
+        case .teleport:     return "figure.run"
         }
     }
-
+    
     // 선택 icon
     var selectedIcon: String {
         switch self {
@@ -48,11 +48,26 @@ enum UserControlItem: CaseIterable, Hashable {
         case .miniMap: return "photo.artframe.circle"
         }
     }
-
+    
+    var description: String {
+        switch self {
+        case .back: return "나가기"
+        case .photoCollection: return "사진"
+        case .memo: return "메모"
+        case .visibility: return "필터링"
+        case .timeline:      return "타임라인"
+        case .teleport:     return "공간이동"
+        case .placedImage: return ""
+        case .cameraheight: return "신장조절"
+        case .miniMap: return "지도"
+        }
+    }
+    
     // 상태 존재 여부
     var isStateful: Bool {
         switch self {
-        case .back: return false
+        case .back, .placedImage:
+            return false
         default: return true
         }
     }
@@ -66,7 +81,7 @@ enum InteractionState: Equatable {
     case visibility  // visible/invisible
     case miniMap  // 위에서 보기
     case cameraheight  // 키(시점) 조절
-
+    
     var activeItem: UserControlItem? {
         switch self {
         case .placing(let t): return t
@@ -78,7 +93,7 @@ enum InteractionState: Equatable {
         case .cameraheight: return .cameraheight
         }
     }
-
+    
     var isPlacing: Bool {
         if case .placing = self { return true }
         return false
