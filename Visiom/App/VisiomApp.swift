@@ -134,6 +134,7 @@ struct VisiomApp: App {
                     HeadAnchorShowView()
                         .environment(appModel)
                         .environment(timelineStore)
+                }
             }
             .onAppear {
                 appModel.immersiveSpaceState = .open

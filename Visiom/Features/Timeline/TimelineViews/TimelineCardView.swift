@@ -160,16 +160,7 @@ struct TimelineCardView: View {
             }
         }
         .frame(width: 93, height: 36)
-        .background(
-            Color(
-                UIColor(
-                    red: 32 / 255,
-                    green: 25 / 255,
-                    blue: 22 / 255,
-                    alpha: 1
-                )
-            )
-        )
+        .background(.ultraThickMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .padding(.bottom, 14)
         .padding(.leading, 24)
@@ -193,6 +184,7 @@ struct TimelineCardView: View {
             ),
             displayedComponents: [.hourAndMinute]
         )
+        .background(.ultraThickMaterial)
         .labelsHidden()
         .environment(\.locale, Locale(identifier: "en_GB"))
         .frame(width: 93, height: 36)
