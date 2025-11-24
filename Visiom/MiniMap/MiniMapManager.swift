@@ -125,7 +125,7 @@ class MiniMapManager {
         return circle
     }
     
-    // 화면을 90도로 변환하는 함수 
+    // 화면을 90도로 변환하는 함수
     func orientationChange90Degrees(content: RealityViewContent) {
         // 엔티티 찾기
         guard let entity = content.entities.first(where: { $0.name == "Immersive" }) else {
@@ -161,11 +161,7 @@ class MiniMapManager {
         )
     }
     
-    func clear() {
-        entityByAnchorIDs.removeAll()
-    }
-    
-    // Entity 미리 로드 entity 관련 파일로 이동
+    // Entity 미리 로드
     @MainActor
     func preloadChrimeScene() async {
         guard cachedCrimeScene == nil else { return }
@@ -176,7 +172,5 @@ class MiniMapManager {
         } catch {
             print("Failed to load CrimeScene: \(error)")
         }
-
     }
-    
 }
