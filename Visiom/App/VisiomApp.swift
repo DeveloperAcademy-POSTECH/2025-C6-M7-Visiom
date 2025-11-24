@@ -48,6 +48,7 @@ struct VisiomApp: App {
                 Text("컬렉션이 선택되지 않았습니다.")
             }
         }
+        .defaultSize(CGSize(width: 1200, height: 686))
         .defaultWindowPlacement { content, context in
             if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
                 return WindowPlacement(.above(userControl))
@@ -78,8 +79,10 @@ struct VisiomApp: App {
             TimelineBoardView()
                 .environment(appModel)
                 .environment(timelineStore)
+                .frame(width: 433, height: 685)
+                .fixedSize()
         }
-        .defaultSize(width: 433, height: 685)
+        .windowResizability(.contentSize)
         .defaultWindowPlacement { content, context in
             if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
                 return WindowPlacement(.above(userControl))
@@ -90,8 +93,10 @@ struct VisiomApp: App {
         WindowGroup(id: appModel.cameraHeightWindowID) {
             CameraHeightView()
                 .environment(appModel)
+                .frame(width: 207, height: 236)
+                .fixedSize()
         }
-        .defaultSize(width: 207, height: 236)
+        .windowResizability(.contentSize)
 
         WindowGroup(id: appModel.timelineShowWindowID) {
             TimelineShowView()
