@@ -15,70 +15,156 @@ struct MixedImmersiveView: View {
     @Environment(CollectionStore.self) var collectionStore
     @Environment(MemoStore.self) var memoStore
     @Environment(TimelineStore.self) var timelineStore
+    @Environment(PlacedImageStore.self) var placedImageStore
     @Environment(MiniMapManager.self) var miniMapManager
     @Environment(LineManager.self) var lineManager
     
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
-
+    
     static let arSession = ARKitSession()
     static let worldTracking = WorldTrackingProvider()
-
+    
     @State var root: Entity? = nil
-
+    
     @State var anchorToMemo: [UUID: UUID] = [:]
     @State var pendingItemType: [UUID: UserControlItem] = [:]
-
+    
     @State var photoGroup: Entity?
     @State var memoGroup: Entity?
     @State var teleportGroup: Entity?
     @State var timelineGroup: Entity?
-
+    @State var placedImageGroup: Entity?
+    
     @State var anchorRegistry = AnchorRegistry()
     @State var placementManager: PlacementManager? = nil
-
+    
     // JSON 저장/복원 담당
     @State var persistence: PersistenceManager? = nil
     @State var bootstrap: SceneBootstrap? = nil
-
+    
     @State var anchorSystem: AnchorSystem? = nil
-
+    
     @State var inputSurface = SwiftUIInputSurface()
     @State var router: InteractionRouter? = nil
     @State var gestureBridge: GestureBridge? = nil
-
+    
     @State var controller: MixedImmersiveController? = nil
-
+    @State var isARSessionRunning = false
+    
     var body: some View {
         RealityView { content in
-            await buildRealityContent(content)
-            lineManager.content = content
-
-            setupPersistenceIfNeeded()
-            setupAnchorSystem()
+            // 1) ARSession
+            await startARSessionIFNeeded()
+            
+            // 2) 씬(root+groups) 준비
+            await setupScene(content: content)
+            
+            // 3) 의존성 준비
+            setupDependenciesIfNeeded()
+            
+            // 4) restore
+            if let bootstrap {
+                await bootstrap.restoreAndSpawn()
+            }
+            
+            // 5) AnchorSystem은 단 1회 생성/시작
+            setupAnchorSystemIfNeeded()
+            if let root, let anchorSystem {
+                try? await anchorSystem.attachRootAnchor(to: root)
+            }
             anchorSystem?.start()
+            
+            lineManager.content = content
+            
+            // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
         }
-        .onChange(of: appModel.itemAdd, initial: false) { _, newValue in
+        .onChange(of: appModel.itemAdd, initial: false) { (oldValue: UserControlItem?, newValue: UserControlItem?) in
             guard let newValue else { return }
+            commitItem(itemAdd: newValue)
+        }
+        .onChange(of: appModel.customHeight, initial: false) {(oldValue: Float, newValue: Float) in
             Task {
-                await controller?.makePlacement(type: newValue)
+                await controller?.applyHeightAdjustment(customHeight: newValue)
+            }
+        }
+        .simultaneousGesture(tapEntityGesture)
+        .simultaneousGesture(longPressEntityGesture)
+        .simultaneousGesture(dragEntityGesture)
+        .onAppear {
+            // timeline 앵커 삭제
+            timelineStore.onTimelineDeleted = { timelineID in
+                Task {
+                    if let anchorID = anchorRegistry.records.values.first(
+                        where: {
+                            $0.kind == EntityKind.timeline.rawValue
+                            && $0.dataRef == timelineID
+                        })?.id
+                    {
+                        // 월드 앵커 삭제 로직 제거
+                        // await removeWorldAnchor(by: anchorID)
+                        // scene-local 를 삭제하는 함수 추후 추가
+                        // ex) await controller?.removeSceneLocalAnchor(anchorID)
+                    } else {
+                        print(
+                            "Timeline 삭제 알림 받았으나 연결된 앵커를 찾지 못함 for \(timelineID)"
+                        )
+                    }
+                }
+            }
+            
+            appModel.onTimelineShow = { timelineID in  // TimelineID
+                // AnchorRegistry에서 해당 timelineDataID와 연결된 AnchorRecord를 찾기
+                if let anchorRecord =
+                    anchorRegistry
+                    .all()
+                    .first(where: {
+                        $0.kind == EntityKind.timeline.rawValue
+                        && $0.dataRef == timelineID
+                    })
+                {
+                    let anchorID = anchorRecord.id  // 찾은 World Anchor의 UUID
+                    
+                    Task {
+                        await controller?.teleportToID(to: anchorID, animated: true)
+                    }
+                } else {
+                    print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
+                }
+            }
+            appModel.onTimelineHighlight = { timelineID in
+                Task {
+                    await controller?.highlightTimeline(timelineID: timelineID)
+                }
+            }
+        }
+        .onDisappear {
+            anchorSystem?.stop()
+        }
+    }
+    
+    private func commitItem(itemAdd: UserControlItem) {
+        switch itemAdd {
+        case .photoCollection, .teleport:
+            Task {
+                await controller?.makePlacement(type: itemAdd)
                 await MainActor.run {
                     appModel.itemAdd = nil
                 }
             }
-        }
-        .onChange(of: memoStore.memoToAnchorID, initial: false) { _, memoID in
-            guard let memoID else { return }
+            
+        case .memo:
+            guard let memoID = memoStore.memoToAnchorID else { return }
             Task {
                 if let existing =
                     anchorRegistry
                     .all()
                     .first(where: {
                         $0.kind == EntityKind.memo.rawValue
-                            && $0.dataRef == memoID
+                        && $0.dataRef == memoID
                     })
                 {
                     await controller?.refreshMemoOverlay(
@@ -88,14 +174,14 @@ struct MixedImmersiveView: View {
                 } else {
                     await controller?.makePlacement(type: .memo)
                 }
-                await MainActor.run { memoStore.memoToAnchorID = nil }
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                    memoStore.memoToAnchorID = nil
+                }
             }
-        }
-
-        .onChange(of: appModel.timelineToAnchorID, initial: false) {
-            _,
-            timelineID in
-            guard let timelineID else { return }
+            
+        case .timeline:
+            guard let timelineID = appModel.timelineToAnchorID else { return }
             Task {
                 if let existing =
                     anchorRegistry
@@ -112,79 +198,34 @@ struct MixedImmersiveView: View {
                         dataRef: timelineID
                     )
                 }
-                await lineManager.updateLines()
-                await MainActor.run { appModel.timelineToAnchorID = nil }
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                    appModel.timelineToAnchorID = nil
+                }
             }
-        }
-        .onChange(of: appModel.customHeight, initial: false) { _, newValue in
+            
+        case .placedImage:
+            guard let placedImageID = placedImageStore.placedImageToAnchorID else { return }
             Task {
-                await controller?.applyHeightAdjustment(customHeight: newValue)
-            }
-        }
-
-        .simultaneousGesture(tapEntityGesture)
-        .simultaneousGesture(longPressEntityGesture)
-        .simultaneousGesture(dragEntityGesture)
-
-        /// AR 세션 관리
-        .task {
-            await MixedImmersiveView.startARSession()
-        }
-        .onAppear {
-            // timeline 앵커 삭제
-            timelineStore.onTimelineDeleted = { timelineID in
-                Task {
-                    if let anchorID = anchorRegistry.records.values.first(
-                        where: {
-                            $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
-                        })?.id
-                    {
-                        await removeWorldAnchor(by: anchorID)
-                    } else {
-                        print(
-                            "Timeline 삭제 알림 받았으나 연결된 앵커를 찾지 못함 for \(timelineID)"
-                        )
-                    }
-                }
-            }
-
-            appModel.onTimelineShow = { timelineID in  // TimelineID
-                // AnchorRegistry에서 해당 timelineDataID와 연결된 AnchorRecord를 찾기
-                if let anchorRecord =
-                    anchorRegistry
+                if let existing = anchorRegistry
                     .all()
-                    .first(where: {
-                        $0.kind == EntityKind.timeline.rawValue
-                            && $0.dataRef == timelineID
-                    })
+                    .first(where: { $0.kind == EntityKind.placedImage.rawValue && $0.dataRef == placedImageID })
                 {
-                    let anchorID = anchorRecord.id  // 찾은 World Anchor의 UUID
-
-                    Task {
-                        await controller?.smoothTeleport(anchorID: anchorID)
-                    }
+                    print("Placed Image anchor already exists: \(existing.id)")
                 } else {
-                    print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
+                    await controller?.makePlacement(type: .placedImage)
+                }
+                await MainActor.run {
+                    appModel.itemAdd = nil
+                    placedImageStore.placedImageToAnchorID = nil
+                }
+            }
+        default :
+            Task {
+                await MainActor.run {
+                    appModel.itemAdd = nil
                 }
             }
         }
-        .onDisappear {
-            anchorSystem?.stop()
-        }
-    }
-
-    private func updateRealityContent(_ content: RealityViewContent) {
-        controller?.refreshScene(
-            showPhotos: appModel.showPhotos,
-            showMemos: appModel.showMemos,
-            showTeleports: appModel.showTeleports,
-            showTimelines: appModel.showTimelines
-        )
-    }
-
-    private func buildRealityContent(_ content: RealityViewContent) async {
-        await setupScene(content: content)
-        await MainActor.run { startInteractionPipelineIfReady() }
     }
 }
