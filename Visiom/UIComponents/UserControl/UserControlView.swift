@@ -120,11 +120,16 @@ extension UserControlView {
             }
             // 가시성 토글
         case .visibility:
-            appModel.togglePhotos()
-            appModel.toggleMemos()
-            appModel.toggleTimelines()
-            appModel.togglePlacedImages()
-            // 보드(타임라인)
+            // 예: “사진/메모/타임라인/placedImage”만 한꺼번에 토글
+                let anyHidden =
+                    !appModel.showPhotos ||
+                    !appModel.showMemos ||
+                    !appModel.showTimelines ||
+                    !appModel.showPlacedImages
+
+                // 하나라도 숨겨져 있으면 -> 전부 보이기
+                // 다 보이는 상태면 -> 전부 숨기기
+                appModel.setAllVisible(anyHidden)
         case .timeline:
             if state == .timeline {
                 openWindow(id: appModel.timelineWindowID)
@@ -136,15 +141,7 @@ extension UserControlView {
             
             // 이동
         case .teleport:
-            appModel.togglePlacedImages()
-            if case .placing(.teleport) = state {
-                appModel.itemAdd = .teleport
-                print("⚡️ 텔레포트 배치 시작")
-            } else {
-                appModel.itemAdd = nil
-                print("⚡️ 텔레포트 배치 종료")
-            }
-            
+            appModel.toggle(.teleport)
         case .miniMap:
             if case .miniMap = state {
                 openWindow(id:appModel.miniMapWindowID)

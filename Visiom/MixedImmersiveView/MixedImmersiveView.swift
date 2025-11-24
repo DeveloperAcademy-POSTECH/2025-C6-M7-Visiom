@@ -83,9 +83,6 @@ struct MixedImmersiveView: View {
             
             // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
-        } update: { content in
-            miniMapManager.orientationChange90Degrees(content: content)
-            updateRealityContent(content)
         }
         .onChange(of: appModel.itemAdd, initial: false) { (oldValue: UserControlItem?, newValue: UserControlItem?) in
             guard let newValue else { return }
@@ -95,6 +92,15 @@ struct MixedImmersiveView: View {
             Task {
                 await controller?.applyHeightAdjustment(customHeight: newValue)
             }
+        }
+        .onChange(of: appModel.visibleKinds, initial: true) { _, newValue in
+            controller?.refreshScene(
+                showPhotos: newValue.contains(.photo),
+                showMemos: newValue.contains(.memo),
+                showTimelines: newValue.contains(.timeline),
+                showPlacedImage: newValue.contains(.placedImage),
+                isTeleportVisible: newValue.contains(.teleport)
+            )
         }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
