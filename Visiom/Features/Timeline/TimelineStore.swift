@@ -174,4 +174,13 @@ final class TimelineStore {
         return timelines.first(where: { $0.timelineIndex == currentIndex })?.id
     }
 
+    // 이전 타임라인이 있는지 check
+    var canGoToPreviousTimeline: Bool {
+        return !timelines.isEmpty && currentIndex > 1
+    }
+
+    // 다음 타임라인이 있는지 check
+    var canGoToNextTimeline: Bool {
+        return !timelines.isEmpty && currentIndex < timelines.count
+    }
 }

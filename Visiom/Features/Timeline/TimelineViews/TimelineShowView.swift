@@ -39,7 +39,9 @@ struct TimelineShowView: View {
                     Image(systemName: "arrow.left")
                         .font(.system(size: 29, weight: .regular))
                         .frame(width: 90, height: 64)
-                }.glassBackgroundEffect()
+                }
+                .glassBackgroundEffect()
+                .disabled(!timelineStore.canGoToPreviousTimeline)
 
                 Spacer()
 
@@ -51,7 +53,9 @@ struct TimelineShowView: View {
                     Image(systemName: "arrow.right")
                         .font(.system(size: 29, weight: .regular))
                         .frame(width: 90, height: 64)
-                }.glassBackgroundEffect()
+                }
+                .glassBackgroundEffect()
+                .disabled(!timelineStore.canGoToNextTimeline)
             }
             .padding(.horizontal, 36)
             .padding(.top, 16)
