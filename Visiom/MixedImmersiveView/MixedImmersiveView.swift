@@ -17,6 +17,7 @@ struct MixedImmersiveView: View {
     @Environment(TimelineStore.self) var timelineStore
     @Environment(PlacedImageStore.self) var placedImageStore
     @Environment(MiniMapManager.self) var miniMapManager
+    @Environment(LineManager.self) var lineManager
     
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
@@ -49,7 +50,6 @@ struct MixedImmersiveView: View {
     @State var gestureBridge: GestureBridge? = nil
     
     @State var controller: MixedImmersiveController? = nil
-
     @State var isARSessionRunning = false
     
     var body: some View {
@@ -77,9 +77,10 @@ struct MixedImmersiveView: View {
             }
             anchorSystem?.start()
             
+            lineManager.content = content
+            
             // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
-            
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
             updateRealityContent(content)
@@ -96,9 +97,7 @@ struct MixedImmersiveView: View {
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)
         .simultaneousGesture(dragEntityGesture)
-
         .onAppear {
-            // TODO: (지지) 리팩토링 필요!!!
             // timeline 앵커 삭제
             timelineStore.onTimelineDeleted = { timelineID in
                 Task {
@@ -139,7 +138,6 @@ struct MixedImmersiveView: View {
                     print("텔레포트 대상 앵커를 찾을 수 없음: \(timelineID)")
                 }
             }
-            
             appModel.onTimelineHighlight = { timelineID in
                 Task {
                     await controller?.highlightTimeline(timelineID: timelineID)
@@ -151,17 +149,6 @@ struct MixedImmersiveView: View {
         }
     }
     
-    private func updateRealityContent(_ content: RealityViewContent) {
-        controller?.refreshScene(
-            showPhotos: appModel.showPhotos,
-            showMemos: appModel.showMemos,
-            showTeleports: appModel.showTeleports,
-            showTimelines: appModel.showTimelines,
-            showPlacedImage: appModel.showPlacedImages
-            
-        )
-    }
-
     private func commitItem(itemAdd: UserControlItem) {
         switch itemAdd {
         case .photoCollection, .teleport:

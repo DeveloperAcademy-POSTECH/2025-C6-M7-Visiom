@@ -154,7 +154,11 @@ class MiniMapManager {
         )
     }
     
-    // Entity 미리 로드
+    func clear() {
+        entityByAnchorIDs.removeAll()
+    }
+    
+    // Entity 미리 로드 entity 관련 파일로 이동
     @MainActor
     func preloadChrimeScene() async {
         guard cachedChrimeScene == nil else { return }
