@@ -166,9 +166,9 @@ extension MixedImmersiveView {
             entity.generateCollisionShapes(recursive: true)
             entity.components.set(InputTargetComponent())
             
-            miniMapManager.updateAnchor(
-                entityByAnchorID: controller.entityByAnchorID
-            )
+//            miniMapManager.updateAnchor(
+//                entityByAnchorID: controller.entityByAnchorID
+//            )
         }
         
         bootstrap.memoTextProvider = { [weak memoStore] memoID in
@@ -200,16 +200,16 @@ extension MixedImmersiveView {
             },
             setEntityForAnchorID: { [weak controller, weak miniMapManager] id, e in
                 controller?.entityByAnchorID[id] = e
-                miniMapManager?.updateAnchor(
-                    entityByAnchorID: controller?.entityByAnchorID ?? [:]
-                )
+//                miniMapManager?.updateAnchor(
+//                    entityByAnchorID: controller?.entityByAnchorID ?? [:]
+//                )
             },
             spawnEntity: { [weak controller, weak miniMapManager] rec in
                 guard let controller else { return }
                 await controller.spawnEntity(rec)
-                miniMapManager?.updateAnchor(
-                    entityByAnchorID: controller.entityByAnchorID
-                )
+//                miniMapManager?.updateAnchor(
+//                    entityByAnchorID: controller.entityByAnchorID
+//                )
             }
         )
     }
