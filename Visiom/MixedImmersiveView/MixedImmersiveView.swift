@@ -70,6 +70,10 @@ struct MixedImmersiveView: View {
                 await bootstrap.restoreAndSpawn()
             }
             
+            if let controller {
+                await controller.spawnTeleportGridIfNeeded(spacing: 1.5)
+            }
+            
             // 5) AnchorSystem은 단 1회 생성/시작
             setupAnchorSystemIfNeeded()
             if let root, let anchorSystem {
@@ -93,6 +97,15 @@ struct MixedImmersiveView: View {
             Task {
                 await controller?.applyHeightAdjustment(customHeight: newValue)
             }
+        }
+        .onChange(of: appModel.visibleKinds, initial: true) { _, newValue in
+            controller?.refreshScene(
+                showPhotos: newValue.contains(.photo),
+                showMemos: newValue.contains(.memo),
+                showTimelines: newValue.contains(.timeline),
+                showPlacedImage: newValue.contains(.placedImage),
+                isTeleportVisible: newValue.contains(.teleport)
+            )
         }
         .simultaneousGesture(tapEntityGesture)
         .simultaneousGesture(longPressEntityGesture)

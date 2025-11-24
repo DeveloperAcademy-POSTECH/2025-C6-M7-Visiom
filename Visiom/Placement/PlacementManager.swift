@@ -27,29 +27,7 @@ public final class PlacementManager {
         self.anchorRegistry = anchorRegistry
         self.sceneRoot = sceneRoot
     }
-//    
-//    func tapToTeleport(anchorID: UUID) {
-//        
-//        guard let rec = anchorRegistry.records[anchorID] else { return }
-//       
-//        let sceneContent = self.sceneRoot
-//        
-//        // Calculate the vector from the origin to the tapped position
-//        let vectorToTap = rec.worldMatrix.columns.3
-//        // Normalize the vector to get a direction from the origin to the tapped position
-//        let direction = normalize(vectorToTap)
-//        
-//        // Calculate the distance (or magnitude) between the origin and the tapped position
-//        let distance = length(vectorToTap)
-//        
-//        // Calculate the new position by inverting the direction multiplied by the distance
-//        let newPosition = -direction * distance
-//        
-//        // Update sceneOffset's X and Z components, leave Y as it is
-//        sceneContent.position.x = newPosition.x
-//        sceneContent.position.z = newPosition.z
-//    }
-//    
+
     // 사용자 전방 1m에 월드 앵커 생성 후 Registry 기록
     public func place(
         kind: EntityKind,
@@ -107,7 +85,7 @@ public final class PlacementManager {
     public func moveAnchor(anchorID: UUID, deltaWorld: SIMD3<Float>) {
         guard var record = anchorRegistry.records[anchorID] else { return }
 
-        // ✅ deltaWorld(증분) -> deltaScene(증분) 변환
+        // deltaWorld(증분) -> deltaScene(증분) 변환
         let a = Entity(); a.setPosition(.zero, relativeTo: nil)
         let b = Entity(); b.setPosition(deltaWorld, relativeTo: nil)
 
@@ -120,12 +98,12 @@ public final class PlacementManager {
             bScene.z - aScene.z
         )
 
-        // ✅ NaN 방어 (이게 없으면 사라짐/튐 계속 남음)
+        // NaN 방어 (이게 없으면 사라짐/튐 계속 남음)
         if deltaScene.x.isNaN || deltaScene.y.isNaN || deltaScene.z.isNaN {
             return
         }
 
-        // ✅ 현재 위치(scene-local) 가져오기
+        // 현재 위치(scene-local) 가져오기
         let curScenePos = SIMD3<Float>(
             record.worldMatrix.columns.3.x,
             record.worldMatrix.columns.3.y,
@@ -139,7 +117,7 @@ public final class PlacementManager {
             newScene.y = curScenePos.y
         }
 
-        // ✅ 회전 유지하면서 translation만 변경
+        // 회전 유지하면서 translation만 변경
         var t = Transform(matrix: record.worldMatrix)
         t.translation = newScene
         record.worldMatrix = t.matrix
