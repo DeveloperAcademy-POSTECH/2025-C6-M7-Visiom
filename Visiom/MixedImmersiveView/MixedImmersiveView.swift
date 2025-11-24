@@ -70,6 +70,10 @@ struct MixedImmersiveView: View {
                 await bootstrap.restoreAndSpawn()
             }
             
+            if let controller {
+                await controller.spawnTeleportGridIfNeeded(spacing: 1.5)
+            }
+            
             // 5) AnchorSystem은 단 1회 생성/시작
             setupAnchorSystemIfNeeded()
             if let root, let anchorSystem {
@@ -79,7 +83,6 @@ struct MixedImmersiveView: View {
             
             // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
-            
         } update: { content in
             miniMapManager.orientationChange90Degrees(content: content)
             updateRealityContent(content)

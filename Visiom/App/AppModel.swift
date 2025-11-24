@@ -60,6 +60,9 @@ class AppModel {
     func togglePlacedImages() {
         showPlacedImages.toggle()
     }
+    func toggleTeleports() {
+        isTeleportVisible.toggle()
+    }
 
     var onTimelineShow: ((UUID) -> Void)?  // show를 위해 index 순서대로 id를 받음
     var onTimelineHighlight: ((UUID) -> Void)?

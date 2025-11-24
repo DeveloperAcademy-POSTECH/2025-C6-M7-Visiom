@@ -260,7 +260,6 @@ extension MixedImmersiveController {
     private func handleTeleportPlacement(_ anchorRecord: AnchorRecord) async {
         anchorRegistry.upsert(anchorRecord)
         await spawnEntity(anchorRecord)
-        persistence.save()
     }
 
     private func handleTimelinePlacement(
@@ -637,6 +636,65 @@ extension MixedImmersiveController {
                 duration: duration,
                 timingFunction: .easeIn
             )
+        }
+    }
+}
+
+// MARK: - Teleport Grid Spawning (runtime only)
+extension MixedImmersiveController {
+
+    /// Immersive 공간 크기를 기준으로 1.5m 격자로 Teleport를 깐다.
+    /// - Note: AnchorRegistry에는 등록하지만 Persistence 저장은 하지 않는다.
+    func spawnTeleportGridIfNeeded(spacing: Float = 1.5) async {
+        guard let sceneRoot = root else { return }
+        guard let teleportGroup else { return }
+
+        // 이미 있으면(restore로 불러왔든, 이전에 깔았든) 중복 생성 X
+        if !teleportGroup.children.isEmpty { return }
+        print("텔레포트 생성 시작")
+
+        // 1) Immersive 공간 bounds 추정 (sceneRoot 로컬 기준)
+        let bounds = sceneRoot.visualBounds(relativeTo: sceneRoot)
+        var width  = bounds.extents.x
+        var depth  = bounds.extents.z
+
+        // bounds가 비정상적으로 작으면 fallback
+        if width < 0.1 || depth < 0.1 {
+            width = 6.0
+            depth = 3.0
+        }
+
+        let halfW = width / 2
+        let halfD = depth / 2
+
+        // 2) 격자 개수 계산
+        let countX = Int(floor(width / spacing)) + 1
+        let countZ = Int(floor(depth / spacing)) + 1
+
+        // 3) 격자 스폰
+        for ix in 0..<countX {
+            for iz in 0..<countZ {
+                let x = -halfW + Float(ix) * spacing
+                let z = -halfD + Float(iz) * spacing
+
+                let id = UUID()
+                let localTransform = Transform(
+                    translation: SIMD3<Float>(x, 0.05, z)
+                ).matrix
+
+                let record = AnchorRecord(
+                    id: id,
+                    kind: EntityKind.teleport.rawValue,
+                    dataRef: nil,
+                    transform: localTransform
+                )
+
+                // 런타임용으로만 등록
+                anchorRegistry.upsert(record)
+
+                // spawnEntity는 bootstrap.attachVisual + transform 적용 + onSpawned로 그룹에 붙음
+                await spawnEntity(record)
+            }
         }
     }
 }

@@ -86,7 +86,7 @@ public enum EntityFactory {
             InteractionPolicyComponent(
                 kind: .teleport,
                 // teleport entity가 허용하는 상호작용
-                caps: [.place, .persist, .delete, .move, .tap],
+                caps: [.tap],
                 collisionGroup: .teleport,
                 dataRef: nil
             )
