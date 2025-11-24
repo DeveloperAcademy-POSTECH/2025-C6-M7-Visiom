@@ -39,7 +39,7 @@ struct ImageGalleryView: View {
                                 cornerRadius: cornerRadius,
                                 isSelected: idx == selectedIndex,
                                 size: thumbnailSize
-                            )
+                            ).hoverEffect(.lift)
                         }
                         .overlay(alignment: .bottomLeading) {
                             FilenameBadge(url: url)
