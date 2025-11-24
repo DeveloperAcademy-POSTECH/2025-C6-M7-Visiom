@@ -84,9 +84,11 @@ struct MixedImmersiveView: View {
             
             // 6) Interaction pipeline 시작
             startInteractionPipelineIfReady()
-        } update: { content in
-            miniMapManager.orientationChange90Degrees(content: content)
         }
+//        update: { content in
+//            print("=== MixedImmersiveView update tick ===")
+//            miniMapManager.orientationChange90Degrees(content: content)
+//        }
         .onChange(of: appModel.itemAdd, initial: false) {
             (oldValue: UserControlItem?, newValue: UserControlItem?) in
             guard let newValue else { return }
