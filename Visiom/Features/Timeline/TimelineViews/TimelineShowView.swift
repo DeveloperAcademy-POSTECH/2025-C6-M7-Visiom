@@ -57,5 +57,6 @@ struct TimelineShowView: View {
             .padding(.top, 16)
         }
         .frame(width: 388, height: 190)
+        .glassBackgroundEffect()
     }
 }
