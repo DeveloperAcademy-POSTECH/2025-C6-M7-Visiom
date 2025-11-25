@@ -35,5 +35,14 @@ struct CameraHeightView: View {
 
             Text("CM").font(.system(size: 29, weight: .semibold))
         }
+        .onAppear {
+            let savedHeight = Int(round(appModel.customHeight * 100))
+            if heights.contains(savedHeight) {
+                userHeight = savedHeight
+            } else {
+                userHeight = savedHeight
+            }
+            print("저장된 높이 불러옴: \(userHeight)cm")
+        }
     }
 }

@@ -159,18 +159,9 @@ struct TimelineCardView: View {
                     .padding(.trailing, 10)
             }
         }
-        .frame(width: 93, height: 36)
-        .background(
-            Color(
-                UIColor(
-                    red: 32 / 255,
-                    green: 25 / 255,
-                    blue: 22 / 255,
-                    alpha: 1
-                )
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .frame(width: 90, height: 43)
+        .background(.ultraThickMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .padding(.bottom, 14)
         .padding(.leading, 24)
         .buttonStyle(.plain)
@@ -193,10 +184,10 @@ struct TimelineCardView: View {
             ),
             displayedComponents: [.hourAndMinute]
         )
+        .foregroundStyle(.ultraThickMaterial)
         .labelsHidden()
         .environment(\.locale, Locale(identifier: "en_GB"))
         .frame(width: 93, height: 36)
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .padding(.bottom, 14)
         .padding(.leading, 24)
     }

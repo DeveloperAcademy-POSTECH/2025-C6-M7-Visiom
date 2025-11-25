@@ -80,6 +80,10 @@ enum AREntityFactory {
         entity.generateCollisionShapes(recursive: true)
         entity.components.set(InputTargetComponent())
 
+        var manipulationComponent = ManipulationComponent()
+        manipulationComponent.releaseBehavior = .stay
+        entity.components.set(manipulationComponent)
+
         return entity
     }
 
@@ -108,6 +112,10 @@ enum AREntityFactory {
 
         entity.generateCollisionShapes(recursive: true)
         entity.components.set(InputTargetComponent())
+
+        //        var manipulationComponent = ManipulationComponent()
+        //        manipulationComponent.releaseBehavior = .stay
+        //        entity.components.set(manipulationComponent)
 
         return entity
     }
@@ -143,13 +151,20 @@ enum AREntityFactory {
             ]
         )
         let inputTargetComponent = InputTargetComponent()
-        
-        let hoverEffectComponent = HoverEffectComponent(.highlight(HoverEffectComponent.HighlightHoverEffectStyle(
-            color: .white, strength: 2.0
-        )))
-        
-        entity.components.set([collisionComponent, inputTargetComponent, hoverEffectComponent])
-        
+
+        let hoverEffectComponent = HoverEffectComponent(
+            .highlight(
+                HoverEffectComponent.HighlightHoverEffectStyle(
+                    color: .white,
+                    strength: 2.0
+                )
+            )
+        )
+
+        entity.components.set([
+            collisionComponent, inputTargetComponent, hoverEffectComponent,
+        ])
+
         return entity
     }
 
@@ -273,6 +288,11 @@ enum AREntityFactory {
         }
 
         let entity = ModelEntity(mesh: mesh, materials: [material])
+
+        var manipulationComponent = ManipulationComponent()
+        manipulationComponent.releaseBehavior = .stay
+        entity.components.set(manipulationComponent)
+
         return entity
     }
 
