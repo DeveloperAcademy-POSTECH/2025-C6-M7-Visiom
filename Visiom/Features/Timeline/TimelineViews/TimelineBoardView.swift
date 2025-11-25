@@ -18,7 +18,6 @@ struct TimelineBoardView: View {
     @State private var isCreatePopupShow = false
     @State private var newTimelineTitle: String = ""
     @State private var newTimelineDate: Date? = nil
-    @State private var hasOccurredTime: Bool = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -30,7 +29,6 @@ struct TimelineBoardView: View {
                 Button {
                     newTimelineTitle = ""
                     newTimelineDate = nil
-                    hasOccurredTime = false
                     isCreatePopupShow = true
                 } label: {
                     Image(systemName: "plus")
@@ -114,20 +112,31 @@ struct TimelineBoardView: View {
                 .padding(.vertical, 10)
             HStack {
                 Text("시간").font(.system(size: 18, weight: .regular))
-                Toggle("임시 nil 일때 경우", isOn: $hasOccurredTime)
-                    .onChange(of: hasOccurredTime) { oldValue, newValue in
-                        if newValue && newTimelineDate == nil {
-                            // 토글이 켜지면 DatePicker를 위해 현재 시간으로 초기화
-                            newTimelineDate = Date()
-                        } else if !newValue {
-                            // 토글이 꺼지면 미정 상태를 위해 nil로 설정
-                            newTimelineDate = nil
-                        }
-                    }
+                Spacer()
+                if newTimelineDate == nil {
+                    HStack {
+                        Text("미정")
+                            .font(.system(size: 17, weight: .regular))
+                            .foregroundStyle(.white)
+                            .frame(width: 40)
+                            .padding(.leading, 6)
 
-                if hasOccurredTime {
-                    // DatePicker는 non-optional Binding<Date>를 요구하므로
-                    // 옵셔널인 $newTimelineDate를 non-optional로 변환하는 Binding을 생성
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundStyle(.white)
+                            .padding(.leading, 6)
+                            .padding(.trailing, 10)
+                    }
+                    .frame(width: 93, height: 36)
+                    .background(.ultraThickMaterial)
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    )
+                    .buttonStyle(.plain)
+                    .onTapGesture {
+                        newTimelineDate = Date()
+                    }
+                } else {
                     DatePicker(
                         "",
                         selection: Binding(
@@ -136,8 +145,13 @@ struct TimelineBoardView: View {
                         ),
                         displayedComponents: [.hourAndMinute]
                     )
+                    .background(.ultraThickMaterial)
                     .labelsHidden()
                     .environment(\.locale, Locale(identifier: "en_GB"))
+                    .frame(width: 93, height: 36)
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    )
                 }
             }
             .padding(.horizontal, 24)
