@@ -70,9 +70,11 @@ struct CrimeSceneListView: View {
                                 title: crimeScene.title,
                                 occuredDate: crimeScene.occuredDate,
                                 location: crimeScene.location,
-                                status: crimeScene.status
+                                status: crimeScene.status,
+                                isLock: crimeScene.isLock
                             )
                         }
+                        .disabled(crimeScene.isLock)
                         .buttonStyle(.plain)
                     }
                 }
