@@ -122,7 +122,6 @@ final class AnchorSystem {
             // per-anchor 업데이트는 완전 무시
             return
         }
-        sceneRoot?.setTransformMatrix(anchor.originFromAnchorTransform, relativeTo: nil)
     }
     
     // 앵커 제거 처리
