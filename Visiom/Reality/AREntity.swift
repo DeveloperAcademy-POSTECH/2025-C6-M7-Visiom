@@ -113,9 +113,9 @@ enum AREntityFactory {
         entity.generateCollisionShapes(recursive: true)
         entity.components.set(InputTargetComponent())
 
-        var manipulationComponent = ManipulationComponent()
-        manipulationComponent.releaseBehavior = .stay
-        entity.components.set(manipulationComponent)
+        //        var manipulationComponent = ManipulationComponent()
+        //        manipulationComponent.releaseBehavior = .stay
+        //        entity.components.set(manipulationComponent)
 
         return entity
     }
