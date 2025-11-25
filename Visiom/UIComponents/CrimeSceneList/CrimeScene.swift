@@ -20,15 +20,17 @@ struct CrimeScene: Identifiable {
     let location: String
     let status: CrimeSceneStatus
     let fileName: String
+    let isLock: Bool
 
     static let mockData: [CrimeScene] = [
         CrimeScene(
             imageName: "crimeSceneDummy4",
             title: "애플 아카데미 사건",
-            occuredDate: "2025.10.8",
+            occuredDate: "2025.11.25",
             location: "경상북도 포항시 청암로77",
             status: .investigating,
-            fileName: "Immersive"
+            fileName: "Immersive",
+            isLock: false
         ),
         CrimeScene(
             imageName: "crimeSceneDummy1",
@@ -36,7 +38,8 @@ struct CrimeScene: Identifiable {
             occuredDate: "2025.10.8",
             location: "경상북도 포항시 청암로77",
             status: .investigating,
-            fileName: "Inside"
+            fileName: "Immersive",
+            isLock: true
         ),
         CrimeScene(
             imageName: "crimeSceneDummy2",
@@ -44,7 +47,8 @@ struct CrimeScene: Identifiable {
             occuredDate: "2025.10.8",
             location: "경상북도 포항시 청암로77",
             status: .coldcase,
-            fileName: "Immersive"
+            fileName: "Immersive",
+            isLock: true
         ),
         CrimeScene(
             imageName: "crimeSceneDummy3",
@@ -52,7 +56,8 @@ struct CrimeScene: Identifiable {
             occuredDate: "2025.10.8",
             location: "경상북도 포항시 청암로77",
             status: .solved,
-            fileName: "Inside"
+            fileName: "Immersive",
+            isLock: true
         ),
     ]
 }
