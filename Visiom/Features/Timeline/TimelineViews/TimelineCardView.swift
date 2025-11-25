@@ -150,7 +150,6 @@ struct TimelineCardView: View {
                 Text("미정")
                     .font(.system(size: 17, weight: .regular))
                     .foregroundStyle(.white)
-                    .frame(width: 30)
                     .padding(.leading, 6)
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.system(size: 12, weight: .regular))
@@ -158,10 +157,13 @@ struct TimelineCardView: View {
                     .padding(.leading, 4)
                     .padding(.trailing, 10)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(width: 76, height: 40)
         .background(.ultraThickMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .hoverEffect()
         .padding(.bottom, 20)
         .padding(.leading, 24)
         .buttonStyle(.plain)
