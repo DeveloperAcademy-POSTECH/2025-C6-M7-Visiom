@@ -26,7 +26,7 @@ struct CrimeScene: Identifiable {
         CrimeScene(
             imageName: "crimeSceneDummy4",
             title: "애플 아카데미 사건",
-            occuredDate: "2025.11.25",
+            occuredDate: "2025.11.27",
             location: "경상북도 포항시 청암로77",
             status: .investigating,
             fileName: "Immersive",
