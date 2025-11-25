@@ -150,19 +150,19 @@ struct TimelineCardView: View {
                 Text("미정")
                     .font(.system(size: 17, weight: .regular))
                     .foregroundStyle(.white)
-                    .frame(width: 40)
+                    .frame(width: 30)
                     .padding(.leading, 6)
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 14, weight: .regular))
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.white)
-                    .padding(.leading, 6)
+                    .padding(.leading, 4)
                     .padding(.trailing, 10)
             }
         }
-        .frame(width: 90, height: 43)
+        .frame(width: 76, height: 40)
         .background(.ultraThickMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .padding(.bottom, 14)
+        .padding(.bottom, 20)
         .padding(.leading, 24)
         .buttonStyle(.plain)
     }
@@ -187,8 +187,10 @@ struct TimelineCardView: View {
         .foregroundStyle(.ultraThickMaterial)
         .labelsHidden()
         .environment(\.locale, Locale(identifier: "en_GB"))
-        .frame(width: 93, height: 36)
-        .padding(.bottom, 14)
-        .padding(.leading, 24)
+        .environment(\.sizeCategory, .medium)
+        .scaleEffect(0.88)
+        .frame(width: 93, height: 32)
+        .padding(.bottom, 20)
+        .padding(.leading, 14)
     }
 }
