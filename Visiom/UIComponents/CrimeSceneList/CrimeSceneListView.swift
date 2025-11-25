@@ -74,6 +74,7 @@ struct CrimeSceneListView: View {
                                 isLock: crimeScene.isLock
                             )
                         }
+                        .disabled(crimeScene.isLock)
                         .buttonStyle(.plain)
                     }
                 }
