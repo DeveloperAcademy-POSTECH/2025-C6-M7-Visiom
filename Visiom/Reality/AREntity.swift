@@ -79,6 +79,16 @@ enum AREntityFactory {
 
         entity.generateCollisionShapes(recursive: true)
         entity.components.set(InputTargetComponent())
+        entity.components.set(
+            HoverEffectComponent(
+                .highlight(
+                    (HoverEffectComponent.HighlightHoverEffectStyle(
+                        color: .white,
+                        strength: 2
+                    ))
+                )
+            )
+        )
 
         var manipulationComponent = ManipulationComponent()
         manipulationComponent.releaseBehavior = .stay
