@@ -51,7 +51,9 @@ struct VisiomApp: App {
         }
         .defaultSize(CGSize(width: 1200, height: 686))
         .defaultWindowPlacement { content, context in
-            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+            if let userControl = context.windows.first(where: {
+                $0.id == appModel.userControlWindowID
+            }) {
                 return WindowPlacement(.above(userControl))
             }
             return WindowPlacement(.utilityPanel)
@@ -70,7 +72,9 @@ struct VisiomApp: App {
         .defaultSize(CGSize(width: 140, height: 140))
         .windowResizability(.contentSize)
         .defaultWindowPlacement { content, context in
-            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+            if let userControl = context.windows.first(where: {
+                $0.id == appModel.userControlWindowID
+            }) {
                 return WindowPlacement(.above(userControl))
             }
             return WindowPlacement(.utilityPanel)
@@ -85,7 +89,9 @@ struct VisiomApp: App {
         }
         .windowResizability(.contentSize)
         .defaultWindowPlacement { content, context in
-            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+            if let userControl = context.windows.first(where: {
+                $0.id == appModel.userControlWindowID
+            }) {
                 return WindowPlacement(.above(userControl))
             }
             return WindowPlacement(.utilityPanel)
@@ -113,7 +119,9 @@ struct VisiomApp: App {
                 .environment(miniMapManager)
         }
         .defaultWindowPlacement { content, context in
-            if let userControl = context.windows.first(where: { $0.id == appModel.userControlWindowID}) {
+            if let userControl = context.windows.first(where: {
+                $0.id == appModel.userControlWindowID
+            }) {
                 return WindowPlacement(.above(userControl))
             }
             return WindowPlacement(.utilityPanel)
@@ -134,6 +142,7 @@ struct VisiomApp: App {
                     HeadAnchorShowView()
                         .environment(appModel)
                         .environment(timelineStore)
+                }
             }
             .onAppear {
                 appModel.immersiveSpaceState = .open
