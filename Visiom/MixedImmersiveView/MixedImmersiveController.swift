@@ -611,7 +611,6 @@ extension MixedImmersiveController {
                 timingFunction: .easeOut
             )
             // 애니메이션이 끝난 직후 텍스트 위치가 깨졌을 수 있으므로 강제로 다시 그림
-            try? await Task.sleep(for: .milliseconds(100))
             await refreshAllMemoTexts()
         } else {
             rootEntity.transform = target
