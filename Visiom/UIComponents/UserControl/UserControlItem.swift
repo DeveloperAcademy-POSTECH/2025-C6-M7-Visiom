@@ -38,14 +38,14 @@ enum UserControlItem: CaseIterable, Hashable {
     var selectedIcon: String {
         switch self {
         case .back: return "arrow.uturn.left"
-        case .photoCollection: return "photo.fill"
-        case .memo: return "rectangle.fill.badge.plus"
+        case .photoCollection: return "photo"
+        case .memo: return "menucard"
         case .visibility: return "eye.slash"
         case .timeline:      return "text.line.first.and.arrowtriangle.forward"
         case .teleport:     return "figure.walk.motion"
         case .placedImage: return ""
         case .cameraheight: return "ruler"
-        case .miniMap: return "photo.artframe.circle"
+        case .miniMap: return "map"
         }
     }
     
