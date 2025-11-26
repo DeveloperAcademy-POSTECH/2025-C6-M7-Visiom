@@ -189,7 +189,7 @@ struct TimelineCardView: View {
         .foregroundStyle(.ultraThickMaterial)
         .labelsHidden()
         .environment(\.locale, Locale(identifier: "en_GB"))
-        .environment(\.sizeCategory, .medium)
+        .fixedSize()
         .scaleEffect(0.88)
         .frame(width: 93, height: 32)
         .padding(.bottom, 20)

@@ -72,7 +72,7 @@ struct CrimeSceneCard: View {
 
                     Image(systemName: "lock.fill")
                         .font(.system(size: 50))
-                        .foregroundColor(.white)
+                        .foregroundColor(.white.opacity(0.5))
                 }
                 .clipShape(crimeSceneCardShape)
             }
