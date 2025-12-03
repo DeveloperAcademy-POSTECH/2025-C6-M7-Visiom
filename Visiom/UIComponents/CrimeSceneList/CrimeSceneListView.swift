@@ -25,10 +25,19 @@ struct CrimeSceneListView: View {
                 Image("icon")
                     .resizable()
                     .frame(width: 48, height: 48)
-                    .padding(.trailing, 16)
+                    .padding(.trailing, 24)
                 Text("Re:Chain")
                     .font(.system(size: 32, weight: .bold))
                     .tracking(0)
+                Spacer()
+                Button(action: {
+                    
+                }){
+                    Image(systemName: "gearshape")
+                        .frame(width: 48, height: 48)
+                }
+                .frame(width: 50, height: 50)
+                .padding(.horizontal, 24)
             }
             .padding(.leading, 24)
             .padding(.vertical, 22)
