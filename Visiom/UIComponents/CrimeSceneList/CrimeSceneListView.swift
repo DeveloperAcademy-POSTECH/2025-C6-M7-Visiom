@@ -22,13 +22,22 @@ struct CrimeSceneListView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Image("icon").frame(width: 48, height: 48).padding(
-                    .trailing,
-                    16
-                )
+                Image("icon")
+                    .resizable()
+                    .frame(width: 48, height: 48)
+                    .padding(.trailing, 24)
                 Text("Re:Chain")
                     .font(.system(size: 32, weight: .bold))
                     .tracking(0)
+                Spacer()
+                Button(action: {
+                    
+                }){
+                    Image(systemName: "gearshape")
+                        .frame(width: 48, height: 48)
+                }
+                .frame(width: 50, height: 50)
+                .padding(.horizontal, 24)
             }
             .padding(.leading, 24)
             .padding(.vertical, 22)
@@ -54,15 +63,15 @@ struct CrimeSceneListView: View {
                                     }
                                 }
 
-//                                await appModel.enterFullImmersive(
+                                appModel.selectedSceneFileName =
+                                    crimeScene.fileName
+
                                 await appModel.enterMixedImmersive(
                                     openImmersiveSpace: openImmersiveSpace,
                                     dismissWindow: dismissWindow
                                 )
                                 progress = 1.0
                                 isLoading = false
-
-                                openWindow(id: appModel.userControlWindowID)
                             }
                         }) {
                             CrimeSceneCard(
@@ -70,9 +79,11 @@ struct CrimeSceneListView: View {
                                 title: crimeScene.title,
                                 occuredDate: crimeScene.occuredDate,
                                 location: crimeScene.location,
-                                status: crimeScene.status
+                                status: crimeScene.status,
+                                isLock: crimeScene.isLock
                             )
                         }
+                        .disabled(crimeScene.isLock)
                         .buttonStyle(.plain)
                     }
                 }
@@ -96,9 +107,4 @@ struct CrimeSceneListView: View {
         }
     }
 
-}
-
-#Preview(windowStyle: .automatic) {
-    CrimeSceneListView()
-        .environment(AppModel())
 }

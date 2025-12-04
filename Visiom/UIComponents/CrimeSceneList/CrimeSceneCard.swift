@@ -12,6 +12,12 @@ struct CrimeSceneCard: View {
     let occuredDate: String
     let location: String
     let status: CrimeSceneStatus
+    let isLock: Bool
+
+    private let crimeSceneCardShape = RoundedRectangle(
+        cornerRadius: 35,
+        style: .continuous
+    )
 
     var body: some View {
         VStack(spacing: 0) {
@@ -55,12 +61,23 @@ struct CrimeSceneCard: View {
                 alignment: .topLeading
             )
         }
-
         .frame(width: 296, height: 316)
         .glassBackgroundEffect(
-            in: RoundedRectangle(cornerRadius: 35, style: .continuous)
+            in: crimeSceneCardShape
         )
-        .contentShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+        .overlay {
+            if isLock {
+                ZStack {
+                    Color.black.opacity(0.8)
+
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .clipShape(crimeSceneCardShape)
+            }
+        }
+        .contentShape(crimeSceneCardShape)
         .hoverEffect()
     }
 }

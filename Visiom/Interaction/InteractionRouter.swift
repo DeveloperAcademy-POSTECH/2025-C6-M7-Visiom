@@ -112,6 +112,8 @@ public final class InteractionRouter {
                 return false  // content 핸들러가 teleport는 다루지 않음
             case .timeline:
                 return false
+            case .placedImage:
+                return false  // placedImage는 탭 제스처 처리를 하지 않음
             }
             
         case .drag(_, let delta, let phase):
@@ -156,7 +158,7 @@ public final class InteractionRouter {
         switch event {
         case .tap(let e, _):
             guard let aID = e.anchorID else { return false }
-            ctx.placement.tapToTeleport(anchorID: aID)
+            ctx.teleportToID(aID)
             return true
             
         case .drag(let e, var delta, let phase):

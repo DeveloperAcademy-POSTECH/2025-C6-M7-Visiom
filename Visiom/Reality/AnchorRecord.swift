@@ -17,8 +17,20 @@ public struct AnchorRecord: Codable, Identifiable, Sendable {
     public var id: UUID         // 앵커 식별자
     public var kind: String     // Entity의 종류 (예: photoCollection, memo, teleport)
     public var dataRef: UUID?   // 이 Entity가 참조하는 데이터의 ID (메모 내용, collection)
-    public var worldMatrix: simd_float4x4     // 최종 변환 위치
+    // 이 값은 world 값이 아님. sceneRoot 기준 로컬 transform임. 추후 이름 변경 필요
+    public var worldMatrix: simd_float4x4
     public var kindEnum : EntityKind?
+    
+    // 위치만 읽고/쓰는 프로퍼티
+    public var position: SIMD3<Float> {
+        get {
+            let c = worldMatrix.columns.3
+            return SIMD3<Float>(c.x, c.y, c.z)
+        }
+        set {
+            worldMatrix.columns.3 = SIMD4<Float>(newValue, 1)
+        }
+    }
     
     public init(id: UUID, kind: String, dataRef: UUID?, transform: simd_float4x4) {
         self.id = id
@@ -43,6 +55,8 @@ public struct AnchorRecord: Codable, Identifiable, Sendable {
         guard flat.count == 16 else { throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.matrix], debugDescription: "matrix must have 16 floats")) }
         // 16개 float 값을 simd_4x4 로 재조립
         worldMatrix = AnchorRecord.makeMatrix(from: flat)
+        
+        kindEnum = EntityKind(rawValue: kind)
     }
     
     // 메모리 -> 디스크 저장
@@ -71,5 +85,16 @@ public struct AnchorRecord: Codable, Identifiable, Sendable {
             SIMD4<Float>(a[8],  a[9],  a[10], a[11]),
             SIMD4<Float>(a[12], a[13], a[14], a[15])
         )
+    }
+    
+    // MARK: - sceneRoot 기준 transform 헬퍼
+    // entity의 transform을 sceneRoot 기준으로 캡처해서 worldMatrix에 저장
+    public mutating func captureTransform(from entity: Entity, relativeTo sceneRoot: Entity) {
+        worldMatrix = entity.transformMatrix(relativeTo: sceneRoot)
+    }
+    
+    /// worldMatrix(sceneRoot 기준)를 entity에 적용
+    public func applyTransform(to entity: Entity, relativeTo sceneRoot: Entity) {
+        entity.setTransformMatrix(worldMatrix, relativeTo: sceneRoot)
     }
 }

@@ -14,6 +14,7 @@ final class TimelineStore {
     private let persistence = PersistenceActor()
     var timelines: [Timeline] = []
     var onTimelineDeleted: ((UUID) -> Void)?
+    var currentIndex: Int = 1
 
     func load() async {
         do {
@@ -24,6 +25,8 @@ final class TimelineStore {
             print("Load timelines error:", error)
             self.timelines = []
         }
+        currentIndex =
+            timelines.isEmpty ? 0 : timelines.first?.timelineIndex ?? 1
     }
 
     // MARK: - Save batching
@@ -153,4 +156,48 @@ final class TimelineStore {
         scheduleSave()
     }
 
+    // show를 위한 함수
+    func nextTimelineID() -> UUID? {
+        guard !timelines.isEmpty else { return nil }
+
+        let maxIndex = timelines.count
+        currentIndex = min(currentIndex + 1, maxIndex)
+
+        return timelines.first(where: { $0.timelineIndex == currentIndex })?.id
+    }
+
+    func previousTimelineID() -> UUID? {
+        guard !timelines.isEmpty else { return nil }
+
+        currentIndex = max(currentIndex - 1, 1)
+
+        return timelines.first(where: { $0.timelineIndex == currentIndex })?.id
+    }
+
+    // 이전 타임라인이 있는지 check
+    var canGoToPreviousTimeline: Bool {
+        return !timelines.isEmpty && currentIndex > 1
+    }
+
+    // 다음 타임라인이 있는지 check
+    var canGoToNextTimeline: Bool {
+        return !timelines.isEmpty && currentIndex < timelines.count
+    }
+
+    func firstTimelineID() -> UUID? {
+        guard !timelines.isEmpty else { return nil }
+
+        // 인덱스 순서대로 정렬
+        let sortedTimelines = timelines.sorted {
+            $0.timelineIndex < $1.timelineIndex
+        }
+
+        // 꼭 index가 1이 아니더라도 가장 첫번째거 가져오기
+        guard let firstItem = sortedTimelines.first else { return nil }
+
+        // 현재 인덱스를 찾은 아이템의 인덱스로 동기화
+        currentIndex = firstItem.timelineIndex
+
+        return firstItem.id
+    }
 }

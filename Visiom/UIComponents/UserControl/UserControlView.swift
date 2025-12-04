@@ -16,36 +16,67 @@ struct UserControlView: View {
     
     @State var state: InteractionState = .idle
     
-    @State private var entityCounter: [EntityType: Int] = [.sphere: 0, .box: 0]
+    private var isTeleportVisible: Bool {
+        appModel.isTeleportVisible
+    }
+    
+    private let columns: [GridItem] = [
+        GridItem(.fixed(90), spacing: 12),
+        GridItem(.fixed(90), spacing: 12),
+        GridItem(.fixed(90), spacing: 12)
+    ]
     
     var body: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(columns: columns, spacing: 12) {
             ForEach(UserControlItem.allCases, id: \.self) { item in
-                Button {
-                    handleTap(item)
-                } label: {
-                    Image(systemName: iconName(for: item))
-                        .font(.system(size: 24))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                        .opacity(isEnabled(item) ? 1.0 : 0.3)
-                        .padding(12)
-                }
-                .buttonStyle(.plain)
-                .disabled(!isEnabled(item))
                 
-                if item == .back || item == .visibility {
-                    VDivider(height: 60)
+                // placedImage는 "빈칸"
+                if item == .placedImage {
+                    ZStack {
+                        Image("icon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                            .clipShape(Circle())
+                    }
+                } else {
+                    UserControlGridButton(
+                        item: item,
+                        isActive: state.activeItem == item,
+                        isEnabled: isEnabled(item),
+                        onTap: { handleTap(item) }
+                    )
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .frame(width: 800, height: 100)
         .background(
             RoundedRectangle(cornerRadius: 50, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+    }
+    
+    private struct UserControlGridButton: View {
+        let item: UserControlItem
+        let isActive: Bool
+        let isEnabled: Bool
+        let onTap: () -> Void
+        
+        var body: some View {
+            Button(action: onTap) {
+                Image(systemName: isActive ? item.selectedIcon : item.icon)
+                    .font(.system(size: 24))
+                    .frame(width: 56, height: 56)
+                    .contentShape(Rectangle())
+                    .opacity(isEnabled ? 1.0 : 0.3)
+            }
+            .help(item.description)
+            .buttonStyle(.plain)
+            .disabled(!isEnabled)
+            .hoverEffect(.highlight)
+            .frame(width: 90, height: 90)
+        }
     }
 }
 
@@ -61,7 +92,6 @@ extension UserControlView {
             // 뒤로가기
         case .back:
             Task {
-            //await appModel.exitFullImmersive(
                 await appModel.exitMixedImmersive(
                     dismissImmersiveSpace: dismissImmersiveSpace,
                     dismissWindow: dismissWindow,
@@ -90,13 +120,19 @@ extension UserControlView {
             }
             // 가시성 토글
         case .visibility:
-            appModel.togglePhotos()
-            appModel.toggleMemos()
-            
-            // 보드(타임라인)
+            // 예: “사진/메모/타임라인/placedImage”만 한꺼번에 토글
+                let anyHidden =
+                    !appModel.showPhotos ||
+                    !appModel.showMemos ||
+                    !appModel.showTimelines ||
+                    !appModel.showPlacedImages
+
+                // 하나라도 숨겨져 있으면 -> 전부 보이기
+                // 다 보이는 상태면 -> 전부 숨기기
+                appModel.setAllVisible(anyHidden)
         case .timeline:
             if state == .timeline {
-                openWindow(id:appModel.timelineWindowID)
+                openWindow(id: appModel.timelineWindowID)
                 print("🗂️ 보드 열기")
             } else {
                 dismissWindow(id: appModel.timelineWindowID)
@@ -105,19 +141,26 @@ extension UserControlView {
             
             // 이동
         case .teleport:
-            if case .placing(.teleport) = state{
-                appModel.itemAdd = .teleport
-                print("⚡️ 텔레포트 배치 시작")
+            appModel.toggle(.teleport)
+        case .miniMap:
+            if case .miniMap = state {
+                openWindow(id:appModel.miniMapWindowID)
+                print("🗺️ 미니맵 시작")
             } else {
-                appModel.itemAdd = nil
-                print("⚡️ 텔레포트 배치 종료")
+                dismissWindow(id: appModel.miniMapWindowID)
+                print("🗺️ 미니맵 종료")
             }
             
-        case .topView:
-            if case .topView = state {
-                appModel.showTopView = true
+        case .placedImage:
+            print("nothing")
+            
+        case .cameraheight:
+            if state == .cameraheight {
+                openWindow(id: appModel.cameraHeightWindowID)
+                print("📏 시점 조정 시작")
             } else {
-                appModel.showTopView = false
+                dismissWindow(id: appModel.cameraHeightWindowID)
+                print("📏 시점 조정 종료")
             }
         }
     }
@@ -128,18 +171,5 @@ extension UserControlView {
     
     private func isEnabled(_ item: UserControlItem) -> Bool {
         UserControlItemLogic.isEnabled(item, when: state)
-    }
-}
-
-struct VDivider: View {
-    var height: CGFloat = 60
-    var opacity: Double = 0.28
-    
-    var body: some View {
-        Rectangle()
-            .fill(.white.opacity(opacity))
-            .frame(width: 1, height: height)
-            .cornerRadius(0.5)
-            .padding(12)
     }
 }

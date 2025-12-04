@@ -86,7 +86,7 @@ public enum EntityFactory {
             InteractionPolicyComponent(
                 kind: .teleport,
                 // teleport entity가 허용하는 상호작용
-                caps: [.place, .persist, .delete, .move, .tap],
+                caps: [.tap],
                 collisionGroup: .teleport,
                 dataRef: nil
             )
@@ -109,6 +109,23 @@ public enum EntityFactory {
             )
         )
         applyCollisionFilter(e, group: .teleport, mask: [.teleport])
+        return e
+    }
+    
+    public static func makePlacedImage(anchorID: UUID, dataRef: UUID) -> Entity {
+        let e = Entity()
+        e.name = anchorID.uuidString  // entity 식별을 위해 앵커 id를 공유
+        e.components.set(
+            InteractionPolicyComponent(
+                kind: .placedImage,
+                // placedImage entity가 허용하는 상호작용
+                caps: [.place, .persist,.delete, .move],
+                // 일단 teleport랑 같은 collisiongroup 사용
+                collisionGroup: .content,
+                dataRef: dataRef
+            )
+        )
+        applyCollisionFilter(e, group: .content, mask: [.content])
         return e
     }
 }
